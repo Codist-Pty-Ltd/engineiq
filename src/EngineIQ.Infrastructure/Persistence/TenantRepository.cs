@@ -298,12 +298,12 @@ public sealed class TenantRepository : ITenantRepository
                 && j.CompletedAt.HasValue
                 && j.CompletedAt >= rangeStart
                 && j.CompletedAt < rangeEndExclusive)
-            .Select(j => j.CompletedAt!.Value.UtcDateTime.Date)
+            .Select(j => j.CompletedAt!.Value.Date)
             .ToListAsync(cancellationToken);
 
         var violDates = await db.Findings.AsNoTracking()
             .Where(f => f.CreatedAt >= rangeStart && f.CreatedAt < rangeEndExclusive)
-            .Select(f => f.CreatedAt.UtcDateTime.Date)
+            .Select(f => f.CreatedAt.Date)
             .ToListAsync(cancellationToken);
 
         static Dictionary<DateOnly, int> ToDailyCounts(IEnumerable<DateTime> dates) =>
