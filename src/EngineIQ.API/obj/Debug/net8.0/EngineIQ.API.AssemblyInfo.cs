@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EngineIQ.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bb2151a5cf0049e48d1881579011ebfeb39ff9d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ebe3fff588ef77958776de88e45938d066f245c")]
 [assembly: System.Reflection.AssemblyProductAttribute("EngineIQ.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EngineIQ.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

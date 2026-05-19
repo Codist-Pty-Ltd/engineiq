@@ -11,6 +11,7 @@ const links = [
   { href: "/installations", label: "Installations" },
   { href: "/overview", label: "Analytics" },
   { href: "/findings", label: "Findings" },
+  { href: "/notifications", label: "Notifications" },
   { href: "/repositories", label: "Repositories" },
   { href: "/usage", label: "Usage" },
   { href: "/settings", label: "Settings" },

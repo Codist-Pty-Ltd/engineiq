@@ -17,6 +17,34 @@ export async function tenantGet(
   });
 }
 
+export type PortalPreferences = {
+  review_all_pull_requests: boolean;
+  skip_draft_pull_requests: boolean;
+  enforce_cursorrules: boolean;
+  monetary_type_safety_checks: boolean;
+  email_on_critical_issues: boolean;
+  weekly_digest: boolean;
+};
+
+export async function tenantPatch(
+  tenantId: string,
+  apiKey: string,
+  path: string,
+  body: unknown,
+  init?: RequestInit,
+) {
+  return fetch(`${apiBase()}/api/v1/tenant/${tenantId}${path}`, {
+    method: "PATCH",
+    ...init,
+    headers: {
+      "X-Api-Key": apiKey,
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 export async function postConfigYaml(tenantId: string, apiKey: string, yaml: string) {
   return fetch(`${apiBase()}/api/v1/tenant/${tenantId}/config`, {
     method: "POST",

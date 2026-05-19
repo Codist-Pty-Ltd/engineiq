@@ -348,6 +348,121 @@ public sealed class JobRepository : IJobRepository
             job.PrNumber);
     }
 
+    public async Task<IReadOnlyList<PortalNotificationItem>> ListPortalNotificationsAsync(
+        Guid tenantId,
+        int take = 50,
+        CancellationToken cancellationToken = default)
+    {
+        take = Math.Clamp(take, 1, 100);
+        var cutoff = DateTimeOffset.UtcNow.AddDays(-30);
+
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+
+        var tenant = await db.Tenants.AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+        if (tenant is null)
+            return Array.Empty<PortalNotificationItem>();
+
+        var items = new List<PortalNotificationItem>();
+
+        if (tenant.GitHubAppInstallationId.HasValue)
+        {
+            items.Add(new PortalNotificationItem(
+                "github_connected",
+                "GitHub App connected",
+                $"{tenant.GitHubOrgLogin ?? "Your organisation"} · EngineIQ can receive pull request events",
+                tenant.CreatedAt,
+                null));
+        }
+
+        var queued = await db.PrReviewJobs.AsNoTracking()
+            .Include(j => j.Repository)
+            .Where(j =>
+                j.TenantId == tenantId
+                && j.Status == ReviewJobStatuses.Queued
+                && j.CreatedAt >= cutoff
+                && j.Repository != null)
+            .OrderByDescending(j => j.CreatedAt)
+            .Take(10)
+            .ToListAsync(cancellationToken);
+
+        foreach (var j in queued)
+        {
+            items.Add(new PortalNotificationItem(
+                "pr_queued",
+                "Pull request queued for review",
+                $"{j.Repository!.FullName} · PR #{j.PrNumber}",
+                j.CreatedAt,
+                j.Id));
+        }
+
+        var completed = await db.PrReviewJobs.AsNoTracking()
+            .Include(j => j.Repository)
+            .Where(j =>
+                j.TenantId == tenantId
+                && (j.Status == ReviewJobStatuses.Completed || j.Status == ReviewJobStatuses.Failed)
+                && j.Repository != null
+                && (j.CompletedAt ?? j.CreatedAt) >= cutoff)
+            .OrderByDescending(j => j.CompletedAt ?? j.CreatedAt)
+            .Take(25)
+            .ToListAsync(cancellationToken);
+
+        foreach (var j in completed)
+        {
+            var at = j.CompletedAt ?? j.CreatedAt;
+            var issueLabel = j.FindingsCount == 1 ? "issue" : "issues";
+            var title = j.Status == ReviewJobStatuses.Failed ? "Review failed" : "Review complete";
+            var sub = j.Status == ReviewJobStatuses.Failed
+                ? $"{j.Repository!.FullName} · PR #{j.PrNumber}"
+                : $"{j.Repository!.FullName} · PR #{j.PrNumber} — {j.FindingsCount} {issueLabel} found";
+            items.Add(new PortalNotificationItem(
+                j.Status == ReviewJobStatuses.Failed ? "review_failed" : "review_complete",
+                title,
+                sub,
+                at,
+                j.Id));
+        }
+
+        var criticalFindings = await db.Findings.AsNoTracking()
+            .Where(f =>
+                f.TenantId == tenantId
+                && f.CreatedAt >= cutoff
+                && f.Severity.ToLower() == "critical")
+            .OrderByDescending(f => f.CreatedAt)
+            .Take(20)
+            .Select(f => new { f.Id, f.JobId, f.CreatedAt, f.FilePath, f.RuleId })
+            .ToListAsync(cancellationToken);
+
+        if (criticalFindings.Count > 0)
+        {
+            var jobIds = criticalFindings.Select(f => f.JobId).Distinct().ToList();
+            var jobMeta = await db.PrReviewJobs.AsNoTracking()
+                .Include(j => j.Repository)
+                .Where(j => jobIds.Contains(j.Id) && j.Repository != null)
+                .Select(j => new { j.Id, j.PrNumber, Repo = j.Repository!.FullName })
+                .ToDictionaryAsync(j => j.Id, cancellationToken);
+
+            foreach (var f in criticalFindings)
+            {
+                if (!jobMeta.TryGetValue(f.JobId, out var meta))
+                    continue;
+                var loc = string.IsNullOrWhiteSpace(f.FilePath) ? "finding" : f.FilePath;
+                items.Add(new PortalNotificationItem(
+                    "critical_issue",
+                    "Critical issue found",
+                    $"{meta.Repo} · PR #{meta.PrNumber} — {loc}",
+                    f.CreatedAt,
+                    f.JobId));
+            }
+        }
+
+        return items
+            .OrderByDescending(i => i.OccurredAt)
+            .Take(take)
+            .ToList();
+    }
+
     private static (string Owner, string Repo) ParseOwnerRepo(string fullName)
     {
         var parts = fullName.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);

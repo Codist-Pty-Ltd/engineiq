@@ -26,6 +26,13 @@ public interface ITenantRepository
 
     Task UpdateConfigYamlAsync(Guid tenantId, string? yaml, CancellationToken cancellationToken = default);
 
+    Task<TenantPortalPreferences?> GetPortalPreferencesAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
+    Task<TenantPortalPreferences?> UpdatePortalPreferencesAsync(
+        Guid tenantId,
+        TenantPortalPreferencesPatch patch,
+        CancellationToken cancellationToken = default);
+
     Task<TenantAccountSnapshot?> GetAccountSnapshotAsync(Guid tenantId, CancellationToken cancellationToken = default);
 
     Task<string?> GetConfigYamlAsync(Guid tenantId, CancellationToken cancellationToken = default);

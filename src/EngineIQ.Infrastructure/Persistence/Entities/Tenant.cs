@@ -17,6 +17,8 @@ public sealed class Tenant
     public string Status { get; set; } = string.Empty;
     public string? ConfigYaml { get; set; }
     public string? FeatureFlagsJson { get; set; }
+    /// <summary>Portal review + notification preferences (jsonb, snake_case keys).</summary>
+    public string? PortalPreferencesJson { get; set; }
     public DateTimeOffset? DpaAcceptedAt { get; set; }
     public string? DpaAcceptedIp { get; set; }
 

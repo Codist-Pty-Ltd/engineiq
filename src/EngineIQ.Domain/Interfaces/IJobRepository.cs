@@ -54,6 +54,12 @@ public interface IJobRepository
         int days,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Activity feed for the portal notifications screen (derived from jobs and findings metadata).</summary>
+    Task<IReadOnlyList<PortalNotificationItem>> ListPortalNotificationsAsync(
+        Guid tenantId,
+        int take = 50,
+        CancellationToken cancellationToken = default);
+
     Task MarkJobFailedAsync(Guid tenantId, Guid jobId, long? durationMs, CancellationToken cancellationToken = default);
 
     /// <summary>Removes queued job row when RabbitMQ publish fails after insert (webhook rollback).</summary>

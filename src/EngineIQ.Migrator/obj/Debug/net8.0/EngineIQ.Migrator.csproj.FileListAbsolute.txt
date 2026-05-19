@@ -58,3 +58,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\obj\Debug\net8.0\EngineIQ.Migrator.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\obj\Debug\net8.0\EngineIQ.Migrator.genruntimeconfig.cache
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\obj\Debug\net8.0\ref\EngineIQ.Migrator.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\obj\Debug\net8.0\EngineIQ.Migrator.sourcelink.json

@@ -212,6 +212,38 @@ public sealed class TenantRepository : ITenantRepository
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<TenantPortalPreferences?> GetPortalPreferencesAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+        var json = await db.Tenants.AsNoTracking()
+            .Where(t => t.Id == tenantId)
+            .Select(t => t.PortalPreferencesJson)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (json is null && !await db.Tenants.AsNoTracking().AnyAsync(t => t.Id == tenantId, cancellationToken))
+            return null;
+        return PortalPreferencesJson.Parse(json);
+    }
+
+    public async Task<TenantPortalPreferences?> UpdatePortalPreferencesAsync(
+        Guid tenantId,
+        TenantPortalPreferencesPatch patch,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+        if (tenant is null)
+            return null;
+
+        var merged = PortalPreferencesJson.Merge(PortalPreferencesJson.Parse(tenant.PortalPreferencesJson), patch);
+        tenant.PortalPreferencesJson = PortalPreferencesJson.Serialize(merged);
+        await db.SaveChangesAsync(cancellationToken);
+        return merged;
+    }
+
     public async Task<TenantAccountSnapshot?> GetAccountSnapshotAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);

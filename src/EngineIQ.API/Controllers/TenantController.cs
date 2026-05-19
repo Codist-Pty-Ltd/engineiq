@@ -248,6 +248,58 @@ public sealed class TenantController : ControllerBase
             items.Select(MapFinding).ToList()));
     }
 
+    [HttpGet("preferences")]
+    public async Task<ActionResult<TenantPreferencesResponse>> GetPreferences(Guid id, CancellationToken cancellationToken)
+    {
+        var prefs = await _tenants.GetPortalPreferencesAsync(id, cancellationToken);
+        if (prefs is null)
+            return NotFound();
+        return Ok(MapPreferences(prefs));
+    }
+
+    [HttpPatch("preferences")]
+    public async Task<ActionResult<TenantPreferencesResponse>> PatchPreferences(
+        Guid id,
+        [FromBody] TenantPreferencesPatchRequest body,
+        CancellationToken cancellationToken)
+    {
+        if (await _tenants.GetAccountSnapshotAsync(id, cancellationToken) is null)
+            return NotFound();
+
+        var patch = new TenantPortalPreferencesPatch(
+            body.ReviewAllPullRequests,
+            body.SkipDraftPullRequests,
+            body.EnforceCursorRules,
+            body.MonetaryTypeSafetyChecks,
+            body.EmailOnCriticalIssues,
+            body.WeeklyDigest);
+
+        var updated = await _tenants.UpdatePortalPreferencesAsync(id, patch, cancellationToken);
+        if (updated is null)
+            return NotFound();
+
+        return Ok(MapPreferences(updated));
+    }
+
+    [HttpGet("notifications")]
+    public async Task<ActionResult<NotificationsListResponse>> Notifications(
+        Guid id,
+        [FromQuery] int take = 50,
+        CancellationToken cancellationToken = default)
+    {
+        if (await _tenants.GetAccountSnapshotAsync(id, cancellationToken) is null)
+            return NotFound();
+
+        var items = await _jobs.ListPortalNotificationsAsync(id, take, cancellationToken);
+        return Ok(new NotificationsListResponse(
+            items.Select(n => new NotificationRowResponse(
+                n.Kind,
+                n.Title,
+                n.Subtitle,
+                n.OccurredAt,
+                n.JobId)).ToList()));
+    }
+
     [HttpGet("config")]
     [Produces("application/json")]
     public async Task<ActionResult<TenantConfigGetResponse>> GetConfig(Guid id, CancellationToken cancellationToken)
@@ -316,6 +368,15 @@ public sealed class TenantController : ControllerBase
             f.WasActioned,
             f.PrMergeStatus,
             f.CreatedAt);
+
+    private static TenantPreferencesResponse MapPreferences(TenantPortalPreferences p) =>
+        new(
+            p.ReviewAllPullRequests,
+            p.SkipDraftPullRequests,
+            p.EnforceCursorRules,
+            p.MonetaryTypeSafetyChecks,
+            p.EmailOnCriticalIssues,
+            p.WeeklyDigest);
 
     private static TenantJobRowResponse MapJobRow(TenantPrJobRow r) =>
         new(
@@ -400,6 +461,45 @@ public sealed class TenantController : ControllerBase
 
     public sealed record TenantConfigGetResponse(
         [property: JsonPropertyName("config_yaml")] string ConfigYaml);
+
+    public sealed record TenantPreferencesResponse(
+        [property: JsonPropertyName("review_all_pull_requests")] bool ReviewAllPullRequests,
+        [property: JsonPropertyName("skip_draft_pull_requests")] bool SkipDraftPullRequests,
+        [property: JsonPropertyName("enforce_cursorrules")] bool EnforceCursorRules,
+        [property: JsonPropertyName("monetary_type_safety_checks")] bool MonetaryTypeSafetyChecks,
+        [property: JsonPropertyName("email_on_critical_issues")] bool EmailOnCriticalIssues,
+        [property: JsonPropertyName("weekly_digest")] bool WeeklyDigest);
+
+    public sealed class TenantPreferencesPatchRequest
+    {
+        [JsonPropertyName("review_all_pull_requests")]
+        public bool? ReviewAllPullRequests { get; set; }
+
+        [JsonPropertyName("skip_draft_pull_requests")]
+        public bool? SkipDraftPullRequests { get; set; }
+
+        [JsonPropertyName("enforce_cursorrules")]
+        public bool? EnforceCursorRules { get; set; }
+
+        [JsonPropertyName("monetary_type_safety_checks")]
+        public bool? MonetaryTypeSafetyChecks { get; set; }
+
+        [JsonPropertyName("email_on_critical_issues")]
+        public bool? EmailOnCriticalIssues { get; set; }
+
+        [JsonPropertyName("weekly_digest")]
+        public bool? WeeklyDigest { get; set; }
+    }
+
+    public sealed record NotificationRowResponse(
+        [property: JsonPropertyName("kind")] string Kind,
+        [property: JsonPropertyName("title")] string Title,
+        [property: JsonPropertyName("subtitle")] string Subtitle,
+        [property: JsonPropertyName("occurred_at")] DateTimeOffset OccurredAt,
+        [property: JsonPropertyName("job_id")] Guid? JobId);
+
+    public sealed record NotificationsListResponse(
+        [property: JsonPropertyName("items")] IReadOnlyList<NotificationRowResponse> Items);
 
     public sealed record ConfigValidationResponse(
         [property: JsonPropertyName("valid")] bool Valid,

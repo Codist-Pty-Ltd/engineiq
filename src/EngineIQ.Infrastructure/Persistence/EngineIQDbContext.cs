@@ -44,6 +44,7 @@ public sealed class EngineIQDbContext : DbContext
             e.Property(x => x.ContactEmail).HasMaxLength(320);
             e.Property(x => x.ConfigYaml).HasColumnType("text");
             e.Property(x => x.FeatureFlagsJson).HasColumnType("jsonb");
+            e.Property(x => x.PortalPreferencesJson).HasColumnType("jsonb");
             e.Property(x => x.DpaAcceptedIp).HasMaxLength(64);
         });
 
