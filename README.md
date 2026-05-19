@@ -22,7 +22,7 @@ Architecture-aware **AI pull request review** for teams standardising on **Anthr
 |-------|--------|
 | API | .NET 8 — webhooks, onboarding, tenant API, `GET /security` |
 | Worker | .NET 8 — RabbitMQ consumer → in-memory diff → Claude → GitHub comment |
-| Admin | .NET 8 Razor — internal ops UI (`127.0.0.1:8081` in Docker) |
+| Admin | .NET 8 + React (`/admin`) — internal ops UI (`127.0.0.1:8081` in Docker) |
 | Marketing | Next.js 14 (static export) — `engineiq.co.za` |
 | Portal | Next.js 14 (static export) — `app.engineiq.co.za` |
 | Edge | Caddy 2 — Let’s Encrypt, routes to marketing / portal / API |

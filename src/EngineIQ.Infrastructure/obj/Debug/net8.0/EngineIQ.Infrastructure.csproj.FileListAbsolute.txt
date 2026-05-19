@@ -13,3 +13,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Infrastru
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Infrastructure\obj\Debug\net8.0\refint\EngineIQ.Infrastructure.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Infrastructure\obj\Debug\net8.0\EngineIQ.Infrastructure.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Infrastructure\obj\Debug\net8.0\ref\EngineIQ.Infrastructure.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Infrastructure\obj\Debug\net8.0\EngineIQ.Infrastructure.sourcelink.json

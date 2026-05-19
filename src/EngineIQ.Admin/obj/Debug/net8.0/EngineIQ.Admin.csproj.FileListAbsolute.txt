@@ -53,3 +53,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.genruntimeconfig.cache
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\ref\EngineIQ.Admin.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.sourcelink.json

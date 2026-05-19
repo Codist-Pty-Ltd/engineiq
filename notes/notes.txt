@@ -1,0 +1,77 @@
+TESTING:
+curl -sS -X POST "https://api.engineiq.co.za/api/v1/onboarding/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "hello@mybillable.co.za",
+    "company_name": "Mybillable",
+    "plan": "Growth",
+    "github_org": "mybillable",
+    "dpa_accepted": true
+  }'
+
+curl -sS -X POST "https://api.engineiq.co.za/api/v1/onboarding/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "hello@therecord.co.za",
+    "company_name": "Therecord",
+    "plan": "Growth",
+    "github_org": "therecord",
+    "dpa_accepted": true
+  }'
+
+curl -sS -X POST "https://api.engineiq.co.za/api/v1/onboarding/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "hello@skillbay.co.za",
+    "company_name": "Skillbay",
+    "plan": "Growth",
+    "github_org": "skillbay",
+    "dpa_accepted": true
+  }'
+
+curl -sS -X POST "https://api.engineiq.co.za/api/v1/onboarding/register" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "technical@codist.co.za",
+    "company_name": "War Room",
+    "plan": "Growth",
+    "github_org": "warroom",
+    "dpa_accepted": true
+  }'
+
+
+
+ openssl rand -hex 32
+222e2e26ba1732c3e342e297f8f247245530df8f94a5e2c2fbbc606615ce396b
+
+ENGINEIQ_ADMIN_USERNAME=engineiq-admin
+ENGINEIQ_ADMIN_PASSWORD=change-me-long-random-admin
+
+
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAwQR96XvKFMNcOIvMvRvwtqYOI9Dr2uUhXkjhq6vCTCLbz+C5
+EyIXP3rxp2I2g/dFBHRU0HezMmDmtYNMah7zvFtkbV94jj/fK5CQTosCkOAA4WOv
+3aay+i9jmUSFTth7Na8/lzqPATX1VRIgEXrEPxzb/p/tMskDrVo7oNAR0FNOxjVI
+i3KO+zjIRCpbUhTxp2HKEvHl2eFCxYnUsUrVokezXcgua0nbSZA8cDCzNYIwOrjl
+YgEFiQyPV5euP7gGRLBC3sFjVroNJ7EsqSvNc212JjSuoVmGoZKZenVfbJ39RfQ1
+jQvSf5bqyHka1BZQlP0sKr+tfR5ut8bcQzupkwIDAQABAoIBAE/fe/tSrp1I+rCr
+qV3YYhQzQ0au/ernRpetsTVJLm4zPqMXa37vbI9oYPfTPJv/hyAAw9hAsHb4goA6
+hTSk+lfHuhdImqrC46cze4QFIlqxV6vthKlEgmvlkGGsaT3nd5UPoFEEeokVuyAp
+D/wrwWocly0XISES7eKepG43rCd4mFGKpG+vhSSuLqrqXTmj/duyzPeDjdeNPFlA
+f7ows+KqATK7stKm4GaQc+tg9IvttMLLOKrWIWYGtew7w7t0Tz3H3uhs5LQLAXi2
+QV9zsZ/MjAtnvd3L2xHbeGg3zAakB04sVstC4h2kxCerREs9/HtRqmfCyfeteF6n
+UAq2m4ECgYEA/hV6gm/8wtKNQw0fjPpInVvb0+5S960k9GzjXxcdTAIe8VjnaTSM
+acVGHNwGasWyD8UkwohlLE52OcBacTQy/PWEdEQEYQ6ydaQ2OlBQMOQ5Oi7WUoe0
+9RkHY1+GxOsRvLgCH3W1TRrywI+woLVqGh3j1YQ04VSOgjrgEzXeTD0CgYEAwnkf
+J2z69miGfF6HB2U6gx41E8yQYXVtu3tENBqz0tg2UHkzySf/kRtQXiVC5uYzf+g2
+Y0ihBOnb/6AiWuGblxvna6zm3zul0mGTeEJOYtT/kCrVvSlo07UJYKlajTrdOZYR
+Ju9fwkEVbBsJAYjTtdlJnWVSmNwRz61iy5nDGg8CgYEA+/yJN3uhDgaLGoiVVdeS
+1J0ZcyHVHtWU5ORoyxG9eHhR/8HQH0KCTxPa6Rw9MP9IDOPUBSoITNyz26qtB8Bh
+IQbNihE61pcg3hMxxLuKDDMLnmx9GfSEvt9HuIIwwnLvcF59nH28hO/I+LiIz5mb
+1LL4FfW8DA00GGwTdnniMXECgYB/wrDr5tXM8giARl2xRxi0sTCvjDHCRTJM/ANn
+s681smOkZKvX2FY2z1nyL8qPBOcKfdTVTw6xuq2Ud3B6gkMEeAmGHLYkK/yZhQ8r
+72ut1D79SJbYyg6bHxFFFp1tsSFLRsKH8LTZWoanWe+FuY1Up6aMJ9emotV0uXTx
+S1f4kwKBgQCTF5wL4/TU9rhOWEIUS8LZEmGC/sZTrg1KWc4UtPd94cHAU0ZsOTGJ
+vWvEptLn5eluBC+rAnQd1DJanHp8AHm3fvCdVdOMkZsrAJe7OIire8qzwBVMGhEg
+UVlPsrNtQ6fL6M1CFDrpk80vMo80siVOWlVL3yHWix1J5UUaoRfipw==
+-----END RSA PRIVATE KEY-----

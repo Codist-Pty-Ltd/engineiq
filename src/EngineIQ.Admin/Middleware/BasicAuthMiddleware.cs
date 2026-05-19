@@ -19,12 +19,25 @@ public sealed class BasicAuthMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
+        // React SPA under /admin uses session-held Basic credentials for JSON calls only.
+        // Static shell is served without HTTP Basic so operators can reach the sign-in page on localhost.
+        var path = context.Request.Path;
+        // SPA shell + redirects + probes Chrome fires at origin root (e.g. /favicon.ico) must not receive
+        // WWW-Authenticate — otherwise the browser shows its native Basic dialog on top of /admin/login.
+        if (path.StartsWithSegments("/admin")
+            || path == "/"
+            || IsAnonymousBrowserProbe(path))
+        {
+            await _next(context);
+            return;
+        }
+
         if (!context.Request.Headers.TryGetValue("Authorization", out var header)
             || !AuthenticationHeaderValue.TryParse(header, out var auth)
             || !string.Equals(auth.Scheme, "Basic", StringComparison.OrdinalIgnoreCase)
             || string.IsNullOrEmpty(auth.Parameter))
         {
-            Challenge(context);
+            RespondUnauthorized(context);
             return;
         }
 
@@ -35,14 +48,14 @@ public sealed class BasicAuthMiddleware
         }
         catch
         {
-            Challenge(context);
+            RespondUnauthorized(context);
             return;
         }
 
         var sep = pair.IndexOf(':', StringComparison.Ordinal);
         if (sep <= 0)
         {
-            Challenge(context);
+            RespondUnauthorized(context);
             return;
         }
 
@@ -53,7 +66,7 @@ public sealed class BasicAuthMiddleware
         var expectedPass = _options.Password ?? string.Empty;
         if (!Utf8FixedTimeEquals(user, expectedUser) || !Utf8FixedTimeEquals(pass, expectedPass))
         {
-            Challenge(context);
+            RespondUnauthorized(context);
             return;
         }
 
@@ -69,9 +82,21 @@ public sealed class BasicAuthMiddleware
         return CryptographicOperations.FixedTimeEquals(ba, bb);
     }
 
-    private static void Challenge(HttpContext context)
+    /// <summary>
+    /// Never send <c>WWW-Authenticate</c> — it triggers the browser-native Basic dialog on incidental requests.
+    /// React sign-in uses <c>Authorization</c> on <c>/api/v1/admin</c> only.
+    /// </summary>
+    private static void RespondUnauthorized(HttpContext context)
     {
         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        context.Response.Headers.WWWAuthenticate = "Basic realm=\"EngineIQ Admin\"";
+    }
+
+    private static bool IsAnonymousBrowserProbe(PathString path)
+    {
+        if (path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (path.Equals("/robots.txt", StringComparison.OrdinalIgnoreCase))
+            return true;
+        return path.StartsWithSegments("/.well-known");
     }
 }

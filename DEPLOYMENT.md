@@ -27,7 +27,7 @@ Nothing on the host binds PostgreSQL/RabbitMQ/Redis to the public internet. Only
 | `caddy` | TLS (Let’s Encrypt), reverse proxy | **0.0.0.0:80, 443** |
 | `engineiq-api` | .NET 8 API | Internal `:5000` only |
 | `engineiq-worker` | .NET 8 queue consumer | No public port |
-| `engineiq-admin` | Internal Razor admin | **127.0.0.1:8081** only |
+| `engineiq-admin` | Internal admin — React **`/admin`** + **`/api/v1/admin`** JSON | **127.0.0.1:8081** only |
 | `engineiq-marketing` | nginx + static export | Internal `:80` |
 | `engineiq-portal` | nginx + static export | Internal `:80` |
 | `postgres` | PostgreSQL 16 | Volume only |
@@ -261,14 +261,45 @@ Confirms **`X-Api-Key`** + **`/status`**, **`/account`**, **`/jobs`** for each p
 
 URL on server: **`http://127.0.0.1:8081`**
 
+Primary UI (React): **`http://127.0.0.1:8081/admin`** — sign in with operator credentials; the session stores the `Authorization` header client-side for **`/api/v1/admin/*`** calls (no browser-native Basic dialog).
+
 From your machine:
 
 ```bash
 ssh -L 8081:127.0.0.1:8081 root@<HETZNER_IP>
-# browser: http://127.0.0.1:8081
+# browser: http://127.0.0.1:8081/admin
 ```
 
 Credentials: `ENGINEIQ_ADMIN_USERNAME` / `ENGINEIQ_ADMIN_PASSWORD` from `.env`.
+
+JSON smoke (`Authorization: Basic …` on **`/api/v1/admin`** only; **`/admin`** static shell is unauthenticated):
+
+```bash
+curl -fsS -u "$ENGINEIQ_ADMIN_USERNAME:$ENGINEIQ_ADMIN_PASSWORD" http://127.0.0.1:8081/api/v1/admin/health
+curl -fsS -u "$ENGINEIQ_ADMIN_USERNAME:$ENGINEIQ_ADMIN_PASSWORD" http://127.0.0.1:8081/api/v1/admin/metrics
+```
+
+### 10.1 Local parity with production (recommended)
+
+**Goal:** Same **Dockerfiles**, **`docker-compose.yml` env keys**, and **migration step** as deploy — without starting API, worker, Caddy, marketing, or portal.
+
+| Script | Purpose |
+|--------|---------|
+| **`scripts/local-stack-admin-parity.sh`** | Starts **postgres** + **rabbitmq**, runs **`engineiq-migrator`**, builds/runs **`engineiq-admin`** (`Dockerfile.admin` includes the React build). Uses `.env` (`POSTGRES_PASSWORD`, `RABBITMQ_PASSWORD`, `ENGINEIQ_ADMIN_PASSWORD`, etc.). **Defaults to local `docker compose build`** — it does **not** follow deploy’s **`SKIP_PULL`** from `.env` (which often points at placeholder **`ENGINEIQ_REGISTRY`** and fails with “denied”). To pull prebuilt images instead: **`ADMIN_PARITY_PULL_IMAGES=1`** (and **`docker login`** to your registry if private). |
+| **`scripts/sync-admin-ui-wwwroot.sh`** | **`npm ci`** + **`npm run build`** in **`web/admin-ui`**, copies **`dist`** → **`src/EngineIQ.Admin/wwwroot/admin`**. Use before **`dotnet run`** on **`EngineIQ.Admin`** so the SPA matches the Docker image output. |
+
+From repo root (Git Bash / Linux / macOS):
+
+```bash
+chmod +x scripts/local-stack-admin-parity.sh scripts/sync-admin-ui-wwwroot.sh
+
+# A — Docker-shaped admin (matches pushed image build path; binds 127.0.0.1:8081)
+./scripts/local-stack-admin-parity.sh
+
+# B — dotnet run / IDE: stop the engineiq-admin container first (same port), sync SPA, align Postgres/Rabbit env with .env
+./scripts/sync-admin-ui-wwwroot.sh
+dotnet run --project src/EngineIQ.Admin/EngineIQ.Admin.csproj
+```
 
 ---
 

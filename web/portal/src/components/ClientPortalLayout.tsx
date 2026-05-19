@@ -7,8 +7,8 @@ import { clearSession, loadSession } from "@/lib/auth";
 import { tenantGet } from "@/lib/api";
 
 const links = [
-  { href: "/overview", label: "Overview" },
-  { href: "/pull-requests", label: "Pull requests" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/overview", label: "Analytics" },
   { href: "/findings", label: "Findings" },
   { href: "/repositories", label: "Repositories" },
   { href: "/usage", label: "Usage" },
@@ -72,7 +72,7 @@ export function ClientPortalLayout({ children }: { children: React.ReactNode }) 
     <div className="eq-app">
       <aside className="eq-sidebar" aria-label="Sidebar navigation">
         <div className="eq-sidebar__logo">
-          <Link href="/overview" className="eq-brand" aria-label="EngineIQ overview">
+          <Link href="/dashboard" className="eq-brand" aria-label="EngineIQ dashboard">
             <span className="eq-brand__mark" aria-hidden="true" />
             <span>EngineIQ</span>
           </Link>
@@ -83,7 +83,12 @@ export function ClientPortalLayout({ children }: { children: React.ReactNode }) 
             <Link
               key={l.href}
               href={l.href}
-              className={`eq-navitem ${pathname === l.href ? "eq-navitem--active" : ""}`}
+              className={`eq-navitem ${
+                pathname === l.href ||
+                (l.href === "/dashboard" && (pathname === "/dashboard" || pathname.startsWith("/dashboard/")))
+                  ? "eq-navitem--active"
+                  : ""
+              }`}
             >
               {l.label}
             </Link>

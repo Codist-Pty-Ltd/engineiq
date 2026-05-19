@@ -13,3 +13,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBu
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\refint\EngineIQ.ContextBuilder.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\ref\EngineIQ.ContextBuilder.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.sourcelink.json

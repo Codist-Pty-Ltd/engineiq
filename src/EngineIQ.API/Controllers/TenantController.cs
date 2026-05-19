@@ -117,6 +117,22 @@ public sealed class TenantController : ControllerBase
         return Ok(MapJobRow(row));
     }
 
+    [HttpGet("jobs/{jobId:guid}/findings")]
+    public async Task<ActionResult<FindingsListResponse>> JobFindings(
+        Guid id,
+        Guid jobId,
+        CancellationToken cancellationToken = default)
+    {
+        if (await _tenants.GetAccountSnapshotAsync(id, cancellationToken) is null)
+            return NotFound();
+
+        if (await _jobs.GetTenantJobAsync(id, jobId, cancellationToken) is null)
+            return NotFound();
+
+        var rows = await _findings.ListByJobAsync(id, jobId, cancellationToken);
+        return Ok(new FindingsListResponse(rows.Select(MapFinding).ToList()));
+    }
+
     [HttpGet("repositories")]
     public async Task<ActionResult<IReadOnlyList<TenantRepositoryRowResponse>>> Repositories(
         Guid id,
@@ -185,18 +201,7 @@ public sealed class TenantController : ControllerBase
         var (items, total) = await _findings.ListForTenantAsync(id, q, cancellationToken);
         return Ok(new FindingsPageResponse(
             total,
-            items.Select(f => new FindingRowResponse(
-                f.Id,
-                f.Severity,
-                f.Category,
-                f.RuleId,
-                f.Source,
-                f.FilePath,
-                f.LineNumber,
-                f.Message,
-                f.WasActioned,
-                f.PrMergeStatus,
-                f.CreatedAt)).ToList()));
+            items.Select(MapFinding).ToList()));
     }
 
     [HttpGet("config")]
@@ -253,6 +258,20 @@ public sealed class TenantController : ControllerBase
         [property: JsonPropertyName("total_input_tokens")] long TotalInputTokens,
         [property: JsonPropertyName("total_output_tokens")] long TotalOutputTokens,
         [property: JsonPropertyName("total_estimated_cost_zar")] decimal TotalEstimatedCostZar);
+
+    private static FindingRowResponse MapFinding(FindingReadDto f) =>
+        new(
+            f.Id,
+            f.Severity,
+            f.Category,
+            f.RuleId,
+            f.Source,
+            f.FilePath,
+            f.LineNumber,
+            f.Message,
+            f.WasActioned,
+            f.PrMergeStatus,
+            f.CreatedAt);
 
     private static TenantJobRowResponse MapJobRow(TenantPrJobRow r) =>
         new(
@@ -312,6 +331,9 @@ public sealed class TenantController : ControllerBase
 
     public sealed record FindingsPageResponse(
         [property: JsonPropertyName("total_count")] int TotalCount,
+        [property: JsonPropertyName("items")] IReadOnlyList<FindingRowResponse> Items);
+
+    public sealed record FindingsListResponse(
         [property: JsonPropertyName("items")] IReadOnlyList<FindingRowResponse> Items);
 
     public sealed record AuditLogRowResponse(

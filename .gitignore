@@ -21,6 +21,9 @@ scripts/demo-tenant-state.local.env
 **/.next/
 **/out/
 
+# Admin SPA emitted into wwwroot by Docker / local npm run build
+src/EngineIQ.Admin/wwwroot/admin/
+
 # OS / tooling
 .DS_Store
 Thumbs.db

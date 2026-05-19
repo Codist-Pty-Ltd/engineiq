@@ -57,28 +57,66 @@ public sealed class AdminPortalService
         return rows;
     }
 
-    public async Task SuspendTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<bool> SetTenantSuspendedAsync(Guid tenantId, bool suspended, CancellationToken cancellationToken = default)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
         var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
         if (tenant is null)
-            return;
-        tenant.Status = "Suspended";
+            return false;
+        tenant.Status = suspended ? "Suspended" : "Active";
         await db.SaveChangesAsync(cancellationToken);
-        _logger.LogWarning("Tenant {TenantId} suspended via admin portal.", tenantId);
+        if (suspended)
+            _logger.LogWarning("Tenant {TenantId} suspended via admin portal.", tenantId);
+        else
+            _logger.LogInformation("Tenant {TenantId} resumed via admin portal.", tenantId);
+        return true;
     }
 
-    public async Task UpgradeTenantAsync(Guid tenantId, string plan, string? featureFlagsJson, CancellationToken cancellationToken = default)
+    public async Task<bool> UpgradeTenantAsync(Guid tenantId, string plan, string? featureFlagsJson, CancellationToken cancellationToken = default)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
         var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
         if (tenant is null)
-            return;
+            return false;
         tenant.Plan = plan.Trim();
         if (featureFlagsJson is not null)
             tenant.FeatureFlagsJson = string.IsNullOrWhiteSpace(featureFlagsJson) ? null : featureFlagsJson.Trim();
         await db.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Tenant {TenantId} plan updated to {Plan}.", tenantId, plan);
+        return true;
+    }
+
+    public async Task<AdminTenantDetail?> GetTenantDetailAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        await using var root = await _factory.CreateDbContextAsync(cancellationToken);
+        var t = await root.Tenants.AsNoTracking().FirstOrDefaultAsync(x => x.Id == tenantId, cancellationToken);
+        if (t is null)
+            return null;
+
+        await using var scoped = await _factory.CreateDbContextAsync(cancellationToken);
+        await scoped.SetCurrentTenantAsync(t.Id, cancellationToken);
+        var prCount = await scoped.PrReviewJobs.LongCountAsync(cancellationToken);
+        DateTimeOffset? lastActive = null;
+        if (prCount > 0)
+        {
+            lastActive = await scoped.PrReviewJobs.MaxAsync(
+                j => j.CompletedAt ?? j.CreatedAt,
+                cancellationToken);
+        }
+
+        return new AdminTenantDetail(
+            t.Id,
+            t.Name,
+            t.Plan,
+            t.Status,
+            t.ContactEmail,
+            t.CreatedAt,
+            t.GitHubOrgLogin,
+            t.GitHubAppInstallationId,
+            t.FeatureFlagsJson,
+            prCount,
+            lastActive,
+            PlanMrrEstimator.MonthlyZar(t.Plan));
     }
 
     public async Task<IReadOnlyList<AdminFindingRow>> ListFindingsAsync(Guid tenantId, int take = 500, CancellationToken cancellationToken = default)
@@ -211,6 +249,20 @@ public sealed record AdminTenantRow(
     string Name,
     string Plan,
     string Status,
+    long PrCount,
+    DateTimeOffset? LastActive,
+    decimal MrrContributionZar);
+
+public sealed record AdminTenantDetail(
+    Guid Id,
+    string Name,
+    string Plan,
+    string Status,
+    string? ContactEmail,
+    DateTimeOffset CreatedAt,
+    string? GitHubOrgLogin,
+    long? GitHubAppInstallationId,
+    string? FeatureFlagsJson,
     long PrCount,
     DateTimeOffset? LastActive,
     decimal MrrContributionZar);

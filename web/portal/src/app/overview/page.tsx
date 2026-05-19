@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
   CartesianGrid,
@@ -52,11 +53,8 @@ export default function OverviewPage() {
     <div>
       <div className="eq-pagehead">
         <div>
-          <div
-            className="eq-text-xs eq-text-muted"
-            style={{ letterSpacing: "0.08em", textTransform: "uppercase" }}
-          >
-            Overview
+          <div className="eq-text-xs eq-text-muted" style={{ letterSpacing: "0.08em", textTransform: "uppercase" }}>
+            Analytics
           </div>
           <h1 className="eq-h2" style={{ marginTop: 10 }}>
             Overview
@@ -65,6 +63,9 @@ export default function OverviewPage() {
             Last 30 days · UTC
           </p>
         </div>
+        <Link href="/dashboard" className="eq-btn eq-btn--secondary eq-text-sm">
+          ← Dashboard
+        </Link>
       </div>
 
       {err && (

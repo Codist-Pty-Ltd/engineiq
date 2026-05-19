@@ -13,3 +13,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.FeedbackG
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.FeedbackGenerator\obj\Debug\net8.0\refint\EngineIQ.FeedbackGenerator.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.FeedbackGenerator\obj\Debug\net8.0\EngineIQ.FeedbackGenerator.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.FeedbackGenerator\obj\Debug\net8.0\ref\EngineIQ.FeedbackGenerator.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.FeedbackGenerator\obj\Debug\net8.0\EngineIQ.FeedbackGenerator.sourcelink.json

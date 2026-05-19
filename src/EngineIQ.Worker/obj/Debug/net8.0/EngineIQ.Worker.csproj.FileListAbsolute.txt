@@ -78,3 +78,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Worker\bi
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Worker\bin\Debug\net8.0\Microsoft.Extensions.Caching.Abstractions.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Worker\bin\Debug\net8.0\Microsoft.Extensions.Caching.Memory.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Worker\bin\Debug\net8.0\Npgsql.EntityFrameworkCore.PostgreSQL.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Worker\obj\Debug\net8.0\EngineIQ.Worker.sourcelink.json

@@ -1,0 +1,605 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.eq{font-family:var(--font-sans);display:flex;flex-direction:column;min-height:700px;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.eq-top{display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:48px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);flex-shrink:0}
+.eq-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.eq-dot{width:8px;height:8px;border-radius:50%;background:#7F77DD}
+.eq-nav{display:flex;gap:2px}
+.eq-nb{padding:5px 12px;border-radius:var(--border-radius-md);font-size:12px;cursor:pointer;color:var(--color-text-secondary);border:none;background:transparent}
+.eq-nb:hover,.eq-nb.on{background:var(--color-background-secondary);color:var(--color-text-primary)}
+.eq-nb.on{font-weight:500}
+.eq-user{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--color-text-secondary)}
+.eq-avatar{width:26px;height:26px;border-radius:50%;background:#EEEDFE;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;color:#534AB7}
+.eq-body{display:flex;flex:1;overflow:hidden}
+.eq-side{width:192px;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);display:flex;flex-direction:column;padding:12px 0;flex-shrink:0}
+.eq-side-lbl{font-size:10px;color:var(--color-text-tertiary);letter-spacing:.06em;text-transform:uppercase;padding:0 16px;margin:8px 0 4px}
+.eq-ri{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--border-radius-md);margin:0 6px;cursor:pointer;font-size:12px;color:var(--color-text-secondary)}
+.eq-ri:hover{background:var(--color-background-secondary)}
+.eq-ri.on{background:var(--color-background-secondary);color:var(--color-text-primary);font-weight:500}
+.eq-ri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.eq-ri-count{margin-left:auto;font-size:10px;color:var(--color-text-tertiary)}
+.eq-main{flex:1;overflow-y:auto;background:var(--color-background-tertiary);padding:20px}
+.sc{display:none}.sc.on{display:block}
+
+.step-bar{display:flex;align-items:center;margin-bottom:24px}
+.stp{display:flex;align-items:center;gap:6px;font-size:12px}
+.stp-n{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+.stp.done .stp-n{background:#639922;color:#fff}
+.stp.cur .stp-n{background:#7F77DD;color:#fff}
+.stp.todo .stp-n{background:var(--color-background-secondary);color:var(--color-text-tertiary);border:0.5px solid var(--color-border-tertiary)}
+.stp-l{font-size:12px;color:var(--color-text-tertiary)}
+.stp.cur .stp-l{color:var(--color-text-primary);font-weight:500}
+.stp-line{flex:1;height:0.5px;background:var(--color-border-tertiary);margin:0 8px}
+
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:20px}
+.card-title{font-size:16px;font-weight:500;margin-bottom:6px}
+.card-sub{font-size:13px;color:var(--color-text-secondary);line-height:1.6;margin-bottom:18px}
+
+.gh-btn{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-primary);cursor:pointer;font-size:13px;color:var(--color-text-primary);margin-bottom:10px;text-align:left}
+.gh-btn:hover{background:var(--color-background-secondary)}
+.gh-ico{width:22px;height:22px;border-radius:50%;background:var(--color-text-primary);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+.repo-list{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);overflow:hidden;margin-bottom:14px}
+.repo-grp{font-size:10px;color:var(--color-text-tertiary);padding:8px 12px 4px;background:var(--color-background-secondary);letter-spacing:.06em;text-transform:uppercase;border-bottom:0.5px solid var(--color-border-tertiary)}
+.repo-row{display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:0.5px solid var(--color-border-tertiary)}
+.repo-row:last-child{border-bottom:none}
+.repo-row:hover{background:var(--color-background-secondary)}
+.chk{width:15px;height:15px;border-radius:3px;border:0.5px solid var(--color-border-secondary);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--color-background-primary)}
+.chk.on{background:#7F77DD;border-color:#7F77DD}
+.repo-stk{margin-left:auto;font-size:10px;color:var(--color-text-tertiary)}
+
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.setting-row:last-child{border-bottom:none}
+.s-label{font-size:13px}
+.s-sub{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+.tgl{width:34px;height:18px;border-radius:9px;background:#7F77DD;position:relative;cursor:pointer;flex-shrink:0}
+.tgl-k{position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
+.tgl.off{background:var(--color-border-tertiary)}
+.tgl.off .tgl-k{transform:translateX(-16px)}
+
+.focus-chk{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:12px;cursor:pointer;border-bottom:0.5px solid var(--color-border-tertiary)}
+.focus-chk:last-child{border-bottom:none}
+
+.ok-ico{width:48px;height:48px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.act-row{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--border-radius-md);font-size:12px;background:var(--color-background-secondary);margin-bottom:4px}
+.badge-ok{font-size:10px;padding:2px 7px;border-radius:var(--border-radius-md);background:#EAF3DE;color:#27500A;font-weight:500}
+
+.pbtn{width:100%;padding:9px;border-radius:var(--border-radius-md);border:none;background:#7F77DD;color:#fff;font-size:13px;font-weight:500;cursor:pointer;margin-top:14px}
+.pbtn:hover{background:#534AB7}
+.sbtn{width:100%;padding:9px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:transparent;color:var(--color-text-primary);font-size:13px;cursor:pointer;margin-top:8px}
+.sbtn:hover{background:var(--color-background-secondary)}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px}
+.stat-l{font-size:10px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.stat-v{font-size:22px;font-weight:500}
+
+.rv-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;margin-bottom:10px;cursor:pointer}
+.rv-card:hover{border-color:var(--color-border-secondary)}
+.rv-repo{font-size:11px;color:var(--color-text-tertiary);margin-bottom:3px}
+.rv-title{font-size:13px;font-weight:500;margin-bottom:8px}
+.rv-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sev{font-size:10px;padding:2px 7px;border-radius:var(--border-radius-md);font-weight:500}
+.s-c{background:#FCEBEB;color:#A32D2D}
+.s-h{background:#FAEEDA;color:#854F0B}
+.s-m{background:#E6F1FB;color:#0C447C}
+.s-s{background:#EAF3DE;color:#27500A}
+.rv-time{margin-left:auto;font-size:11px;color:var(--color-text-tertiary)}
+
+.det-back{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--color-text-secondary);cursor:pointer;border:none;background:transparent;padding:0;margin-bottom:14px}
+.det-back:hover{color:var(--color-text-primary)}
+.det-title{font-size:16px;font-weight:500;margin-bottom:3px}
+.det-meta{font-size:12px;color:var(--color-text-tertiary);margin-bottom:14px}
+.det-summary{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;font-size:12px;color:var(--color-text-secondary);margin-bottom:14px;line-height:1.6}
+.iss-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;margin-bottom:10px}
+.iss-sev{font-size:12px;font-weight:500;margin-bottom:4px}
+.iss-file{font-size:10px;color:var(--color-text-tertiary);font-family:var(--font-mono);margin-bottom:8px}
+.iss-body{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.iss-fix{margin-top:8px;padding:8px 10px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:11px;color:var(--color-text-secondary);font-family:var(--font-mono);line-height:1.5}
+
+.inst-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;margin-bottom:10px}
+.inst-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.inst-name{font-size:13px;font-weight:500}
+.inst-badge{font-size:10px;padding:2px 7px;border-radius:var(--border-radius-md)}
+.ib-ok{background:#EAF3DE;color:#27500A}
+.ib-pend{background:#FAEEDA;color:#854F0B}
+.inst-repos{display:flex;flex-wrap:wrap;gap:6px}
+.repo-pill{font-size:10px;padding:2px 8px;border-radius:var(--border-radius-md);background:var(--color-background-secondary);color:var(--color-text-secondary)}
+
+.settings-page .card{margin-bottom:14px}
+.settings-page .card-title{font-size:14px}
+
+.empty{text-align:center;padding:40px 20px;color:var(--color-text-tertiary)}
+.empty i{font-size:28px;margin-bottom:10px;display:block}
+.empty-t{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:4px}
+.empty-s{font-size:12px}
+
+.search-bar{display:flex;align-items:center;gap:8px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:0 10px;margin-bottom:14px}
+.search-bar input{flex:1;border:none;background:transparent;font-size:12px;padding:8px 0;color:var(--color-text-primary);outline:none}
+
+.notif-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.notif-row:last-child{border-bottom:none}
+.notif-ico{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.notif-txt{flex:1}
+.notif-title{font-size:12px;font-weight:500}
+.notif-sub{font-size:11px;color:var(--color-text-tertiary)}
+.notif-time{font-size:10px;color:var(--color-text-tertiary);flex-shrink:0}
+
+.tok-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;font-family:var(--font-mono);font-size:11px;color:var(--color-text-secondary);word-break:break-all;margin-bottom:10px}
+.copy-btn{display:flex;align-items:center;gap:6px;font-size:12px;color:#7F77DD;cursor:pointer;border:none;background:transparent;padding:0;margin-top:4px}
+</style>
+
+<h2 class="sr-only">EngineIQ — full self-service onboarding and code review dashboard for Codist</h2>
+
+<div class="eq">
+  <div class="eq-top">
+    <div class="eq-logo"><div class="eq-dot"></div>EngineIQ</div>
+    <div class="eq-nav">
+      <button class="eq-nb" onclick="nav('onboard')">Onboard</button>
+      <button class="eq-nb on" onclick="nav('dash')">Dashboard</button>
+      <button class="eq-nb" onclick="nav('installs')">Installations</button>
+      <button class="eq-nb" onclick="nav('settings')">Settings</button>
+      <button class="eq-nb" onclick="nav('notifs')">
+        <i class="ti ti-bell" aria-hidden="true" style="font-size:14px"></i>
+      </button>
+    </div>
+    <div class="eq-user">
+      <div class="eq-avatar">NB</div>
+      <span>Ntoky · Codist</span>
+    </div>
+  </div>
+
+  <div class="eq-body">
+    <div class="eq-side" id="sidebar">
+      <div class="eq-side-lbl">Repositories</div>
+      <div id="side-repos"></div>
+      <div style="margin-top:auto;padding:10px 6px">
+        <button class="sbtn" style="margin:0;font-size:11px" onclick="nav('onboard');goStep(2)">
+          <i class="ti ti-plus" aria-hidden="true" style="font-size:12px"></i> Add repository
+        </button>
+      </div>
+    </div>
+
+    <div class="eq-main">
+
+      <!-- ONBOARDING -->
+      <div class="sc" id="sc-onboard">
+        <div class="card" style="max-width:520px;margin:0 auto">
+
+          <div id="ob1">
+            <div class="step-bar">
+              <div class="stp cur"><div class="stp-n">1</div><span class="stp-l">Connect</span></div>
+              <div class="stp-line"></div>
+              <div class="stp todo"><div class="stp-n">2</div><span class="stp-l">Select</span></div>
+              <div class="stp-line"></div>
+              <div class="stp todo"><div class="stp-n">3</div><span class="stp-l">Configure</span></div>
+              <div class="stp-line"></div>
+              <div class="stp todo"><div class="stp-n">4</div><span class="stp-l">Done</span></div>
+            </div>
+            <div class="card-title">Connect your GitHub account</div>
+            <div class="card-sub">EngineIQ installs as a GitHub App. It receives webhooks when pull requests are opened and posts AI reviews as comments — no server access, no code stored.</div>
+            <button class="gh-btn" onclick="goStep(2)">
+              <div class="gh-ico"><i class="ti ti-brand-github" style="font-size:14px;color:var(--color-background-primary)" aria-hidden="true"></i></div>
+              Install on ntokyb (personal)
+            </button>
+            <button class="gh-btn" onclick="goStep(2)">
+              <div class="gh-ico"><i class="ti ti-brand-github" style="font-size:14px;color:var(--color-background-primary)" aria-hidden="true"></i></div>
+              Install on codist-dev (organisation)
+            </button>
+            <p style="font-size:11px;color:var(--color-text-tertiary);margin-top:10px;line-height:1.6">Read access to code diffs only. Write access to post PR comments. No code is cloned or stored.</p>
+          </div>
+
+          <div id="ob2" style="display:none">
+            <div class="step-bar">
+              <div class="stp done"><div class="stp-n"><i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i></div><span class="stp-l">Connect</span></div>
+              <div class="stp-line"></div>
+              <div class="stp cur"><div class="stp-n">2</div><span class="stp-l">Select</span></div>
+              <div class="stp-line"></div>
+              <div class="stp todo"><div class="stp-n">3</div><span class="stp-l">Configure</span></div>
+              <div class="stp-line"></div>
+              <div class="stp todo"><div class="stp-n">4</div><span class="stp-l">Done</span></div>
+            </div>
+            <div class="card-title">Select repositories</div>
+            <div class="card-sub">All your repositories are listed below. Select the ones EngineIQ should review. You can change this any time.</div>
+            <div class="repo-list" id="ob-repo-list"></div>
+            <button class="pbtn" onclick="goStep(3)">Configure review settings →</button>
+          </div>
+
+          <div id="ob3" style="display:none">
+            <div class="step-bar">
+              <div class="stp done"><div class="stp-n"><i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i></div><span class="stp-l">Connect</span></div>
+              <div class="stp-line"></div>
+              <div class="stp done"><div class="stp-n"><i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i></div><span class="stp-l">Select</span></div>
+              <div class="stp-line"></div>
+              <div class="stp cur"><div class="stp-n">3</div><span class="stp-l">Configure</span></div>
+              <div class="stp-line"></div>
+              <div class="stp todo"><div class="stp-n">4</div><span class="stp-l">Done</span></div>
+            </div>
+            <div class="card-title">Review settings</div>
+            <div class="card-sub">These apply to all selected repositories. Customise per-repo from the dashboard.</div>
+            <div style="margin-bottom:16px">
+              <div class="setting-row">
+                <div><div class="s-label">Review all pull requests</div><div class="s-sub">Auto-post AI review on every PR</div></div>
+                <div class="tgl" onclick="this.classList.toggle('off')" aria-label="auto review"><div class="tgl-k"></div></div>
+              </div>
+              <div class="setting-row">
+                <div><div class="s-label">Skip draft PRs</div><div class="s-sub">Only review when marked ready</div></div>
+                <div class="tgl" onclick="this.classList.toggle('off')" aria-label="skip drafts"><div class="tgl-k"></div></div>
+              </div>
+              <div class="setting-row">
+                <div><div class="s-label">Enforce .cursorrules</div><div class="s-sub">Flag violations of project coding rules</div></div>
+                <div class="tgl" onclick="this.classList.toggle('off')" aria-label="cursorrules"><div class="tgl-k"></div></div>
+              </div>
+              <div class="setting-row">
+                <div><div class="s-label">Monetary type safety</div><div class="s-sub">Flag decimal used for money amounts (must be int cents)</div></div>
+                <div class="tgl" onclick="this.classList.toggle('off')" aria-label="monetary"><div class="tgl-k"></div></div>
+              </div>
+            </div>
+            <div style="font-size:12px;font-weight:500;margin-bottom:8px">Review focus</div>
+            <div id="ob-focus"></div>
+            <button class="pbtn" onclick="goStep(4)">Finish setup →</button>
+          </div>
+
+          <div id="ob4" style="display:none">
+            <div class="step-bar">
+              <div class="stp done"><div class="stp-n"><i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i></div><span class="stp-l">Connect</span></div>
+              <div class="stp-line"></div>
+              <div class="stp done"><div class="stp-n"><i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i></div><span class="stp-l">Select</span></div>
+              <div class="stp-line"></div>
+              <div class="stp done"><div class="stp-n"><i class="ti ti-check" style="font-size:10px" aria-hidden="true"></i></div><span class="stp-l">Configure</span></div>
+              <div class="stp-line"></div>
+              <div class="stp cur"><div class="stp-n">4</div><span class="stp-l">Done</span></div>
+            </div>
+            <div class="ok-ico"><i class="ti ti-check" style="color:#3B6D11;font-size:24px" aria-hidden="true"></i></div>
+            <div class="card-title" style="text-align:center">EngineIQ is live on 13 repos</div>
+            <div class="card-sub" style="text-align:center">Open any pull request on a connected repo. The AI review appears as a comment within 30 seconds — no setup needed on the repo side.</div>
+            <div id="ob-active-list" style="margin-bottom:4px"></div>
+            <button class="pbtn" onclick="nav('dash')">Go to dashboard →</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="sc on" id="sc-dash">
+        <div class="stats">
+          <div class="stat"><div class="stat-l">Reviews this month</div><div class="stat-v">47</div></div>
+          <div class="stat"><div class="stat-l">Issues found</div><div class="stat-v">23</div></div>
+          <div class="stat"><div class="stat-l">Critical issues</div><div class="stat-v" style="color:#A32D2D">3</div></div>
+        </div>
+        <div class="search-bar">
+          <i class="ti ti-search" style="font-size:14px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
+          <input type="text" placeholder="Search reviews by repo, PR title, or issue type..." oninput="filterReviews(this.value)">
+        </div>
+        <div style="font-size:12px;font-weight:500;margin-bottom:10px;color:var(--color-text-secondary)">Recent reviews</div>
+        <div id="rv-feed"></div>
+      </div>
+
+      <!-- REVIEW DETAIL -->
+      <div class="sc" id="sc-review">
+        <button class="det-back" onclick="nav('dash')"><i class="ti ti-arrow-left" aria-hidden="true"></i> Back</button>
+        <div class="det-title" id="det-title"></div>
+        <div class="det-meta" id="det-meta"></div>
+        <div class="det-summary" id="det-sum"></div>
+        <div id="det-issues"></div>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <button class="sbtn" style="width:auto;margin:0;font-size:12px;padding:7px 12px">
+            <i class="ti ti-brand-github" aria-hidden="true" style="font-size:12px"></i> View on GitHub
+          </button>
+          <button class="sbtn" style="width:auto;margin:0;font-size:12px;padding:7px 12px" onclick="sendPrompt('Generate a fix for the critical issue in this PR')">
+            Generate fix ↗
+          </button>
+        </div>
+      </div>
+
+      <!-- INSTALLATIONS -->
+      <div class="sc" id="sc-installs">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:14px;font-weight:500">GitHub installations</div>
+          <button class="sbtn" style="width:auto;margin:0;font-size:12px;padding:6px 12px" onclick="nav('onboard');goStep(1)">
+            <i class="ti ti-plus" aria-hidden="true" style="font-size:12px"></i> Add account
+          </button>
+        </div>
+        <div id="inst-list"></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="sc settings-page" id="sc-settings">
+        <div style="font-size:14px;font-weight:500;margin-bottom:14px">Settings</div>
+
+        <div class="card">
+          <div class="card-title">API access</div>
+          <div class="card-sub" style="margin-bottom:10px">Use this token to call the EngineIQ API directly from your CI/CD pipeline or custom scripts.</div>
+          <div class="tok-box">eiq_live_7f3k2m...n9p4q1r8s5t2u7v0w3x6y9z</div>
+          <button class="copy-btn" onclick="this.innerHTML='<i class=ti ti-check></i> Copied'"><i class="ti ti-copy" aria-hidden="true"></i> Copy token</button>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Default review settings</div>
+          <div style="margin-top:4px">
+            <div class="setting-row">
+              <div><div class="s-label">Review all pull requests</div></div>
+              <div class="tgl" onclick="this.classList.toggle('off')" aria-label="auto review"><div class="tgl-k"></div></div>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">Skip draft PRs</div></div>
+              <div class="tgl" onclick="this.classList.toggle('off')" aria-label="skip drafts"><div class="tgl-k"></div></div>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">Enforce .cursorrules on all repos</div></div>
+              <div class="tgl" onclick="this.classList.toggle('off')" aria-label="cursorrules"><div class="tgl-k"></div></div>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">Monetary type safety checks</div><div class="s-sub">Flag decimal types used for money — must be int (cents)</div></div>
+              <div class="tgl" onclick="this.classList.toggle('off')" aria-label="monetary"><div class="tgl-k"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Notifications</div>
+          <div style="margin-top:4px">
+            <div class="setting-row">
+              <div><div class="s-label">Email on critical issues</div></div>
+              <div class="tgl" onclick="this.classList.toggle('off')" aria-label="email critical"><div class="tgl-k"></div></div>
+            </div>
+            <div class="setting-row">
+              <div><div class="s-label">Weekly digest</div></div>
+              <div class="tgl" onclick="this.classList.toggle('off')" aria-label="digest"><div class="tgl-k"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Webhook URL</div>
+          <div class="card-sub" style="margin-bottom:10px">EngineIQ receives GitHub events at this endpoint. This is configured automatically when you install the GitHub App.</div>
+          <div class="tok-box">https://api.engineiq.co.za/api/webhooks/github</div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="sc" id="sc-notifs">
+        <div style="font-size:14px;font-weight:500;margin-bottom:14px">Notifications</div>
+        <div class="card">
+          <div id="notif-list"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const REPOS=[
+  {grp:'ntokyb',name:'billable',stk:'.NET 8 · Angular',ok:true,reviews:12},
+  {grp:'ntokyb',name:'engineiq',stk:'.NET 8 · Next.js',ok:true,reviews:3},
+  {grp:'ntokyb',name:'therecord',stk:'Next.js · NestJS',ok:true,reviews:8},
+  {grp:'ntokyb',name:'maemo-compliance',stk:'.NET 8 · Angular',ok:true,reviews:5},
+  {grp:'ntokyb',name:'warroom',stk:'React · Node',ok:true,reviews:2},
+  {grp:'codist-dev',name:'sac-api',stk:'.NET 8',ok:true,reviews:7},
+  {grp:'codist-dev',name:'sac-web',stk:'Next.js 14',ok:true,reviews:4},
+  {grp:'codist-dev',name:'sac-admin',stk:'Next.js 14',ok:true,reviews:2},
+  {grp:'codist-dev',name:'sac-mobile',stk:'Flutter',ok:true,reviews:1},
+  {grp:'codist-dev',name:'sac-workers',stk:'.NET 8',ok:true,reviews:1},
+  {grp:'codist-dev',name:'sac-notifications',stk:'.NET 8',ok:true,reviews:2},
+  {grp:'codist-dev',name:'sac-media',stk:'.NET 8',ok:true,reviews:0},
+  {grp:'codist-dev',name:'sac-africa',stk:'.NET 8',ok:true,reviews:0},
+];
+
+const REVIEWS=[
+  {id:1,repo:'ntokyb/billable',pr:47,title:'Fix CORS middleware order',time:'12 min ago',issues:[
+    {sev:'critical',lbl:'Critical — Security',file:'Program.cs · Line 47',body:'UseCors() is called after UseAuthentication(). Preflight OPTIONS requests fail before CORS headers are added. All users in cross-origin browsers will see CORS errors.',fix:'Move UseCors("SacPolicy") to before UseAuthentication() in the middleware pipeline.'},
+    {sev:'high',lbl:'High — Pattern violation',file:'InvoiceController.cs · Line 23',body:'AmountDue is declared as decimal. Codist rule: all monetary amounts must be stored as int (cents). Decimal types risk floating-point precision errors in financial calculations.',fix:'Change to int. Store 500000 for R5,000.00. Divide by 100 for display only.'},
+    {sev:'medium',lbl:'Medium — Missing validation',file:'CreateInvoiceRequest.cs · Line 8',body:'No MaxLength constraint on InvoiceNumber. A client could send a very long string that bypasses application validation.',fix:'Add [MaxLength(50)] or FluentValidation rule: RuleFor(x => x.InvoiceNumber).MaximumLength(50).'}
+  ]},
+  {id:2,repo:'codist-dev/sac-api',pr:12,title:'Add Africa payout provider — EcoCash',time:'1 hour ago',issues:[
+    {sev:'critical',lbl:'Critical — POPIA violation',file:'EcoCashProvider.cs · Line 34',body:'Mobile number is logged before encryption. Any mobile number passed to this method appears in plaintext in production logs, violating POPIA.',fix:'Remove the log line entirely. If logging is required, hash the number: _logger.LogInformation("Payout for hash {Hash}", Hash(mobileNumber))'},
+    {sev:'high',lbl:'High — Feature flag missing',file:'AfricaPayoutsController.cs · Line 12',body:'The EcoCash endpoint does not check the africa.zimbabwe feature flag. All Africa routes must check their flag before executing.',fix:'Inject IFeatureFlagService and call IsEnabledAsync("africa.zimbabwe") at the top of the handler. Return 503 if disabled.'}
+  ]},
+  {id:3,repo:'ntokyb/therecord',pr:31,title:'Add commission cost comparison chart',time:'3 hours ago',issues:[
+    {sev:'medium',lbl:'Medium — N+1 query',file:'CommissionsController.cs · Line 88',body:'Commission list loads all records then accesses .Reports navigation property in a loop. This generates one SQL query per commission record.',fix:'Add .Include(c => c.Reports) to the initial query. EF Core will join in a single SQL statement.'},
+    {sev:'suggestion',lbl:'Suggestion — Data integrity',file:'CommissionDto.cs · Line 14',body:'cost_rands is typed as decimal in the DTO. The database stores this as bigint (cents). Confirm the mapping divides by 100 to avoid displaying raw cents as rands.',fix:'Verify: public decimal CostRands => CostCents / 100m; in the mapping.'}
+  ]},
+  {id:4,repo:'codist-dev/sac-web',pr:8,title:'Creator page responsive layout',time:'5 hours ago',issues:[
+    {sev:'suggestion',lbl:'Suggestion — Mobile-first',file:'CreatorPage.tsx · Line 34',body:'Tip buttons are 32px height on mobile. Codist .cursorrules: all tap targets must be minimum 44px. This may cause missed taps on mobile devices.',fix:'Set min-height: 44px on all button elements in the tip flow.'}
+  ]},
+];
+
+const FOCUS_OPTS=['Security vulnerabilities','Performance issues','Pattern violations (.cursorrules)','Missing input validation','N+1 query detection','Monetary type safety (int cents)','Missing test coverage','POPIA data handling'];
+
+let curStep=1;
+let activeRepo=null;
+let allReviews=[...REVIEWS];
+
+function goStep(n){
+  ['ob1','ob2','ob3','ob4'].forEach((id,i)=>{
+    document.getElementById(id).style.display=(i===n-1)?'block':'none';
+  });
+  curStep=n;
+  if(n===4) buildActiveList();
+}
+
+function buildObRepoList(){
+  const el=document.getElementById('ob-repo-list');
+  let html='',lastGrp='';
+  REPOS.forEach(r=>{
+    if(r.grp!==lastGrp){
+      html+=`<div class="repo-grp">${r.grp}</div>`;
+      lastGrp=r.grp;
+    }
+    html+=`<div class="repo-row" onclick="toggleChk(this)">
+      <div class="chk on"><i class="ti ti-check" style="font-size:9px;color:#fff" aria-hidden="true"></i></div>
+      <span>${r.name}</span>
+      <span class="repo-stk">${r.stk}</span>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+function toggleChk(row){
+  const c=row.querySelector('.chk');
+  c.classList.toggle('on');
+  c.innerHTML=c.classList.contains('on')?'<i class="ti ti-check" style="font-size:9px;color:#fff" aria-hidden="true"></i>':'';
+}
+
+function buildFocus(){
+  const el=document.getElementById('ob-focus');
+  el.innerHTML=FOCUS_OPTS.map(o=>`
+    <div class="focus-chk" onclick="toggleFocus(this)">
+      <div class="chk on" style="flex-shrink:0"><i class="ti ti-check" style="font-size:9px;color:#fff" aria-hidden="true"></i></div>
+      <span>${o}</span>
+    </div>`).join('');
+}
+
+function toggleFocus(row){
+  const c=row.querySelector('.chk');
+  c.classList.toggle('on');
+  c.innerHTML=c.classList.contains('on')?'<i class="ti ti-check" style="font-size:9px;color:#fff" aria-hidden="true"></i>':'';
+}
+
+function buildActiveList(){
+  const el=document.getElementById('ob-active-list');
+  el.innerHTML=REPOS.slice(0,5).map(r=>`
+    <div class="act-row">
+      <span>${r.grp}/${r.name}</span>
+      <span class="badge-ok">Active</span>
+    </div>`).join('')
+    +`<div style="font-size:11px;color:var(--color-text-tertiary);text-align:center;padding:6px">+8 more repositories active</div>`;
+}
+
+function buildSideRepos(){
+  const el=document.getElementById('side-repos');
+  el.innerHTML=REPOS.map(r=>`
+    <div class="eq-ri ${activeRepo===r.name?'on':''}" onclick="filterByRepo('${r.name}',this)">
+      <div class="eq-ri-dot" style="background:${r.ok?'#639922':'var(--color-border-secondary)'}"></div>
+      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1">${r.name}</span>
+      ${r.reviews>0?`<span class="eq-ri-count">${r.reviews}</span>`:''}
+    </div>`).join('');
+}
+
+function filterByRepo(name,el){
+  activeRepo=activeRepo===name?null:name;
+  document.querySelectorAll('.eq-ri').forEach(r=>r.classList.remove('on'));
+  if(activeRepo) el.classList.add('on');
+  buildReviewFeed(activeRepo?REVIEWS.filter(r=>r.repo.includes(activeRepo)):REVIEWS);
+  nav('dash');
+}
+
+function filterReviews(q){
+  const filtered=q
+    ? REVIEWS.filter(r=>r.repo.toLowerCase().includes(q.toLowerCase())||r.title.toLowerCase().includes(q.toLowerCase()))
+    : REVIEWS;
+  buildReviewFeed(filtered);
+}
+
+function buildReviewFeed(reviews){
+  const el=document.getElementById('rv-feed');
+  if(!reviews||reviews.length===0){
+    el.innerHTML=`<div class="empty"><i class="ti ti-git-pull-request" aria-hidden="true"></i><div class="empty-t">No reviews found</div><div class="empty-s">Open a pull request on any connected repo</div></div>`;
+    return;
+  }
+  el.innerHTML=reviews.map(r=>{
+    const c=r.issues.filter(i=>i.sev==='critical').length;
+    const h=r.issues.filter(i=>i.sev==='high').length;
+    const m=r.issues.filter(i=>i.sev==='medium').length;
+    const s=r.issues.filter(i=>i.sev==='suggestion').length;
+    let b='';
+    if(c)b+=`<span class="sev s-c">${c} critical</span>`;
+    if(h)b+=`<span class="sev s-h">${h} high</span>`;
+    if(m)b+=`<span class="sev s-m">${m} medium</span>`;
+    if(s)b+=`<span class="sev s-s">${s} suggestion</span>`;
+    return `<div class="rv-card" onclick="openReview(${r.id})">
+      <div class="rv-repo">${r.repo} · PR #${r.pr}</div>
+      <div class="rv-title">${r.title}</div>
+      <div class="rv-foot">${b}<span class="rv-time">${r.time}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function openReview(id){
+  const r=REVIEWS.find(x=>x.id===id);
+  if(!r)return;
+  document.getElementById('det-title').textContent=r.title;
+  document.getElementById('det-meta').textContent=`${r.repo} · PR #${r.pr} · ${r.time}`;
+  const tot=r.issues.length;
+  const crit=r.issues.filter(i=>i.sev==='critical').length;
+  document.getElementById('det-sum').textContent=
+    `EngineIQ found ${tot} issue${tot!==1?'s':''} in this pull request.`+
+    (crit?` ${crit} critical issue${crit!==1?'s':''} need immediate attention.`:'');
+  document.getElementById('det-issues').innerHTML=r.issues.map(i=>
+    `<div class="iss-card">
+      <div class="iss-sev">${i.lbl}</div>
+      <div class="iss-file"><i class="ti ti-file-code" style="font-size:11px" aria-hidden="true"></i> ${i.file}</div>
+      <div class="iss-body">${i.body}</div>
+      <div class="iss-fix">Fix: ${i.fix}</div>
+    </div>`).join('');
+  nav('review');
+}
+
+function buildInstalls(){
+  const el=document.getElementById('inst-list');
+  el.innerHTML=[
+    {acct:'ntokyb',type:'personal',repos:['billable','engineiq','therecord','maemo-compliance','warroom'],status:'ok'},
+    {acct:'codist-dev',type:'organisation',repos:['sac-api','sac-web','sac-admin','sac-mobile','sac-workers','sac-notifications','sac-media','sac-africa'],status:'ok'},
+  ].map(inst=>`
+    <div class="inst-card">
+      <div class="inst-header">
+        <div>
+          <div class="inst-name">${inst.acct}</div>
+          <div style="font-size:11px;color:var(--color-text-tertiary)">${inst.type} · ${inst.repos.length} repos</div>
+        </div>
+        <span class="inst-badge ib-ok">Connected</span>
+      </div>
+      <div class="inst-repos">
+        ${inst.repos.map(r=>`<span class="repo-pill">${r}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="sbtn" style="width:auto;margin:0;font-size:11px;padding:5px 10px" onclick="nav('onboard');goStep(2)">Manage repos</button>
+        <button class="sbtn" style="width:auto;margin:0;font-size:11px;padding:5px 10px;color:#A32D2D;border-color:#F09595">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+function buildNotifs(){
+  const el=document.getElementById('notif-list');
+  el.innerHTML=[
+    {ico:'ti-alert-triangle',icobg:'#FAEEDA',icoc:'#854F0B',title:'Critical issue found',sub:'ntokyb/billable · PR #47 — CORS middleware order',time:'12m'},
+    {ico:'ti-circle-check',icobg:'#EAF3DE',icoc:'#27500A',title:'Review complete',sub:'codist-dev/sac-api · PR #12 — 2 issues found',time:'1h'},
+    {ico:'ti-git-pull-request',icobg:'#EEEDFE',icoc:'#534AB7',title:'New PR detected',sub:'ntokyb/therecord · PR #31 opened by ntokyb',time:'3h'},
+    {ico:'ti-circle-check',icobg:'#EAF3DE',icoc:'#27500A',title:'Review complete',sub:'codist-dev/sac-web · PR #8 — 1 suggestion',time:'5h'},
+    {ico:'ti-brand-github',icobg:'var(--color-background-secondary)',icoc:'var(--color-text-secondary)',title:'GitHub App installed',sub:'codist-dev organisation · 8 repositories connected',time:'2d'},
+  ].map(n=>`
+    <div class="notif-row">
+      <div class="notif-ico" style="background:${n.icobg}">
+        <i class="ti ${n.ico}" style="font-size:14px;color:${n.icoc}" aria-hidden="true"></i>
+      </div>
+      <div class="notif-txt">
+        <div class="notif-title">${n.title}</div>
+        <div class="notif-sub">${n.sub}</div>
+      </div>
+      <div class="notif-time">${n.time}</div>
+    </div>`).join('');
+}
+
+function nav(screen){
+  document.querySelectorAll('.sc').forEach(s=>s.classList.remove('on'));
+  document.getElementById('sc-'+screen).classList.add('on');
+  document.querySelectorAll('.eq-nb').forEach((b,i)=>{
+    const screens=['onboard','dash','installs','settings','notifs'];
+    b.classList.toggle('on',screens[i]===screen);
+  });
+  const sidebar=document.getElementById('sidebar');
+  sidebar.style.display=(screen==='dash'||screen==='review')?'flex':'none';
+  if(screen==='dash') buildReviewFeed(activeRepo?REVIEWS.filter(r=>r.repo.includes(activeRepo)):REVIEWS);
+  if(screen==='installs') buildInstalls();
+  if(screen==='notifs') buildNotifs();
+}
+
+buildObRepoList();
+buildFocus();
+buildActiveList();
+buildSideRepos();
+buildReviewFeed(REVIEWS);
+nav('dash');
+</script>

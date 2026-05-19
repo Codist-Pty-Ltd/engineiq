@@ -1,17 +1,5 @@
-import { Suspense } from "react";
-import { PullRequestsView } from "./PullRequestsView";
+import { redirect } from "next/navigation";
 
-export default function PullRequestsPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="eq-card">
-          <div className="eq-skeleton" style={{ height: 14, width: 220 }} />
-          <div className="eq-skeleton" style={{ height: 12, width: 320, marginTop: 12 }} />
-        </div>
-      }
-    >
-      <PullRequestsView />
-    </Suspense>
-  );
+export default function PullRequestsRedirectPage() {
+  redirect("/dashboard");
 }

@@ -1,0 +1,233 @@
+/* Dashboard layout — complements web/shared/design-system.css */
+
+.eq-dash-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.eq-dash-repos {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 24px;
+}
+
+.eq-dash-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.eq-stat-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 900px) {
+  .eq-dash-layout {
+    flex-direction: column;
+  }
+  .eq-dash-repos {
+    width: 100%;
+    position: static;
+  }
+  .eq-stat-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.eq-stat-tile {
+  background: var(--eq-card);
+  border: 1px solid var(--eq-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.eq-stat-tile__label {
+  font-size: 10px;
+  color: var(--eq-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.eq-stat-tile__value {
+  font-size: 22px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.eq-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--eq-card);
+  border: 1px solid var(--eq-border);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  margin-bottom: 14px;
+}
+
+.eq-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  height: 36px;
+  font-size: 13px;
+  color: var(--eq-text);
+  outline: none;
+}
+
+.eq-repo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  margin: 0 4px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--eq-text-muted);
+  cursor: pointer;
+  border: 1px solid transparent;
+  width: calc(100% - 8px);
+  text-align: left;
+  background: transparent;
+}
+
+.eq-repo-item:hover {
+  background: var(--eq-card-hover);
+  color: var(--eq-text);
+}
+
+.eq-repo-item--active {
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--eq-accent-light);
+  border-color: rgba(124, 58, 237, 0.15);
+}
+
+.eq-repo-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--eq-green);
+  flex-shrink: 0;
+}
+
+.eq-repo-count {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--eq-text-dim);
+}
+
+.eq-rv-card {
+  background: var(--eq-card);
+  border: 1px solid var(--eq-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 150ms ease;
+  width: 100%;
+  text-align: left;
+}
+
+.eq-rv-card:hover {
+  border-color: var(--eq-border-light);
+}
+
+.eq-rv-card__repo {
+  font-size: 11px;
+  color: var(--eq-text-dim);
+  margin-bottom: 4px;
+}
+
+.eq-rv-card__title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.eq-rv-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.eq-rv-card__time {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--eq-text-dim);
+}
+
+.eq-sev {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.eq-sev--critical {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--eq-red);
+}
+
+.eq-sev--high {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--eq-amber);
+}
+
+.eq-sev--medium {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--eq-blue);
+}
+
+.eq-sev--low {
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--eq-green);
+}
+
+.eq-iss-card {
+  background: var(--eq-card);
+  border: 1px solid var(--eq-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.eq-iss-card__head {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.eq-iss-card__file {
+  font-size: 11px;
+  color: var(--eq-text-dim);
+  font-family: var(--font-mono);
+  margin-bottom: 8px;
+}
+
+.eq-iss-card__body {
+  font-size: 13px;
+  color: var(--eq-text-muted);
+  line-height: 1.55;
+}
+
+.eq-det-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--eq-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 16px;
+}
+
+.eq-det-back:hover {
+  color: var(--eq-text);
+}

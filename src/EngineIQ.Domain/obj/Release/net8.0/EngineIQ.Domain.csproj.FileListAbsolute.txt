@@ -9,3 +9,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Domain\ob
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Domain\obj\Release\net8.0\refint\EngineIQ.Domain.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Domain\obj\Release\net8.0\EngineIQ.Domain.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Domain\obj\Release\net8.0\ref\EngineIQ.Domain.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Domain\obj\Release\net8.0\EngineIQ.Domain.sourcelink.json

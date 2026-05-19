@@ -131,3 +131,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.API\bin\D
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.API\bin\Debug\net8.0\Microsoft.Extensions.Diagnostics.Abstractions.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.API\bin\Debug\net8.0\Microsoft.Extensions.Http.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.API\bin\Debug\net8.0\YamlDotNet.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.API\obj\Debug\net8.0\EngineIQ.API.sourcelink.json
