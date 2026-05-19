@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { portalLoginUrl } from "@/lib/site-urls";
 
 export const metadata: Metadata = {
   title: "Docs — EngineIQ",
 };
 
 const API_BASE = process.env.NEXT_PUBLIC_ENGINEIQ_API_URL ?? "https://api.engineiq.co.za";
-const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? "https://app.engineiq.co.za";
 
 export default function DocsPage() {
   return (
@@ -62,9 +62,10 @@ export default function DocsPage() {
               Client dashboard
             </h2>
             <p className="eq-text-sm eq-text-muted" style={{ margin: "10px 0 0" }}>
-              Authenticate with tenant ID and API key from your onboarding email.
+              Authenticate with tenant ID and API key from sign-up or your welcome email. After sign-up, use
+              &quot;Continue to portal setup&quot; to pre-fill credentials in the same browser.
             </p>
-            <a className="eq-btn eq-btn--secondary" style={{ marginTop: 16 }} href={`${PORTAL_URL}/login`}>
+            <a className="eq-btn eq-btn--secondary" style={{ marginTop: 16 }} href={portalLoginUrl()}>
               Open portal →
             </a>
           </div>

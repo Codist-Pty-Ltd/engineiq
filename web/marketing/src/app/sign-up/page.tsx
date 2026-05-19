@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useToasts } from "@/components/Toasts";
+import { portalBaseUrl, portalLoginUrl } from "@/lib/site-urls";
+import { navigateToPortalWithHandoff } from "../../../../shared/signup-handoff";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_ENGINEIQ_API_URL ?? "http://localhost:5056";
-const PORTAL_URL =
-  process.env.NEXT_PUBLIC_PORTAL_URL ?? "http://localhost:3001";
 const DPA_PDF_URL =
   process.env.NEXT_PUBLIC_DPA_PDF_URL ?? "https://engineiq.co.za/legal/dpa.pdf";
 
@@ -104,6 +104,7 @@ export default function SignUpPage() {
             <span className={`eq-badge ${step === 2 ? "eq-badge--purple" : "eq-badge--grey"}`}>
               Step 2 · Install GitHub App
             </span>
+            <span className="eq-badge eq-badge--grey">Step 3 · Portal setup</span>
           </div>
         </div>
 
@@ -308,28 +309,37 @@ export default function SignUpPage() {
                   </div>
                 </div>
 
-                <div className="eq-row" style={{ justifyContent: "space-between", flexWrap: "wrap" }}>
-                  <a href={done.install_url} className="eq-btn eq-btn--primary">
+                <div className="eq-row" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                  <a href={done.install_url} className="eq-btn eq-btn--primary" target="_blank" rel="noopener noreferrer">
                     Install GitHub App →
                   </a>
-                  <Link
-                    href={`${PORTAL_URL}/login?tenant=${encodeURIComponent(done.tenant_id)}`}
+                  <button
+                    type="button"
                     className="eq-btn eq-btn--secondary"
+                    onClick={() => navigateToPortalWithHandoff(portalBaseUrl(), done.tenant_id, done.api_key)}
                   >
-                    Open client portal →
-                  </Link>
+                    Continue to portal setup →
+                  </button>
                 </div>
+                <p className="eq-text-xs eq-text-dim">
+                  Portal setup pre-fills your tenant ID and API key in this browser (15-minute handoff). Install GitHub
+                  first if you prefer — you can return via the link in your welcome email.
+                </p>
 
                 <div className="eq-card" style={{ padding: 16 }}>
                   <div className="eq-text-xs eq-text-muted" style={{ letterSpacing: "0.08em", textTransform: "uppercase" }}>
                     Next steps
                   </div>
                   <ol className="eq-text-sm eq-text-muted" style={{ margin: "12px 0 0", paddingLeft: 18, display: "grid", gap: 8 }}>
-                    <li>Click <strong>Install GitHub App</strong> and select repositories to review.</li>
-                    <li>Open any pull request to test. EngineIQ will queue a review automatically.</li>
                     <li>
-                      Sign in at <strong>app.engineiq.co.za</strong> with your tenant ID + API key to see analytics and findings.
+                      Click <strong>Install GitHub App</strong> and select repositories (or do this from the portal
+                      wizard).
                     </li>
+                    <li>
+                      Click <strong>Continue to portal setup</strong> to sign in and finish onboarding (repos, optional
+                      standards).
+                    </li>
+                    <li>Open a pull request on a connected repo to trigger your first review.</li>
                   </ol>
                   <div className="eq-text-xs eq-text-dim" style={{ marginTop: 12 }}>
                     Questions? Email <a href="mailto:hello@engineiq.co.za">hello@engineiq.co.za</a>
@@ -381,7 +391,7 @@ export default function SignUpPage() {
 
             <div className="eq-text-xs eq-text-dim" style={{ marginTop: 18 }}>
               Already have a tenant?{" "}
-              <a href={`${PORTAL_URL}/login`} style={{ color: "var(--eq-accent-light)" }}>
+              <a href={portalLoginUrl()} style={{ color: "var(--eq-accent-light)" }}>
                 Sign in to the portal
               </a>
               .

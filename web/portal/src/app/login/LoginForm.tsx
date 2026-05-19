@@ -4,7 +4,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { saveSession } from "@/lib/auth";
 import { tenantGet } from "@/lib/api";
+import { signUpUrl } from "@/lib/site-urls";
 import { useToasts } from "@/components/Toasts";
+import { consumeSignupHandoff } from "../../../../shared/signup-handoff";
 
 export function LoginForm() {
   const router = useRouter();
@@ -15,11 +17,26 @@ export function LoginForm() {
   const [showKey, setShowKey] = useState(false);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [handoffLoaded, setHandoffLoaded] = useState(false);
 
   useEffect(() => {
     const t = params.get("tenant_id") ?? params.get("tenant");
     if (t) setTenantId(t);
-    if (params.get("onboarding") === "complete") {
+
+    const handoff = consumeSignupHandoff();
+    if (handoff) {
+      setTenantId(handoff.tenant_id);
+      setApiKey(handoff.api_key);
+      setHandoffLoaded(true);
+    }
+
+    if (params.get("from") === "signup") {
+      pushToast({
+        kind: "info",
+        title: "Welcome",
+        message: "Sign in to continue portal setup. Credentials were loaded from sign-up when available.",
+      });
+    } else if (params.get("onboarding") === "complete") {
       pushToast({
         kind: "success",
         title: "GitHub connected",
@@ -95,8 +112,19 @@ export function LoginForm() {
         <div className="eq-card">
           <h1 className="eq-h2">Sign in to your workspace</h1>
           <p className="eq-text-sm eq-text-muted" style={{ margin: "10px 0 0" }}>
-          Use the tenant ID and API key from your onboarding email.
+            Use the tenant ID and API key from your onboarding email or sign-up screen.
           </p>
+
+          {handoffLoaded ? (
+            <div
+              className="eq-card"
+              style={{ marginTop: 14, padding: 14, borderColor: "rgba(99, 102, 241, 0.35)" }}
+            >
+              <div className="eq-text-sm" style={{ color: "var(--eq-accent-light)" }}>
+                Credentials from sign-up were loaded. Click Sign in to open the setup wizard.
+              </div>
+            </div>
+          ) : null}
 
           <form onSubmit={onSubmit} style={{ marginTop: 18, display: "grid", gap: 14 }}>
             <div>
@@ -155,7 +183,7 @@ export function LoginForm() {
 
           <div className="eq-text-xs eq-text-dim" style={{ marginTop: 14 }}>
             Don&apos;t have an account?{" "}
-            <a href="https://engineiq.co.za/sign-up" style={{ color: "var(--eq-accent-light)" }}>
+            <a href={signUpUrl()} style={{ color: "var(--eq-accent-light)" }}>
               Create one
             </a>
             .
