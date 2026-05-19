@@ -75,7 +75,7 @@ public class ReviewServiceTests
         var trust = Options.Create(new TrustOptions { PublicApiBaseUrl = "https://api.test.example" });
         var svc = new ReviewService(factory, options, trust, NullLogger<ReviewService>.Instance);
 
-        var result = await svc.ReviewDiffAsync("diff --git a/README.md", CancellationToken.None);
+        var result = await svc.ReviewDiffAsync("diff --git a/README.md", cancellationToken: CancellationToken.None);
 
         Assert.Contains("LGTM on structure.", result.CommentBody);
         Assert.Contains("EngineIQ processed this diff ephemerally", result.CommentBody);
@@ -94,6 +94,8 @@ public class ReviewServiceTests
         Assert.Equal("claude-sonnet-4-6", doc.RootElement.GetProperty("model").GetString());
         Assert.Equal("user", doc.RootElement.GetProperty("messages")[0].GetProperty("role").GetString());
         Assert.Contains("diff --git a/README.md", doc.RootElement.GetProperty("messages")[0].GetProperty("content").GetString());
-        Assert.Equal(ReviewService.SystemPrompt, doc.RootElement.GetProperty("system").GetString());
+        var system = doc.RootElement.GetProperty("system").GetString() ?? "";
+        Assert.StartsWith(ReviewService.SystemPrompt.Trim(), system.Trim());
+        Assert.Contains("Tenant review preferences:", system);
     }
 }

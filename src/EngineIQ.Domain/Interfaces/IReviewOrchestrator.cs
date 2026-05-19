@@ -7,10 +7,7 @@ namespace EngineIQ.Domain.Interfaces;
 /// </summary>
 public interface IReviewOrchestrator
 {
-    Task<PrReviewDiffOutcome> ReviewPullRequestAsync(
-        long installationId,
-        string owner,
-        string repo,
-        int prNumber,
+    Task<PrReviewJobResult> ReviewPullRequestAsync(
+        PrReviewJobCommand command,
         CancellationToken cancellationToken = default);
 }

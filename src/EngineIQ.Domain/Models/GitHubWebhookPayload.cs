@@ -33,6 +33,9 @@ public class PullRequestInfo
 
     [JsonPropertyName("title")]
     public string? Title { get; set; }
+
+    [JsonPropertyName("draft")]
+    public bool Draft { get; set; }
 }
 
 public class RepositoryInfo

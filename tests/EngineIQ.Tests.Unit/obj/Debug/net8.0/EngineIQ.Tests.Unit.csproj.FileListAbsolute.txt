@@ -145,3 +145,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\tests\EngineIQ.Tests.U
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\tests\EngineIQ.Tests.Unit\bin\Debug\net8.0\EngineIQ.API.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\tests\EngineIQ.Tests.Unit\bin\Debug\net8.0\EngineIQ.GitHub.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\tests\EngineIQ.Tests.Unit\bin\Debug\net8.0\EngineIQ.Infrastructure.pdb
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\tests\EngineIQ.Tests.Unit\obj\Debug\net8.0\EngineIQ.Tests.Unit.sourcelink.json

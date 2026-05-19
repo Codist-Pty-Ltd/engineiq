@@ -3,6 +3,8 @@ using System.Text.Json;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Messaging;
 using EngineIQ.Domain.Models;
+using EngineIQ.Domain.Reviews;
+using EngineIQ.Domain.Tenants;
 using EngineIQ.GitHub;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,17 +23,20 @@ public class WebhookController : ControllerBase
 
     private readonly IPullReviewJobPublisher _publisher;
     private readonly IJobRepository _jobRepository;
+    private readonly ITenantRepository _tenants;
     private readonly IConfiguration _configuration;
     private readonly ILogger<WebhookController> _logger;
 
     public WebhookController(
         IPullReviewJobPublisher publisher,
         IJobRepository jobRepository,
+        ITenantRepository tenants,
         IConfiguration configuration,
         ILogger<WebhookController> logger)
     {
         _publisher = publisher;
         _jobRepository = jobRepository;
+        _tenants = tenants;
         _configuration = configuration;
         _logger = logger;
     }
@@ -86,6 +91,8 @@ public class WebhookController : ControllerBase
             return BadRequest();
         }
 
+        var isDraft = payload.PullRequest.Draft;
+
         using var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         budget.CancelAfter(TimeSpan.FromMilliseconds(450));
 
@@ -126,6 +133,20 @@ public class WebhookController : ControllerBase
             }
 
             _logger.LogInformation("Duplicate GitHub delivery {DeliveryId}; skipping enqueue.", deliveryId);
+            return Ok();
+        }
+
+        var preferences = await _tenants.GetPortalPreferencesAsync(enqueue.TenantId!.Value, budget.Token)
+                        ?? new TenantPortalPreferences();
+        if (!ReviewEnqueuePolicy.ShouldEnqueue(preferences, isDraft, out var skipReason))
+        {
+            await _jobRepository.DeleteQueuedJobAsync(enqueue.TenantId!.Value, enqueue.JobId!.Value, cancellationToken);
+            _logger.LogInformation(
+                "Skipping review enqueue for tenant {TenantId} PR {Repo}#{Pr}: {Reason}",
+                enqueue.TenantId,
+                fullName,
+                prNumber,
+                skipReason);
             return Ok();
         }
 

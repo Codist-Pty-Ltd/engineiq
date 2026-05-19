@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Messaging;
+using EngineIQ.Domain.Reviews;
+using EngineIQ.Domain.Tenants;
 using EngineIQ.Infrastructure;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -24,17 +26,20 @@ public sealed class PullReviewJobConsumer : BackgroundService
     private readonly IOptions<RabbitMqOptions> _rabbitOptions;
     private readonly IReviewOrchestrator _orchestrator;
     private readonly IJobRepository _jobRepository;
+    private readonly ITenantRepository _tenants;
     private readonly ILogger<PullReviewJobConsumer> _logger;
 
     public PullReviewJobConsumer(
         IOptions<RabbitMqOptions> rabbitOptions,
         IReviewOrchestrator orchestrator,
         IJobRepository jobRepository,
+        ITenantRepository tenants,
         ILogger<PullReviewJobConsumer> logger)
     {
         _rabbitOptions = rabbitOptions;
         _orchestrator = orchestrator;
         _jobRepository = jobRepository;
+        _tenants = tenants;
         _logger = logger;
     }
 
@@ -103,15 +108,41 @@ public sealed class PullReviewJobConsumer : BackgroundService
             using var reviewCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
             reviewCts.CancelAfter(TimeSpan.FromSeconds(90));
 
+            var preferences = await _tenants.GetPortalPreferencesAsync(job.TenantId, reviewCts.Token)
+                            ?? new TenantPortalPreferences();
+            var configYaml = await _tenants.GetConfigYamlAsync(job.TenantId, reviewCts.Token);
+
             var sw = Stopwatch.StartNew();
-            var outcome = await _orchestrator.ReviewPullRequestAsync(
-                job.InstallationId,
-                job.Owner,
-                job.Repo,
-                job.PrNumber,
+            var result = await _orchestrator.ReviewPullRequestAsync(
+                new PrReviewJobCommand(
+                    job.TenantId,
+                    job.InstallationId,
+                    job.Owner,
+                    job.Repo,
+                    job.PrNumber,
+                    preferences,
+                    configYaml),
                 reviewCts.Token);
             sw.Stop();
 
+            if (result.Skipped)
+            {
+                await _jobRepository.MarkJobSkippedAsync(
+                    job.TenantId,
+                    job.JobId,
+                    result.SkipReason ?? "skipped",
+                    stoppingToken);
+                channel.BasicAck(ea.DeliveryTag, multiple: false);
+                _logger.LogInformation(
+                    "PR review skipped for {Owner}/{Repo}#{Pr}: {Reason}",
+                    job.Owner,
+                    job.Repo,
+                    job.PrNumber,
+                    result.SkipReason);
+                return;
+            }
+
+            var outcome = result.Outcome!;
             await _jobRepository.MarkJobCompletedAsync(
                 job.TenantId,
                 job.JobId,

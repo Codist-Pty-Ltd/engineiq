@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EngineIQ.GitHub")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ebe3fff588ef77958776de88e45938d066f245c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8f0d592093bdad3db1aa457d6defbe088d486998")]
 [assembly: System.Reflection.AssemblyProductAttribute("EngineIQ.GitHub")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EngineIQ.GitHub")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

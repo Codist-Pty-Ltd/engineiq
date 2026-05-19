@@ -4,6 +4,7 @@ using System.Text.Json;
 using EngineIQ.AIEngine.Anthropic;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Reviews;
+using EngineIQ.Domain.Tenants;
 using EngineIQ.Domain.Trust;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -42,8 +43,14 @@ Keep the review actionable and friendly. Use bullet points. Do not include the d
         _logger = logger;
     }
 
-    public async Task<PrReviewDiffOutcome> ReviewDiffAsync(string diff, CancellationToken cancellationToken = default)
+    public async Task<PrReviewDiffOutcome> ReviewDiffAsync(
+        string diff,
+        TenantPortalPreferences? preferences = null,
+        string? standardsConfigYaml = null,
+        CancellationToken cancellationToken = default)
     {
+        var prefs = preferences ?? new TenantPortalPreferences();
+        var systemPrompt = ReviewPromptBuilder.BuildSystemPrompt(prefs, standardsConfigYaml);
         var footer = AnthropicReviewResponseParser.BuildTrustFooter(_trust.PublicApiBaseUrl);
         if (string.IsNullOrWhiteSpace(diff))
         {
@@ -57,7 +64,7 @@ Keep the review actionable and friendly. Use bullet points. Do not include the d
         {
             model = string.IsNullOrWhiteSpace(_options.Model) ? "claude-sonnet-4-6" : _options.Model,
             max_tokens = _options.MaxOutputTokens,
-            system = SystemPrompt,
+            system = systemPrompt,
             messages = new object[]
             {
                 new { role = "user", content = userContent }

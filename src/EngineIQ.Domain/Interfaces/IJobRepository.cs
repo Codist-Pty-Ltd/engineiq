@@ -32,6 +32,13 @@ public interface IJobRepository
         decimal estimatedCostZar,
         CancellationToken cancellationToken = default);
 
+    /// <summary>Marks a job skipped per tenant preferences (no AI call, no GitHub comment).</summary>
+    Task MarkJobSkippedAsync(
+        Guid tenantId,
+        Guid jobId,
+        string skipReason,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Completed reviews only — metadata for compliance audit (no messages or code).</summary>
     Task<(IReadOnlyList<TenantAuditReviewRow> Items, int TotalCount)> ListAuditReviewsAsync(
         Guid tenantId,

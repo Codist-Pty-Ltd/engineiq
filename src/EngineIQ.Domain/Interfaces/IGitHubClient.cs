@@ -10,6 +10,14 @@ public interface IGitHubClient
     /// </summary>
     Task<string> GetPullRequestDiffAsync(long installationId, string owner, string repo, int prNumber, CancellationToken cancellationToken = default);
 
+    /// <summary>PR metadata for gating (draft detection).</summary>
+    Task<GitHubPullRequestInfo> GetPullRequestInfoAsync(
+        long installationId,
+        string owner,
+        string repo,
+        int prNumber,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Posts a review comment to the pull request.
     /// </summary>

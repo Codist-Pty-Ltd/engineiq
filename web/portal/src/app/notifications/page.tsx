@@ -27,6 +27,8 @@ function notifStyle(kind: string): { bg: string; glyph: string } {
       return { bg: "rgba(99, 102, 241, 0.15)", glyph: "↗" };
     case "github_connected":
       return { bg: "var(--eq-card)", glyph: "◎" };
+    case "review_skipped":
+      return { bg: "rgba(148, 163, 184, 0.15)", glyph: "—" };
     default:
       return { bg: "var(--eq-card)", glyph: "•" };
   }

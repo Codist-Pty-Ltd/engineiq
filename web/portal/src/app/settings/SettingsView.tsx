@@ -231,7 +231,7 @@ export function SettingsView() {
             <section className="eq-card">
               <h2 className="eq-h3">Default review settings</h2>
               <p className="eq-text-xs eq-text-dim" style={{ marginTop: 8 }}>
-                Stored on your tenant profile (full enforcement rules belong in YAML below).
+                Applied on webhook enqueue and review: auto-review, skip drafts. Cursorrules and monetary checks shape the AI prompt.
               </p>
               <div style={{ marginTop: 8 }}>
                 <ToggleRow
@@ -271,8 +271,8 @@ export function SettingsView() {
                 </Link>
               </div>
               <p className="eq-text-xs eq-text-dim" style={{ marginTop: 8 }}>
-                Email delivery uses your contact address ({account?.contact_email ?? "on file"}). Activity history is in
-                the portal feed.
+                Email on critical and weekly digest are saved for upcoming delivery. Activity history is in the portal
+                feed ({account?.contact_email ?? "contact email on file"}).
               </p>
               <div style={{ marginTop: 8 }}>
                 <ToggleRow

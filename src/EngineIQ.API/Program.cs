@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using EngineIQ.API.Cors;
 using EngineIQ.API.Middleware;
 using EngineIQ.API.Options;
 using EngineIQ.API.Validation;
@@ -19,15 +20,17 @@ builder.Services.Configure<EngineIQAppOptions>(builder.Configuration.GetSection(
 builder.Services.Configure<TrustOptions>(builder.Configuration.GetSection(TrustOptions.SectionName));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection(CorsOptions.SectionName));
 
-var corsOrigins = builder.Configuration.GetSection(CorsOptions.SectionName).Get<CorsOptions>()?.AllowedOrigins;
-if (corsOrigins is not { Length: > 0 })
-    corsOrigins = new[] { "http://localhost:3000", "http://localhost:3001" };
+var corsOrigins = CorsOriginResolver.Resolve(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(
-        "Portal",
-        policy => policy.WithOrigins(corsOrigins).AllowAnyHeader().AllowAnyMethod());
+        PortalCorsExtensions.PolicyName,
+        policy => policy
+            .WithOrigins(corsOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .SetPreflightMaxAge(TimeSpan.FromHours(1)));
 });
 
 builder.Services.AddEngineIQPersistence(builder.Configuration);
@@ -85,13 +88,16 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// TLS terminates at Caddy; forwarded proto avoids redirect loops that break CORS preflight.
+if (app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
+
 app.UseRouting();
-app.UseCors("Portal");
+app.UseCors(PortalCorsExtensions.PolicyName);
 app.UseMiddleware<ApiKeyTenantMiddleware>();
 app.UseRateLimiter();
-app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
-app.MapControllers().RequireCors("Portal");
+app.MapGet("/health", () => Results.Ok(new { status = "ok" })).RequireCors(PortalCorsExtensions.PolicyName);
+app.MapControllers().RequireCors(PortalCorsExtensions.PolicyName);
 
 app.Run();
 

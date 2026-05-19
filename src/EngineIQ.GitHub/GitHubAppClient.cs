@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 using EiqGitHubClient = EngineIQ.Domain.Interfaces.IGitHubClient;
+using GitHubPullRequestInfo = EngineIQ.Domain.Interfaces.GitHubPullRequestInfo;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Octokit;
@@ -21,6 +22,17 @@ public class GitHubAppClient : EiqGitHubClient
     {
         var client = await GetInstallationClientAsync(installationId, cancellationToken);
         return await client.GetPullRequestDiffAsync(installationId, owner, repo, prNumber, cancellationToken);
+    }
+
+    public async Task<GitHubPullRequestInfo> GetPullRequestInfoAsync(
+        long installationId,
+        string owner,
+        string repo,
+        int prNumber,
+        CancellationToken cancellationToken = default)
+    {
+        var client = await GetInstallationClientAsync(installationId, cancellationToken);
+        return await client.GetPullRequestInfoAsync(installationId, owner, repo, prNumber, cancellationToken);
     }
 
     public async Task PostReviewCommentAsync(long installationId, string owner, string repo, int prNumber, string body, CancellationToken cancellationToken = default)
@@ -67,6 +79,17 @@ public class GitHubAppClient : EiqGitHubClient
         private readonly GitHubClient _client;
 
         public InstallationGitHubClient(GitHubClient client) => _client = client;
+
+        public async Task<GitHubPullRequestInfo> GetPullRequestInfoAsync(
+            long installationId,
+            string owner,
+            string repo,
+            int prNumber,
+            CancellationToken cancellationToken = default)
+        {
+            var pr = await _client.PullRequest.Get(owner, repo, prNumber);
+            return new GitHubPullRequestInfo(pr.Draft, pr.Title);
+        }
 
         public async Task<string> GetPullRequestDiffAsync(long installationId, string owner, string repo, int prNumber, CancellationToken cancellationToken = default)
         {

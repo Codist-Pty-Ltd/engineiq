@@ -19,7 +19,13 @@ export function ReviewCard({ job, onClick }: Props) {
       <div className="eq-rv-card__foot">
         <span
           className={`eq-badge ${
-            job.status === "Completed" ? "eq-badge--green" : job.status === "Failed" ? "eq-badge--red" : "eq-badge--grey"
+            job.status === "Completed"
+              ? "eq-badge--green"
+              : job.status === "Failed"
+                ? "eq-badge--red"
+                : job.status === "Skipped"
+                  ? "eq-badge--amber"
+                  : "eq-badge--grey"
           }`}
         >
           {job.status}

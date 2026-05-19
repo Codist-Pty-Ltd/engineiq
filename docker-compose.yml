@@ -74,6 +74,7 @@ services:
       Cors__AllowedOrigins__0: https://engineiq.co.za
       Cors__AllowedOrigins__1: https://www.engineiq.co.za
       Cors__AllowedOrigins__2: https://app.engineiq.co.za
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://engineiq.co.za,https://www.engineiq.co.za,https://app.engineiq.co.za}
       SendGrid__ApiKey: ${SENDGRID_API_KEY:-}
       SendGrid__FromEmail: ${SENDGRID_FROM_EMAIL:-noreply@engineiq.co.za}
       SendGrid__FromName: ${SENDGRID_FROM_NAME:-EngineIQ}

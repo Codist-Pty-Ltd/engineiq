@@ -1,3 +1,4 @@
+using EngineIQ.API.Cors;
 using EngineIQ.Domain.Interfaces;
 
 namespace EngineIQ.API.Middleware;
@@ -43,14 +44,14 @@ public sealed class ApiKeyTenantMiddleware
         if (!context.Request.Headers.TryGetValue("X-Api-Key", out var apiKeyHeader) || string.IsNullOrWhiteSpace(apiKeyHeader))
         {
             _logger.LogDebug("Missing X-Api-Key for {Path}.", path);
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await WriteJsonErrorAsync(context, StatusCodes.Status401Unauthorized);
             return;
         }
 
         var keyTenantId = await tenants.ValidateApiKeyAndGetTenantIdAsync(apiKeyHeader!, context.RequestAborted);
         if (keyTenantId is null)
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            await WriteJsonErrorAsync(context, StatusCodes.Status401Unauthorized);
             return;
         }
 
@@ -58,14 +59,14 @@ public sealed class ApiKeyTenantMiddleware
         {
             if (!TryParseTenantRoute(path, out var routeTenantId))
             {
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await WriteJsonErrorAsync(context, StatusCodes.Status404NotFound);
                 return;
             }
 
             if (keyTenantId.Value != routeTenantId)
             {
                 _logger.LogWarning("API key tenant mismatch for route {RouteTenantId}.", routeTenantId);
-                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await WriteJsonErrorAsync(context, StatusCodes.Status403Forbidden);
                 return;
             }
         }
@@ -105,5 +106,15 @@ public sealed class ApiKeyTenantMiddleware
         if (!segments[2].Equals("tenant", StringComparison.OrdinalIgnoreCase))
             return false;
         return Guid.TryParse(segments[3], out tenantId);
+    }
+
+    private static async Task WriteJsonErrorAsync(HttpContext context, int statusCode)
+    {
+        if (context.Response.HasStarted)
+            return;
+
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json";
+        await PortalCorsExtensions.ApplyPortalCorsAsync(context);
     }
 }

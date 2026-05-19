@@ -154,6 +154,30 @@ public sealed class JobRepository : IJobRepository
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task MarkJobSkippedAsync(
+        Guid tenantId,
+        Guid jobId,
+        string skipReason,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+        var job = await db.PrReviewJobs.FirstOrDefaultAsync(j => j.Id == jobId, cancellationToken);
+        if (job is null)
+            return;
+
+        job.Status = ReviewJobStatuses.Skipped;
+        job.CompletedAt = DateTimeOffset.UtcNow;
+        job.DurationMs = 0;
+        job.FindingsCount = 0;
+        job.InputTokens = 0;
+        job.OutputTokens = 0;
+        job.EstimatedCostZar = 0m;
+        // GithubDeliveryId is unique per delivery; skip reason is logged only (not persisted on job row).
+        _ = skipReason;
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<(IReadOnlyList<TenantAuditReviewRow> Items, int TotalCount)> ListAuditReviewsAsync(
         Guid tenantId,
         int skip,
@@ -394,6 +418,27 @@ public sealed class JobRepository : IJobRepository
                 "Pull request queued for review",
                 $"{j.Repository!.FullName} · PR #{j.PrNumber}",
                 j.CreatedAt,
+                j.Id));
+        }
+
+        var skipped = await db.PrReviewJobs.AsNoTracking()
+            .Include(j => j.Repository)
+            .Where(j =>
+                j.TenantId == tenantId
+                && j.Status == ReviewJobStatuses.Skipped
+                && j.Repository != null
+                && (j.CompletedAt ?? j.CreatedAt) >= cutoff)
+            .OrderByDescending(j => j.CompletedAt ?? j.CreatedAt)
+            .Take(10)
+            .ToListAsync(cancellationToken);
+
+        foreach (var j in skipped)
+        {
+            items.Add(new PortalNotificationItem(
+                "review_skipped",
+                "Review skipped",
+                $"{j.Repository!.FullName} · PR #{j.PrNumber} (tenant preferences)",
+                j.CompletedAt ?? j.CreatedAt,
                 j.Id));
         }
 

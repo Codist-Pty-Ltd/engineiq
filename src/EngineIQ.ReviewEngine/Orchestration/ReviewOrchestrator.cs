@@ -1,5 +1,6 @@
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Reviews;
+using EngineIQ.Domain.Tenants;
 
 namespace EngineIQ.ReviewEngine.Orchestration;
 
@@ -17,16 +18,41 @@ public sealed class ReviewOrchestrator : IReviewOrchestrator
         _aiEngine = aiEngine;
     }
 
-    public async Task<PrReviewDiffOutcome> ReviewPullRequestAsync(
-        long installationId,
-        string owner,
-        string repo,
-        int prNumber,
+    public async Task<PrReviewJobResult> ReviewPullRequestAsync(
+        PrReviewJobCommand command,
         CancellationToken cancellationToken = default)
     {
-        var diff = await _gitHubClient.GetPullRequestDiffAsync(installationId, owner, repo, prNumber, cancellationToken);
-        var outcome = await _aiEngine.ReviewDiffAsync(diff, cancellationToken);
-        await _gitHubClient.PostReviewCommentAsync(installationId, owner, repo, prNumber, outcome.CommentBody, cancellationToken);
-        return outcome;
+        var pr = await _gitHubClient.GetPullRequestInfoAsync(
+            command.InstallationId,
+            command.Owner,
+            command.Repo,
+            command.PrNumber,
+            cancellationToken);
+
+        if (!ReviewEnqueuePolicy.ShouldEnqueue(command.Preferences, pr.IsDraft, out var skipReason))
+            return new PrReviewJobResult(true, skipReason, null);
+
+        var diff = await _gitHubClient.GetPullRequestDiffAsync(
+            command.InstallationId,
+            command.Owner,
+            command.Repo,
+            command.PrNumber,
+            cancellationToken);
+
+        var outcome = await _aiEngine.ReviewDiffAsync(
+            diff,
+            command.Preferences,
+            command.StandardsConfigYaml,
+            cancellationToken);
+
+        await _gitHubClient.PostReviewCommentAsync(
+            command.InstallationId,
+            command.Owner,
+            command.Repo,
+            command.PrNumber,
+            outcome.CommentBody,
+            cancellationToken);
+
+        return new PrReviewJobResult(false, null, outcome);
     }
 }
