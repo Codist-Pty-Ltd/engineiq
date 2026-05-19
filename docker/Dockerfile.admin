@@ -8,13 +8,16 @@ RUN npm ci
 COPY web/admin-ui/ ./
 RUN npm run build
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG DOTNET_SDK_IMAGE=public.ecr.aws/dotnet/sdk:8.0
+ARG DOTNET_ASPNET_IMAGE=public.ecr.aws/dotnet/aspnet:8.0
+
+FROM ${DOTNET_SDK_IMAGE} AS build
 WORKDIR /src
 COPY src/ ./src/
 COPY --from=ui /build/web/admin-ui/dist ./src/EngineIQ.Admin/wwwroot/admin
 RUN dotnet publish src/EngineIQ.Admin/EngineIQ.Admin.csproj -c Release -o /app/publish /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim AS runtime
+FROM ${DOTNET_ASPNET_IMAGE} AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 ENV ASPNETCORE_URLS=http://+:8081

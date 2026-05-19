@@ -415,6 +415,7 @@ Validate each org can open a test PR and receive a review comment (Worker + Anth
 | Webhook 401 | Wrong `GITHUB_WEBHOOK_SECRET` vs GitHub App settings |
 | Reviews never run | Worker down, RabbitMQ creds wrong, Anthropic key invalid |
 | Portal CORS errors | API `Cors:AllowedOrigins` must include portal/marketing origins (compose sets prod hosts) |
+| Docker build `mcr.microsoft.com` **403** | Dockerfiles default to `public.ecr.aws/dotnet/*:8.0`; re-run workflow or `docker pull public.ecr.aws/dotnet/sdk:8.0` on the host |
 | Admin PG errors | Ensure migrator ran; check `postgres` health |
 
 ---

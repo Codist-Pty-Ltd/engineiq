@@ -1,10 +1,13 @@
 # syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG DOTNET_SDK_IMAGE=public.ecr.aws/dotnet/sdk:8.0
+ARG DOTNET_RUNTIME_IMAGE=public.ecr.aws/dotnet/runtime:8.0
+
+FROM ${DOTNET_SDK_IMAGE} AS build
 WORKDIR /src
 COPY src/ ./src/
 RUN dotnet publish src/EngineIQ.Worker/EngineIQ.Worker.csproj -c Release -o /app/publish /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-bookworm-slim AS runtime
+FROM ${DOTNET_RUNTIME_IMAGE} AS runtime
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "EngineIQ.Worker.dll"]
