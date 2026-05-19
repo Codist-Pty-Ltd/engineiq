@@ -17,9 +17,16 @@ export function LoginForm() {
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = params.get("tenant");
+    const t = params.get("tenant_id") ?? params.get("tenant");
     if (t) setTenantId(t);
-  }, [params]);
+    if (params.get("onboarding") === "complete") {
+      pushToast({
+        kind: "success",
+        title: "GitHub connected",
+        message: "Sign in with your API key to finish setup in the portal.",
+      });
+    }
+  }, [params, pushToast]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,9 +66,14 @@ export function LoginForm() {
         return;
       }
 
+      const status = (await res.json()) as { onboarding_status?: string };
       saveSession(t, k);
       pushToast({ kind: "success", title: "Signed in", message: "Welcome to your workspace." });
-      router.push("/overview");
+      if (status.onboarding_status === "pending_github_install") {
+        router.push("/onboarding");
+      } else {
+        router.push("/dashboard");
+      }
     } catch {
       setErr("Network error — cannot reach the EngineIQ API.");
       pushToast({ kind: "error", title: "Network error", message: "Cannot reach the EngineIQ API." });

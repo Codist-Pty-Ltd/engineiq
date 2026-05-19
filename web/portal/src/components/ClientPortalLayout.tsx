@@ -8,6 +8,7 @@ import { tenantGet } from "@/lib/api";
 
 const links = [
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/installations", label: "Installations" },
   { href: "/overview", label: "Analytics" },
   { href: "/findings", label: "Findings" },
   { href: "/repositories", label: "Repositories" },
@@ -22,6 +23,7 @@ export function ClientPortalLayout({ children }: { children: React.ReactNode }) 
   const [ready, setReady] = useState(false);
   const [tenantName, setTenantName] = useState<string | null>(null);
   const [tenantPlan, setTenantPlan] = useState<string | null>(null);
+  const [onboardingStatus, setOnboardingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (pathname === "/login") return;
@@ -34,22 +36,36 @@ export function ClientPortalLayout({ children }: { children: React.ReactNode }) 
     // Soft-validate session (and hydrate sidebar label) without blocking page load.
     (async () => {
       try {
-        const res = await tenantGet(s.tenantId, s.apiKey, "/account");
-        if (res.status === 401 || res.status === 403) {
+        const [accountRes, statusRes] = await Promise.all([
+          tenantGet(s.tenantId, s.apiKey, "/account"),
+          tenantGet(s.tenantId, s.apiKey, "/status"),
+        ]);
+        if (accountRes.status === 401 || accountRes.status === 403) {
           clearSession();
           router.replace("/login");
           return;
         }
-        if (res.ok) {
-          const data = (await res.json()) as { company_name?: string; plan?: string };
+        if (accountRes.ok) {
+          const data = (await accountRes.json()) as { company_name?: string; plan?: string };
           setTenantName(data.company_name ?? null);
           setTenantPlan(data.plan ?? null);
+        }
+        if (statusRes.ok) {
+          const st = (await statusRes.json()) as { onboarding_status?: string };
+          setOnboardingStatus(st.onboarding_status ?? null);
         }
       } finally {
         setReady(true);
       }
     })();
   }, [pathname, router]);
+
+  useEffect(() => {
+    if (!ready || pathname === "/login" || pathname.startsWith("/onboarding")) return;
+    if (onboardingStatus === "pending_github_install") {
+      router.replace("/onboarding");
+    }
+  }, [ready, onboardingStatus, pathname, router]);
 
   if (pathname === "/login") return <>{children}</>;
 

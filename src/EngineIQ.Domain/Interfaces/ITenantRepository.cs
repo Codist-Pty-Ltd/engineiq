@@ -16,6 +16,14 @@ public interface ITenantRepository
 
     Task<TenantStatusSnapshot?> GetStatusSnapshotAsync(Guid tenantId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Returns a one-time install state when the tenant has no GitHub App installation yet.
+    /// Creates a new state if the welcome email state was consumed or missing.
+    /// </summary>
+    Task<(bool Ok, string? InstallState, string? Error)> EnsureGitHubInstallStateAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken = default);
+
     Task UpdateConfigYamlAsync(Guid tenantId, string? yaml, CancellationToken cancellationToken = default);
 
     Task<TenantAccountSnapshot?> GetAccountSnapshotAsync(Guid tenantId, CancellationToken cancellationToken = default);

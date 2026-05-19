@@ -3,9 +3,11 @@ using EngineIQ.API.Validation;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Jobs;
 using EngineIQ.Domain.Tenants;
+using EngineIQ.GitHub;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Options;
 
 namespace EngineIQ.API.Controllers;
 
@@ -19,17 +21,23 @@ public sealed class TenantController : ControllerBase
     private readonly IFindingRepository _findings;
     private readonly IJobRepository _jobs;
     private readonly StandardsConfigYamlValidator _yamlValidator;
+    private readonly IOptions<GitHubClientOptions> _gitHub;
+    private readonly ILogger<TenantController> _logger;
 
     public TenantController(
         ITenantRepository tenants,
         IFindingRepository findings,
         IJobRepository jobs,
-        StandardsConfigYamlValidator yamlValidator)
+        StandardsConfigYamlValidator yamlValidator,
+        IOptions<GitHubClientOptions> gitHub,
+        ILogger<TenantController> logger)
     {
         _tenants = tenants;
         _findings = findings;
         _jobs = jobs;
         _yamlValidator = yamlValidator;
+        _gitHub = gitHub;
+        _logger = logger;
     }
 
     [HttpGet("status")]
@@ -43,6 +51,42 @@ public sealed class TenantController : ControllerBase
             snapshot.OnboardingStatus,
             snapshot.RepositoriesDetected,
             snapshot.FirstPrReviewed));
+    }
+
+    [HttpGet("onboarding/install-url")]
+    public async Task<ActionResult<TenantInstallUrlResponse>> OnboardingInstallUrl(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        var account = await _tenants.GetAccountSnapshotAsync(id, cancellationToken);
+        if (account is null)
+            return NotFound();
+
+        if (account.GitHubAppConnected)
+            return Conflict(new { error = "already_installed" });
+
+        if (string.IsNullOrWhiteSpace(_gitHub.Value.AppSlug))
+        {
+            _logger.LogError("GitHub:AppSlug is not configured; cannot build install URL.");
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "server_misconfigured" });
+        }
+
+        var (ok, installState, error) = await _tenants.EnsureGitHubInstallStateAsync(id, cancellationToken);
+        if (!ok)
+        {
+            return error switch
+            {
+                "already_installed" => Conflict(new { error }),
+                "not_found" => NotFound(),
+                _ => StatusCode(StatusCodes.Status500InternalServerError, new { error = error ?? "install_state_failed" }),
+            };
+        }
+
+        var slug = _gitHub.Value.AppSlug.Trim();
+        var installUrl =
+            $"https://github.com/apps/{slug}/installations/new?state={Uri.EscapeDataString(installState!)}";
+
+        return Ok(new TenantInstallUrlResponse(installUrl, account.GitHubOrgLogin));
     }
 
     [HttpGet("account")]
@@ -291,6 +335,10 @@ public sealed class TenantController : ControllerBase
         [property: JsonPropertyName("onboarding_status")] string OnboardingStatus,
         [property: JsonPropertyName("repositories_detected")] int RepositoriesDetected,
         [property: JsonPropertyName("first_pr_reviewed")] bool FirstPrReviewed);
+
+    public sealed record TenantInstallUrlResponse(
+        [property: JsonPropertyName("install_url")] string InstallUrl,
+        [property: JsonPropertyName("github_org")] string? GitHubOrg);
 
     public sealed record TenantAccountResponse(
         [property: JsonPropertyName("tenant_id")] Guid TenantId,

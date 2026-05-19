@@ -168,6 +168,39 @@ public sealed class TenantRepository : ITenantRepository
         return new TenantStatusSnapshot(onboarding, repos, firstPr);
     }
 
+    public async Task<(bool Ok, string? InstallState, string? Error)> EnsureGitHubInstallStateAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+        if (tenant is null)
+            return (false, null, "not_found");
+
+        if (tenant.GitHubAppInstallationId.HasValue)
+            return (false, null, "already_installed");
+
+        if (!string.IsNullOrWhiteSpace(tenant.GitHubInstallState))
+            return (true, tenant.GitHubInstallState.Trim(), null);
+
+        for (var i = 0; i < 5; i++)
+        {
+            var installState = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+            tenant.GitHubInstallState = installState;
+            try
+            {
+                await db.SaveChangesAsync(cancellationToken);
+                return (true, installState, null);
+            }
+            catch (DbUpdateException ex) when (IsUniqueViolation(ex))
+            {
+                _logger.LogDebug(ex, "Retrying install state allocation for tenant {TenantId}.", tenantId);
+            }
+        }
+
+        return (false, null, "state_allocation_failed");
+    }
+
     public async Task UpdateConfigYamlAsync(Guid tenantId, string? yaml, CancellationToken cancellationToken = default)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
