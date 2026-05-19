@@ -89,3 +89,4 @@ dotnet run --project src/EngineIQ.Admin   # http://127.0.0.1:8081 — see appset
 ## Licence / product
 
 Proprietary — EngineIQ. Configure branding and legal URLs under **`Trust:`** and marketing pages as needed.
+# Tue May 19 07:07:52 PM UTC 2026
