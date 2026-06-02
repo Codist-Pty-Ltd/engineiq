@@ -1,4 +1,6 @@
 # syntax=docker/dockerfile:1
+ARG DOTNET_SDK_IMAGE=mcr.microsoft.com/dotnet/sdk:8.0
+ARG DOTNET_ASPNET_IMAGE=mcr.microsoft.com/dotnet/aspnet:8.0
 
 FROM node:20-bookworm AS ui
 WORKDIR /build/web/admin-ui
@@ -7,9 +9,6 @@ COPY web/admin-ui/package.json web/admin-ui/package-lock.json ./
 RUN npm ci
 COPY web/admin-ui/ ./
 RUN npm run build
-
-ARG DOTNET_SDK_IMAGE=mcr.microsoft.com/dotnet/sdk:8.0
-ARG DOTNET_ASPNET_IMAGE=mcr.microsoft.com/dotnet/aspnet:8.0
 
 FROM ${DOTNET_SDK_IMAGE} AS build
 WORKDIR /src
