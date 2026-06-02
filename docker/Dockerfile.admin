@@ -8,8 +8,8 @@ RUN npm ci
 COPY web/admin-ui/ ./
 RUN npm run build
 
-ARG DOTNET_SDK_IMAGE=public.ecr.aws/dotnet/sdk:8.0
-ARG DOTNET_ASPNET_IMAGE=public.ecr.aws/dotnet/aspnet:8.0
+ARG DOTNET_SDK_IMAGE=mcr.microsoft.com/dotnet/sdk:8.0
+ARG DOTNET_ASPNET_IMAGE=mcr.microsoft.com/dotnet/aspnet:8.0
 
 FROM ${DOTNET_SDK_IMAGE} AS build
 WORKDIR /src
