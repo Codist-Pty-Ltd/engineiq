@@ -11,8 +11,15 @@ import {
 } from "@/lib/api";
 import { loadSession } from "@/lib/auth";
 import { useToasts } from "@/components/Toasts";
+import { GitHubConnectPanel } from "@/components/github/GitHubConnectPanel";
 import { ToggleRow } from "@/components/settings/ToggleRow";
 import "../portal-settings.css";
+
+function formatAccountStatus(status: string): string {
+  if (status === "AwaitingGitHubInstall") return "Awaiting GitHub install";
+  if (status === "Active") return "Active";
+  return status;
+}
 
 type Account = {
   tenant_id: string;
@@ -162,7 +169,7 @@ export function SettingsView() {
                 {[
                   ["Company", account.company_name],
                   ["Plan", account.plan],
-                  ["Status", account.status],
+                  ["Status", formatAccountStatus(account.status)],
                   ["Contact email", account.contact_email ?? "—"],
                   ["GitHub org", account.github_org ?? "—"],
                   ["Tenant ID", account.tenant_id],
@@ -179,14 +186,14 @@ export function SettingsView() {
               </tbody>
             </table>
           ) : null}
-          <p className="eq-text-xs eq-text-dim" style={{ marginTop: 12 }}>
-            GitHub App:{" "}
-            {account?.github_app_connected ? (
-              <Link href="/installations">Connected</Link>
-            ) : (
-              <Link href="/onboarding">Complete setup</Link>
-            )}
-          </p>
+          {account ? (
+            <GitHubConnectPanel
+              githubOrg={account.github_org}
+              connected={account.github_app_connected}
+              installationId={account.github_app_installation_id}
+              onRefresh={() => void load()}
+            />
+          ) : null}
         </section>
 
         <section className="eq-card">

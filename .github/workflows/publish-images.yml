@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/engineiq
+  IMAGE_PREFIX: ghcr.io/codist-pty-ltd/engineiq
 
 jobs:
   build-and-push:

@@ -62,10 +62,10 @@ export function ClientPortalLayout({ children }: { children: React.ReactNode }) 
   }, [pathname, router]);
 
   useEffect(() => {
-    if (!ready || pathname === "/login" || pathname.startsWith("/onboarding")) return;
-    if (onboardingStatus === "pending_github_install") {
-      router.replace("/onboarding");
-    }
+    if (!ready || pathname === "/login") return;
+    if (onboardingStatus !== "pending_github_install") return;
+    if (pathname.startsWith("/onboarding") || pathname === "/installations" || pathname === "/settings") return;
+    router.replace("/onboarding");
   }, [ready, onboardingStatus, pathname, router]);
 
   if (pathname === "/login") return <>{children}</>;
