@@ -164,6 +164,14 @@ public sealed class JobRepository : IJobRepository
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
         await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+
+        var tenantSuspended = await db.Tenants.AsNoTracking()
+            .Where(t => t.Id == tenantId)
+            .Select(t => t.Status)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (string.Equals(tenantSuspended, "Suspended", StringComparison.OrdinalIgnoreCase))
+            return false;
+
         var updated = await db.PrReviewJobs
             .Where(j =>
                 j.TenantId == tenantId

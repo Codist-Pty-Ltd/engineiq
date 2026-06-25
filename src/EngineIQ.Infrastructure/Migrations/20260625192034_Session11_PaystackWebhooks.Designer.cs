@@ -3,6 +3,7 @@ using System;
 using EngineIQ.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace EngineIQ.Infrastructure.Migrations
 {
     [DbContext(typeof(EngineIQDbContext))]
-    partial class EngineIQDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260625192034_Session11_PaystackWebhooks")]
+    partial class Session11_PaystackWebhooks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

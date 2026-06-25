@@ -16,6 +16,7 @@ public sealed class EngineIQDbContext : DbContext
     public DbSet<PrReviewJob> PrReviewJobs => Set<PrReviewJob>();
     public DbSet<Finding> Findings => Set<Finding>();
     public DbSet<TenantMetric> TenantMetrics => Set<TenantMetric>();
+    public DbSet<PaystackWebhookEvent> PaystackWebhookEvents => Set<PaystackWebhookEvent>();
 
     public Task SetCurrentTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
@@ -102,6 +103,14 @@ public sealed class EngineIQDbContext : DbContext
             e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<PaystackWebhookEvent>(e =>
+        {
+            e.ToTable("paystack_webhook_events");
+            e.HasKey(x => x.EventKey);
+            e.Property(x => x.EventKey).HasMaxLength(256);
+            e.Property(x => x.EventType).HasMaxLength(128).IsRequired();
+        });
+
         modelBuilder.Entity<Tenant>().HasData(
             new Tenant
             {
@@ -118,7 +127,8 @@ public sealed class EngineIQDbContext : DbContext
                 CreatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
                 Status = "Active",
                 ConfigYaml = "# Billable default — replace github_app_installation_id when GitHub App is installed for this org.",
-                FeatureFlagsJson = null
+                FeatureFlagsJson = null,
+                BillingStatus = "Internal",
             });
     }
 }

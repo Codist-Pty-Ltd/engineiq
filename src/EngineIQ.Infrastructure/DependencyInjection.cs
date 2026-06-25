@@ -39,6 +39,8 @@ public static class DependencyInjection
         services.Configure<Paystack.PaystackOptions>(configuration.GetSection(Paystack.PaystackOptions.SectionName));
         services.AddHttpClient<IPaystackClient, Paystack.PaystackClient>();
         services.AddScoped<ITenantBillingService, Paystack.TenantBillingService>();
+        services.AddSingleton<IPaystackWebhookRepository, Persistence.PaystackWebhookRepository>();
+        services.AddSingleton<IPaystackWebhookProcessor, Paystack.PaystackWebhookProcessor>();
         return services;
     }
 
