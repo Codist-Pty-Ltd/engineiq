@@ -66,7 +66,7 @@ EngineIQ processed this diff ephemerally. No source code was stored. Findings me
         return findings;
     }
 
-    internal static string StripTrustFooter(string markdown)
+    public static string StripTrustFooter(string markdown)
     {
         var idx = markdown.IndexOf("\n---\n", StringComparison.Ordinal);
         return idx >= 0 ? markdown[..idx] : markdown;

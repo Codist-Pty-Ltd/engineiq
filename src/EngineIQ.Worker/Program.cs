@@ -24,6 +24,7 @@ builder.Services.AddHttpClient(ReviewService.AnthropicHttpClientName, client =>
 });
 
 builder.Services.AddSingleton<IGitHubClient, GitHubAppClient>();
+builder.Services.AddSingleton<IStandardsEngine, EngineIQ.StandardsEngine.StandardsEngine>();
 builder.Services.AddSingleton<IAIEngine, ReviewService>();
 builder.Services.AddSingleton<IReviewOrchestrator, ReviewOrchestrator>();
 
