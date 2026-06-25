@@ -81,6 +81,34 @@ Welcome mail sends dynamic fields:
 
 Create templates in SendGrid and put template IDs in `.env` (`SENDGRID_TEMPLATE_*`). If templates are empty, sending is skipped (API still works).
 
+### 2.4 Paystack — EngineIQ subscription plans (separate from Billable)
+
+EngineIQ billing uses the **same Paystack merchant account** as other Codist products (e.g. Billable), but **distinct plan names** so nothing touches Billable’s existing plans.
+
+| Plan | Monthly (ZAR) | Paystack amount (cents) |
+|------|---------------|-------------------------|
+| EngineIQ Starter | R 2,500 | `250000` |
+| EngineIQ Growth | R 5,500 | `550000` |
+| EngineIQ Scale | R 12,000 | `1200000` |
+
+**Run once per environment** (test vs live) after `PAYSTACK_SECRET_KEY` is set:
+
+```bash
+chmod +x scripts/paystack/create-plans.sh
+export PAYSTACK_SECRET_KEY=sk_live_...   # or sk_test_... for sandbox
+./scripts/paystack/create-plans.sh
+```
+
+The script is **idempotent**: it lists existing plans via `GET /plan` and skips any row whose **name** already matches (`EngineIQ Starter`, `EngineIQ Growth`, `EngineIQ Scale`). On create it calls `POST /plan` with `name`, `interval` (`monthly`), `amount` (ZAR cents), and `currency` (`ZAR`) per [Paystack Plan API](https://paystack.com/docs/api/plan/).
+
+Copy the printed `plan_code` values into `.env`:
+
+- `PAYSTACK_PLAN_STARTER`
+- `PAYSTACK_PLAN_GROWTH`
+- `PAYSTACK_PLAN_SCALE`
+
+Also set `PAYSTACK_PUBLIC_KEY` and `PAYSTACK_WEBHOOK_SECRET` from the Paystack Dashboard. **Do not** rename or delete Billable plans in Paystack — EngineIQ only adds the three prefixed plans above.
+
 ---
 
 ## 3. DNS (cPanel or registrar)
