@@ -1,4 +1,5 @@
 using EngineIQ.Domain.Interfaces;
+using EngineIQ.Observability;
 using Microsoft.Extensions.Logging;
 
 namespace EngineIQ.AIEngine;
@@ -36,6 +37,7 @@ public static class ReviewTenantMetricsPersistence
         }
         catch (Exception ex)
         {
+            ReviewTelemetry.RecordPersistenceFailure("tenant_metrics");
             logger.LogWarning(
                 ex,
                 "Failed to update tenant_metrics for tenant {TenantId} on {Date}; job completion continues.",

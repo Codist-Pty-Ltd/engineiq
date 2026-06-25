@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\src\EngineIQ.FeedbackGenerator\EngineIQ.FeedbackGenerator.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.AIEngine\EngineIQ.AIEngine.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.ContextBuilder\EngineIQ.ContextBuilder.csproj" />
+    <ProjectReference Include="..\..\src\EngineIQ.Observability\EngineIQ.Observability.csproj" />
   </ItemGroup>
 
 </Project>

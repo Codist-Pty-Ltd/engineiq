@@ -5,6 +5,7 @@ using EngineIQ.Domain.Reviews;
 using EngineIQ.Domain.Tenants;
 using EngineIQ.Domain.Trust;
 using EngineIQ.FeedbackGenerator;
+using EngineIQ.Observability;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -80,15 +81,28 @@ public sealed class ReviewOrchestrator : IReviewOrchestrator
         }
 
         var prFilePaths = DiffPathExtractor.ExtractFilePaths(diff);
-        var repoContext = await TryGetRepoContextAsync(command, prFilePaths, cancellationToken);
+        Domain.Context.RepoContext? repoContext;
+        using (ReviewTelemetry.StartActivity("review.context"))
+        {
+            repoContext = await TryGetRepoContextAsync(command, prFilePaths, cancellationToken);
+        }
 
-        var ruleFindings = _standardsEngine.EvaluateDiff(diff, command.StandardsConfigYaml, repoContext);
-        var aiOutcome = await _aiEngine.ReviewDiffAsync(
-            diff,
-            command.Preferences,
-            command.StandardsConfigYaml,
-            repoContext,
-            cancellationToken);
+        IReadOnlyList<FindingWriteDto> ruleFindings;
+        using (ReviewTelemetry.StartActivity("review.standards"))
+        {
+            ruleFindings = _standardsEngine.EvaluateDiff(diff, command.StandardsConfigYaml, repoContext);
+        }
+
+        PrReviewDiffOutcome aiOutcome;
+        using (ReviewTelemetry.StartActivity("review.claude"))
+        {
+            aiOutcome = await _aiEngine.ReviewDiffAsync(
+                diff,
+                command.Preferences,
+                command.StandardsConfigYaml,
+                repoContext,
+                cancellationToken);
+        }
 
         var mergedFindings = ReviewFindingsMerger.Merge(ruleFindings, aiOutcome.ParsedFindings);
         var aiNarrative = AnthropicReviewResponseParser.StripTrustFooter(aiOutcome.CommentBody);
@@ -102,13 +116,16 @@ public sealed class ReviewOrchestrator : IReviewOrchestrator
             mergedFindings.Count,
             mergedFindings);
 
-        await _gitHubClient.PostReviewCommentAsync(
-            command.InstallationId,
-            command.Owner,
-            command.Repo,
-            command.PrNumber,
-            outcome.CommentBody,
-            cancellationToken);
+        using (ReviewTelemetry.StartActivity("review.comment.post"))
+        {
+            await _gitHubClient.PostReviewCommentAsync(
+                command.InstallationId,
+                command.Owner,
+                command.Repo,
+                command.PrNumber,
+                outcome.CommentBody,
+                cancellationToken);
+        }
 
         return new PrReviewJobResult(false, null, outcome);
     }

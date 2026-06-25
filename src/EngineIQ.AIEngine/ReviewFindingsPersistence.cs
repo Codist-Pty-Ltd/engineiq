@@ -1,4 +1,5 @@
 using EngineIQ.Domain.Interfaces;
+using EngineIQ.Observability;
 using Microsoft.Extensions.Logging;
 
 namespace EngineIQ.AIEngine;
@@ -30,6 +31,7 @@ public static class ReviewFindingsPersistence
         }
         catch (Exception ex)
         {
+            ReviewTelemetry.RecordPersistenceFailure("findings");
             logger.LogWarning(
                 ex,
                 "Failed to persist {Count} findings for tenant {TenantId} job {JobId}; review comment was still posted.",

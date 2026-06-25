@@ -20,6 +20,7 @@
     <ProjectReference Include="..\EngineIQ.Domain\EngineIQ.Domain.csproj" />
     <ProjectReference Include="..\EngineIQ.GitHub\EngineIQ.GitHub.csproj" />
     <ProjectReference Include="..\EngineIQ.Infrastructure\EngineIQ.Infrastructure.csproj" />
+    <ProjectReference Include="..\EngineIQ.Observability\EngineIQ.Observability.csproj" />
   </ItemGroup>
 
 </Project>

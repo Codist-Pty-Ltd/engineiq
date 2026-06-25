@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Messaging;
+using EngineIQ.Infrastructure.Telemetry;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -44,6 +45,7 @@ public sealed class RabbitMqPullReviewJobPublisher : IPullReviewJobPublisher, ID
             var props = channel.CreateBasicProperties();
             props.Persistent = true;
             props.ContentType = "application/json";
+            TracePropagation.Inject(props);
 
             channel.BasicPublish(
                 exchange: string.Empty,

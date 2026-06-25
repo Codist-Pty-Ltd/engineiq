@@ -9,6 +9,8 @@ using EngineIQ.Domain.Reviews;
 using EngineIQ.Domain.Tenants;
 using EngineIQ.Infrastructure;
 using EngineIQ.Infrastructure.Email;
+using EngineIQ.Infrastructure.Telemetry;
+using EngineIQ.Observability;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -121,6 +123,20 @@ public sealed class PullReviewJobConsumer : BackgroundService
                 return;
             }
 
+            var parentContext = TracePropagation.Extract(ea.BasicProperties);
+            using var activity = ReviewTelemetry.ActivitySource.StartActivity(
+                "review.process",
+                ActivityKind.Consumer,
+                parentContext);
+            using var logScope = ReviewLogScope.Begin(
+                _logger,
+                job.TenantId,
+                job.JobId,
+                job.PrNumber,
+                job.Owner,
+                job.Repo);
+            ReviewTelemetry.SetReviewTags(activity, job.TenantId, job.JobId, job.PrNumber);
+
             await _jobRepository.MarkJobProcessingAsync(job.TenantId, job.JobId, stoppingToken);
 
             using var reviewCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
@@ -131,6 +147,8 @@ public sealed class PullReviewJobConsumer : BackgroundService
             var configYaml = await _tenants.GetConfigYamlAsync(job.TenantId, reviewCts.Token);
 
             var sw = Stopwatch.StartNew();
+            using var reviewActivity = ReviewTelemetry.StartActivity("review.execute");
+            ReviewTelemetry.SetReviewTags(reviewActivity, job.TenantId, job.JobId, job.PrNumber);
             var result = await _orchestrator.ReviewPullRequestAsync(
                 new PrReviewJobCommand(
                     job.TenantId,
@@ -151,6 +169,7 @@ public sealed class PullReviewJobConsumer : BackgroundService
                     result.SkipReason ?? "skipped",
                     stoppingToken);
                 channel.BasicAck(ea.DeliveryTag, multiple: false);
+                ReviewTelemetry.RecordReviewCompleted("skipped", sw.Elapsed.TotalMilliseconds, 0, 0);
                 _logger.LogInformation(
                     "PR review skipped for {Owner}/{Repo}#{Pr}: {Reason}",
                     job.Owner,
@@ -203,6 +222,12 @@ public sealed class PullReviewJobConsumer : BackgroundService
                 stoppingToken);
 
             channel.BasicAck(ea.DeliveryTag, multiple: false);
+            ReviewTelemetry.RecordReviewCompleted(
+                "completed",
+                sw.Elapsed.TotalMilliseconds,
+                outcome.ParsedFindings.Count,
+                (double)outcome.EstimatedCostZar);
+            ReviewTelemetry.RecordClaudeTokens(outcome.InputTokens, outcome.OutputTokens);
             _logger.LogInformation(
                 "PR review completed for {Owner}/{Repo}#{Pr}",
                 job.Owner,
@@ -216,6 +241,7 @@ public sealed class PullReviewJobConsumer : BackgroundService
         catch (Exception ex)
         {
             _logger.LogError(ex, "PR review job failed for message.");
+            ReviewTelemetry.ReviewsTotal.Add(1, new KeyValuePair<string, object?>("status", "failed"));
 
             if (job is not null && job.Attempt < 3)
             {
@@ -270,6 +296,7 @@ public sealed class PullReviewJobConsumer : BackgroundService
                     body: ea.Body);
 
                 _logger.LogError("Sent PR review job to dead-letter queue after max retries.");
+                ReviewTelemetry.ReviewsTotal.Add(1, new KeyValuePair<string, object?>("status", "dlq"));
                 channel.BasicAck(ea.DeliveryTag, multiple: false);
             }
         }

@@ -6,6 +6,7 @@ using EngineIQ.Domain.Models;
 using EngineIQ.Domain.Reviews;
 using EngineIQ.Domain.Tenants;
 using EngineIQ.GitHub;
+using EngineIQ.Observability;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EngineIQ.API.Controllers;
@@ -45,6 +46,7 @@ public class WebhookController : ControllerBase
     public async Task<IActionResult> GitHub(CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();
+        using var activity = ReviewTelemetry.StartActivity("review.webhook", ActivityKind.Server);
 
         Request.EnableBuffering();
         using var reader = new StreamReader(Request.Body, leaveOpen: true);
@@ -123,18 +125,31 @@ public class WebhookController : ControllerBase
             if (string.Equals(enqueue.BlockReason, "suspended", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogWarning("GitHub webhook rejected for suspended tenant {TenantId}.", enqueue.TenantId);
+                ReviewTelemetry.RecordWebhookEnqueue("suspended", sw.Elapsed.TotalMilliseconds);
                 return StatusCode(StatusCodes.Status403Forbidden, "tenant_suspended");
             }
 
             if (string.Equals(enqueue.BlockReason, "enqueue_failed", StringComparison.OrdinalIgnoreCase))
             {
                 _logger.LogError("Job enqueue exhausted for tenant {TenantId}.", enqueue.TenantId);
+                ReviewTelemetry.RecordWebhookEnqueue("enqueue_failed", sw.Elapsed.TotalMilliseconds);
                 return StatusCode(StatusCodes.Status503ServiceUnavailable, "enqueue_failed");
             }
 
             _logger.LogInformation("Duplicate GitHub delivery {DeliveryId}; skipping enqueue.", deliveryId);
+            ReviewTelemetry.RecordWebhookEnqueue("duplicate", sw.Elapsed.TotalMilliseconds);
             return Ok();
         }
+
+        using var logScope = ReviewLogScope.Begin(
+            _logger,
+            enqueue.TenantId!.Value,
+            enqueue.JobId!.Value,
+            prNumber,
+            owner,
+            repo);
+        ReviewTelemetry.SetReviewTags(activity, enqueue.TenantId.Value, enqueue.JobId.Value, prNumber);
+        activity?.SetTag("github.delivery_id", deliveryId);
 
         var preferences = await _tenants.GetPortalPreferencesAsync(enqueue.TenantId!.Value, budget.Token)
                         ?? new TenantPortalPreferences();
@@ -162,6 +177,8 @@ public class WebhookController : ControllerBase
 
         try
         {
+            using var enqueueActivity = ReviewTelemetry.StartActivity("review.enqueue");
+            ReviewTelemetry.SetReviewTags(enqueueActivity, enqueue.TenantId.Value, enqueue.JobId.Value, prNumber);
             await _publisher.PublishAsync(jobMessage, budget.Token);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
@@ -178,6 +195,7 @@ public class WebhookController : ControllerBase
         }
 
         sw.Stop();
+        ReviewTelemetry.RecordWebhookEnqueue("enqueued", sw.Elapsed.TotalMilliseconds);
         if (sw.ElapsedMilliseconds > 500)
             _logger.LogWarning("Webhook handler took {Ms} ms (target under 500 ms).", sw.ElapsedMilliseconds);
         else

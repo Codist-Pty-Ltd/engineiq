@@ -6,10 +6,14 @@ using EngineIQ.API.Validation;
 using EngineIQ.Domain.Trust;
 using EngineIQ.GitHub;
 using EngineIQ.Infrastructure;
+using EngineIQ.Observability;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.ConfigureEngineIQMetricsKestrel(defaultMetricsPort: 9464);
+builder.Services.AddEngineIQObservability(builder.Configuration, "engineiq-api");
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -96,8 +100,10 @@ app.UseRouting();
 app.UseCors(PortalCorsExtensions.PolicyName);
 app.UseMiddleware<ApiKeyTenantMiddleware>();
 app.UseRateLimiter();
+app.UseEngineIQMetricsPortGate();
 app.MapGet("/health", () => Results.Ok(new { status = "ok" })).RequireCors(PortalCorsExtensions.PolicyName);
 app.MapControllers().RequireCors(PortalCorsExtensions.PolicyName);
+app.MapEngineIQMetricsEndpoint();
 
 app.Run();
 

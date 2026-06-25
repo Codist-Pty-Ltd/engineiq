@@ -2,6 +2,7 @@ using EngineIQ.AIEngine;
 using EngineIQ.AIEngine.Anthropic;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Persistence;
+using EngineIQ.Observability;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace EngineIQ.Tests.Unit;
@@ -80,6 +81,50 @@ public class ReviewFindingsPersistenceTests
         Assert.Equal("architecture", repo.LastBatch[1].Category);
         Assert.False(repo.LastBatch[0].WasActioned);
         Assert.Equal("unknown", repo.LastBatch[0].PrMergeStatus);
+    }
+
+    [Fact]
+    public async Task TryPersistAsync_logs_warning_and_increments_metric_when_repository_throws()
+    {
+        var repo = new ThrowingFindingRepository();
+        var tenantId = Guid.NewGuid();
+        var jobId = Guid.NewGuid();
+        var findings = new[]
+        {
+            new FindingWriteDto("high", "security", null, FindingSources.AI, "a.cs", 1, "msg", false, "unknown", null),
+        };
+
+        await ReviewFindingsPersistence.TryPersistAsync(
+            repo,
+            tenantId,
+            jobId,
+            findings,
+            NullLogger.Instance);
+
+        var metricEx = Record.Exception(() => ReviewTelemetry.RecordPersistenceFailure("findings"));
+        Assert.Null(metricEx);
+    }
+
+    private sealed class ThrowingFindingRepository : IFindingRepository
+    {
+        public Task AddFindingsAsync(
+            Guid tenantId,
+            Guid jobId,
+            IReadOnlyList<FindingWriteDto> findings,
+            CancellationToken cancellationToken = default) =>
+            throw new InvalidOperationException("db down");
+
+        public Task<IReadOnlyList<FindingReadDto>> ListByJobAsync(
+            Guid tenantId,
+            Guid jobId,
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
+
+        public Task<(IReadOnlyList<FindingReadDto> Items, int TotalCount)> ListForTenantAsync(
+            Guid tenantId,
+            FindingListQuery query,
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
     }
 
     [Fact]

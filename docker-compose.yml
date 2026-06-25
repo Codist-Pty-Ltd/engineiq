@@ -71,6 +71,8 @@ services:
       Trust__DataLocation: ${TRUST_DATA_LOCATION:-Hetzner SA / Johannesburg}
       Trust__DpaPdfUrl: ${TRUST_DPA_PDF_URL:-https://engineiq.co.za/legal/dpa.pdf}
       Trust__AiProvider: ${TRUST_AI_PROVIDER:-Anthropic}
+      Observability__Enabled: ${OBSERVABILITY_ENABLED:-true}
+      Observability__MetricsPort: ${OBSERVABILITY_API_METRICS_PORT:-9464}
       Cors__AllowedOrigins__0: https://engineiq.co.za
       Cors__AllowedOrigins__1: https://www.engineiq.co.za
       Cors__AllowedOrigins__2: https://app.engineiq.co.za
@@ -90,6 +92,9 @@ services:
         condition: service_healthy
     expose:
       - "5000"
+      - "9464"
+    ports:
+      - "127.0.0.1:9464:9464"
 
   engineiq-worker:
     profiles: [platform]
@@ -114,6 +119,8 @@ services:
       RabbitMq__DeadLetterQueueName: ${RABBITMQ_DLQ_NAME:-pr-review-jobs-dlq}
       Redis__ConnectionString: ${REDIS_CONNECTION_STRING:-redis:6379}
       Redis__ContextCacheTtlHours: ${REDIS_CONTEXT_CACHE_TTL_HOURS:-24}
+      Observability__Enabled: ${OBSERVABILITY_ENABLED:-true}
+      Observability__MetricsPort: ${OBSERVABILITY_WORKER_METRICS_PORT:-9465}
       GitHub__AppId: ${GITHUB_APP_ID:?}
       GitHub__AppSlug: ${GITHUB_APP_SLUG:-}
       GitHub__PrivateKeyPem: ${GITHUB_PRIVATE_KEY_PEM:?}
@@ -131,6 +138,8 @@ services:
       SendGrid__FromEmail: ${SENDGRID_FROM_EMAIL:-noreply@engineiq.co.za}
       SendGrid__FromName: ${SENDGRID_FROM_NAME:-EngineIQ}
       SendGrid__TemplateCriticalIssues: ${SENDGRID_TEMPLATE_CRITICAL_ISSUES:-}
+    ports:
+      - "127.0.0.1:9465:9465"
 
   engineiq-admin:
     profiles: [platform]
