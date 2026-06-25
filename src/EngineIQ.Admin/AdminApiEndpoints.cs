@@ -1,4 +1,6 @@
+using System.Text.Json.Serialization;
 using EngineIQ.Admin.Services;
+using EngineIQ.Domain.Interfaces;
 using EngineIQ.Infrastructure;
 using EngineIQ.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +92,18 @@ public static class AdminApiEndpoints
             })
             .WithName("AdminTenantPlan");
 
+        group.MapPost("/tenants/{tenantId:guid}/rotate-key", async (
+                Guid tenantId,
+                ITenantRepository tenants,
+                CancellationToken ct) =>
+            {
+                var (ok, apiKey) = await tenants.RotateApiKeyAsync(tenantId, ct);
+                if (!ok)
+                    return Results.NotFound();
+                return Results.Ok(new RotateApiKeyResponse(apiKey!));
+            })
+            .WithName("AdminTenantRotateKey");
+
         group.MapGet("/tenants/{tenantId:guid}/findings", async (
                 Guid tenantId,
                 int? take,
@@ -146,4 +160,6 @@ public static class AdminApiEndpoints
     public sealed record UpgradePlanBody(string Plan, string? FeatureFlagsJson);
 
     public sealed record RetryDlqBody(int Index);
+
+    public sealed record RotateApiKeyResponse([property: JsonPropertyName("api_key")] string ApiKey);
 }

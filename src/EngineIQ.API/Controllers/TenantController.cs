@@ -108,6 +108,17 @@ public sealed class TenantController : ControllerBase
             a.HasConfigYaml));
     }
 
+    [HttpPost("rotate-key")]
+    public async Task<ActionResult<TenantRotateKeyResponse>> RotateKey(Guid id, CancellationToken cancellationToken)
+    {
+        var (ok, apiKey) = await _tenants.RotateApiKeyAsync(id, cancellationToken);
+        if (!ok)
+            return NotFound();
+
+        _logger.LogInformation("Tenant {TenantId} rotated API key via tenant API.", id);
+        return Ok(new TenantRotateKeyResponse(apiKey!));
+    }
+
     [HttpGet("analytics")]
     public async Task<ActionResult<TenantAnalyticsResponse>> Analytics(
         Guid id,
@@ -504,4 +515,6 @@ public sealed class TenantController : ControllerBase
     public sealed record ConfigValidationResponse(
         [property: JsonPropertyName("valid")] bool Valid,
         [property: JsonPropertyName("errors")] IReadOnlyList<string> Errors);
+
+    public sealed record TenantRotateKeyResponse([property: JsonPropertyName("api_key")] string ApiKey);
 }

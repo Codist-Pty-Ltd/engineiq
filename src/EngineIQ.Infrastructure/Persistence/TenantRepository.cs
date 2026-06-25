@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Persistence;
+using EngineIQ.Domain.Security;
 using EngineIQ.Domain.Tenants;
 using EngineIQ.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -24,8 +25,8 @@ public sealed class TenantRepository : ITenantRepository
     public async Task<RegisterTenantResult> RegisterAsync(RegisterTenantCommand command, CancellationToken cancellationToken = default)
     {
         var tenantId = Guid.NewGuid();
-        var apiKey = $"{tenantId:N}.{Convert.ToHexString(RandomNumberGenerator.GetBytes(32))}";
-        var apiKeyHash = SHA256.HashData(Encoding.UTF8.GetBytes(apiKey));
+        var apiKey = TenantApiKeyMaterial.Generate(tenantId);
+        var apiKeyHash = TenantApiKeyMaterial.Hash(apiKey);
         var webhookSecret = $"whsec_{Convert.ToHexString(RandomNumberGenerator.GetBytes(32))}";
         var webhookSecretHash = SHA256.HashData(Encoding.UTF8.GetBytes(webhookSecret));
         var dpaAt = DateTimeOffset.UtcNow;
@@ -122,28 +123,35 @@ public sealed class TenantRepository : ITenantRepository
 
     public async Task<Guid?> ValidateApiKeyAndGetTenantIdAsync(string apiKey, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (!TenantApiKeyMaterial.TryParseTenantId(apiKey, out var tenantId))
             return null;
 
-        var trimmed = apiKey.Trim();
-        var dot = trimmed.IndexOf('.', StringComparison.Ordinal);
-        if (dot <= 0 || dot >= trimmed.Length - 1)
-            return null;
-
-        if (!Guid.TryParse(trimmed.AsSpan(0, dot), out var tenantId))
-            return null;
-
-        var hash = SHA256.HashData(Encoding.UTF8.GetBytes(trimmed));
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
         var row = await db.Tenants.AsNoTracking()
             .Where(t => t.Id == tenantId && t.ApiKeyHash != null)
             .Select(t => new { t.ApiKeyHash })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (row?.ApiKeyHash is null || row.ApiKeyHash.Length != hash.Length)
+        if (row?.ApiKeyHash is null)
             return null;
 
-        return CryptographicOperations.FixedTimeEquals(row.ApiKeyHash, hash) ? tenantId : null;
+        return TenantApiKeyMaterial.FixedTimeEqualsHash(row.ApiKeyHash, apiKey) ? tenantId : null;
+    }
+
+    public async Task<(bool Ok, string? ApiKeyPlaintext)> RotateApiKeyAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+        if (tenant is null)
+            return (false, null);
+
+        var apiKey = TenantApiKeyMaterial.Generate(tenantId);
+        tenant.ApiKeyHash = TenantApiKeyMaterial.Hash(apiKey);
+        await db.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation("Rotated API key for tenant {TenantId}.", tenantId);
+        return (true, apiKey);
     }
 
     public async Task<TenantStatusSnapshot?> GetStatusSnapshotAsync(Guid tenantId, CancellationToken cancellationToken = default)

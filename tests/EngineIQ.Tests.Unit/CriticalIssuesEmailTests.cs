@@ -79,6 +79,9 @@ public class CriticalIssuesEmailTests
         public Task<Guid?> ValidateApiKeyAndGetTenantIdAsync(string apiKey, CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
 
+        public Task<(bool Ok, string? ApiKeyPlaintext)> RotateApiKeyAsync(Guid tenantId, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
+
         public Task<(bool Ok, Guid? TenantId, string? ContactEmail, string? Error)> CompleteGitHubInstallAsync(
             long installationId,
             string installState,

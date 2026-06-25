@@ -14,6 +14,9 @@ public interface ITenantRepository
 
     Task<Guid?> ValidateApiKeyAndGetTenantIdAsync(string apiKey, CancellationToken cancellationToken = default);
 
+    /// <summary>Issues a new API key (plaintext returned once) and invalidates the previous hash.</summary>
+    Task<(bool Ok, string? ApiKeyPlaintext)> RotateApiKeyAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
     Task<TenantStatusSnapshot?> GetStatusSnapshotAsync(Guid tenantId, CancellationToken cancellationToken = default);
 
     /// <summary>
