@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using EngineIQ.AIEngine;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Messaging;
 using EngineIQ.Domain.Reviews;
@@ -26,6 +27,7 @@ public sealed class PullReviewJobConsumer : BackgroundService
     private readonly IOptions<RabbitMqOptions> _rabbitOptions;
     private readonly IReviewOrchestrator _orchestrator;
     private readonly IJobRepository _jobRepository;
+    private readonly IFindingRepository _findings;
     private readonly ITenantRepository _tenants;
     private readonly ILogger<PullReviewJobConsumer> _logger;
 
@@ -33,12 +35,14 @@ public sealed class PullReviewJobConsumer : BackgroundService
         IOptions<RabbitMqOptions> rabbitOptions,
         IReviewOrchestrator orchestrator,
         IJobRepository jobRepository,
+        IFindingRepository findings,
         ITenantRepository tenants,
         ILogger<PullReviewJobConsumer> logger)
     {
         _rabbitOptions = rabbitOptions;
         _orchestrator = orchestrator;
         _jobRepository = jobRepository;
+        _findings = findings;
         _tenants = tenants;
         _logger = logger;
     }
@@ -143,6 +147,15 @@ public sealed class PullReviewJobConsumer : BackgroundService
             }
 
             var outcome = result.Outcome!;
+
+            await ReviewFindingsPersistence.TryPersistAsync(
+                _findings,
+                job.TenantId,
+                job.JobId,
+                outcome.ParsedFindings,
+                _logger,
+                stoppingToken);
+
             await _jobRepository.MarkJobCompletedAsync(
                 job.TenantId,
                 job.JobId,

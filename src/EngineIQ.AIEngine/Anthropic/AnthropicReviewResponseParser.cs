@@ -1,4 +1,7 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using EngineIQ.Domain.Interfaces;
+using EngineIQ.Domain.Persistence;
 
 namespace EngineIQ.AIEngine.Anthropic;
 
@@ -19,12 +22,132 @@ EngineIQ processed this diff ephemerally. No source code was stored. Findings me
 """;
     }
 
-    /// <summary>Heuristic count of list-style review bullets (no persisted finding rows required).</summary>
+    private static readonly Regex FilePathLineRegex = new(
+        @"(?<path>[\w./\\-]+\.(?:cs|csproj|ts|tsx|js|jsx|py|md|json|ya?ml|sql|go|rs|java|kt|rb|php|vue|css|scss|html|xml))(?:\:(?<line>\d+))?",
+        RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    private static readonly Regex BacktickPathRegex = new(
+        @"`(?<path>[^`\s]+)`",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// Maps markdown review bullets to persisted finding metadata (no source code in messages).
+    /// </summary>
+    public static IReadOnlyList<FindingWriteDto> ParseFindingsFromMarkdown(string markdown)
+    {
+        if (string.IsNullOrWhiteSpace(markdown))
+            return Array.Empty<FindingWriteDto>();
+
+        var body = StripTrustFooter(markdown);
+        var findings = new List<FindingWriteDto>();
+
+        foreach (var rawLine in body.Split('\n'))
+        {
+            if (!TryExtractBulletText(rawLine, out var message) || string.IsNullOrWhiteSpace(message))
+                continue;
+
+            var (filePath, lineNumber) = ExtractFileLocation(message);
+            var severity = InferSeverity(message);
+            var category = InferCategory(message, severity);
+
+            findings.Add(new FindingWriteDto(
+                Severity: severity,
+                Category: category,
+                RuleId: null,
+                Source: FindingSources.AI,
+                FilePath: filePath,
+                LineNumber: lineNumber,
+                Message: message.Trim(),
+                WasActioned: false,
+                PrMergeStatus: "unknown",
+                TrainingFeaturesJson: null));
+        }
+
+        return findings;
+    }
+
+    internal static string StripTrustFooter(string markdown)
+    {
+        var idx = markdown.IndexOf("\n---\n", StringComparison.Ordinal);
+        return idx >= 0 ? markdown[..idx] : markdown;
+    }
+
+    private static bool TryExtractBulletText(string line, out string message)
+    {
+        message = string.Empty;
+        var t = line.TrimStart();
+        if (t.StartsWith("- ", StringComparison.Ordinal) || t.StartsWith("* ", StringComparison.Ordinal))
+        {
+            message = t[2..].Trim();
+            return true;
+        }
+
+        if (t.Length > 2 && char.IsDigit(t[0]))
+        {
+            var dot = t.IndexOf('.', StringComparison.Ordinal);
+            if (dot is > 0 and < 5 && dot < t.Length - 1 && char.IsWhiteSpace(t[dot + 1]))
+            {
+                message = t[(dot + 1)..].Trim();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static (string FilePath, int? LineNumber) ExtractFileLocation(string message)
+    {
+        foreach (Match m in FilePathLineRegex.Matches(message))
+        {
+            var path = m.Groups["path"].Value;
+            int? line = m.Groups["line"].Success && int.TryParse(m.Groups["line"].Value, out var n) ? n : null;
+            return (path, line);
+        }
+
+        foreach (Match m in BacktickPathRegex.Matches(message))
+        {
+            var path = m.Groups["path"].Value;
+            if (path.Contains('.', StringComparison.Ordinal))
+                return (path, null);
+        }
+
+        return (string.Empty, null);
+    }
+
+    private static string InferSeverity(string message)
+    {
+        var lower = message.ToLowerInvariant();
+        if (lower.Contains("critical", StringComparison.Ordinal) || lower.Contains("[critical]", StringComparison.Ordinal))
+            return "critical";
+        if (lower.Contains("security", StringComparison.Ordinal) || lower.Contains("secret", StringComparison.Ordinal)
+            || lower.Contains("vulnerability", StringComparison.Ordinal))
+            return "high";
+        if (lower.Contains("warning", StringComparison.Ordinal) || lower.Contains("[warn", StringComparison.Ordinal))
+            return "warning";
+        if (lower.Contains("nit", StringComparison.Ordinal) || lower.Contains("style", StringComparison.Ordinal))
+            return "info";
+        return "medium";
+    }
+
+    private static string InferCategory(string message, string severity)
+    {
+        var lower = message.ToLowerInvariant();
+        if (severity is "critical" or "high" && (lower.Contains("security", StringComparison.Ordinal) || lower.Contains("secret", StringComparison.Ordinal)))
+            return "security";
+        if (lower.Contains("architecture", StringComparison.Ordinal) || lower.Contains("layering", StringComparison.Ordinal))
+            return "architecture";
+        if (lower.Contains("async", StringComparison.Ordinal) || lower.Contains("null", StringComparison.Ordinal))
+            return "reliability";
+        return "general";
+    }
+
+    /// <summary>Heuristic count of list-style review bullets (fallback when structured parse yields none).</summary>
     public static int EstimateBulletFindingCount(string markdown)
     {
         if (string.IsNullOrWhiteSpace(markdown))
             return 0;
 
+        markdown = StripTrustFooter(markdown);
         var count = 0;
         foreach (var line in markdown.Split('\n'))
         {

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using EngineIQ.AIEngine.Anthropic;
+using EngineIQ.Domain.Persistence;
 
 namespace EngineIQ.Tests.Unit;
 
@@ -34,6 +35,17 @@ public class AnthropicReviewResponseParserTests
         Assert.True(AnthropicReviewResponseParser.TryParseUsage(doc.RootElement, out var input, out var output));
         Assert.Equal(1200, input);
         Assert.Equal(340, output);
+    }
+
+    [Fact]
+    public void ParseFindingsFromMarkdown_maps_bullet_lines_to_AI_findings()
+    {
+        var md = "- First issue\n- Second issue in `Program.cs:10`";
+        var findings = AnthropicReviewResponseParser.ParseFindingsFromMarkdown(md);
+        Assert.Equal(2, findings.Count);
+        Assert.Equal(FindingSources.AI, findings[0].Source);
+        Assert.Equal("Program.cs", findings[1].FilePath);
+        Assert.Equal(10, findings[1].LineNumber);
     }
 
     [Fact]

@@ -55,7 +55,7 @@ Keep the review actionable and friendly. Use bullet points. Do not include the d
         if (string.IsNullOrWhiteSpace(diff))
         {
             var emptyBody = "_No changes to review._" + footer;
-            return new PrReviewDiffOutcome(emptyBody, 0, 0, 0m, 0);
+            return new PrReviewDiffOutcome(emptyBody, 0, 0, 0m, 0, Array.Empty<FindingWriteDto>());
         }
 
         var userContent = $"Review this pull request diff:\n\n```diff\n{diff}\n```";
@@ -96,7 +96,10 @@ Keep the review actionable and friendly. Use bullet points. Do not include the d
             reviewText = "_No review generated._";
 
         reviewText = reviewText.Trim();
-        var findingsEstimate = AnthropicReviewResponseParser.EstimateBulletFindingCount(reviewText);
+        var parsedFindings = AnthropicReviewResponseParser.ParseFindingsFromMarkdown(reviewText);
+        var findingsEstimate = parsedFindings.Count > 0
+            ? parsedFindings.Count
+            : AnthropicReviewResponseParser.EstimateBulletFindingCount(reviewText);
 
         _ = AnthropicReviewResponseParser.TryParseUsage(root, out var inputTokens, out var outputTokens);
         var estimatedZar = AnthropicReviewResponseParser.EstimateZarCost(
@@ -113,6 +116,12 @@ Keep the review actionable and friendly. Use bullet points. Do not include the d
             outputTokens,
             _options.Model);
 
-        return new PrReviewDiffOutcome(reviewText + footer, inputTokens, outputTokens, estimatedZar, findingsEstimate);
+        return new PrReviewDiffOutcome(
+            reviewText + footer,
+            inputTokens,
+            outputTokens,
+            estimatedZar,
+            findingsEstimate,
+            parsedFindings);
     }
 }
