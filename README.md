@@ -2,7 +2,7 @@
 
 Architecture-aware **AI pull request review** for teams standardising on **Anthropic Claude**, tenant isolation, and a **public trust surface** (`GET /security`, audit metadata).
 
-**Source repository:** [github.com/ntokyb/engineiq](https://github.com/ntokyb/engineiq)
+**Source repository:** [github.com/Codist-Pty-Ltd/engineiq](https://github.com/Codist-Pty-Ltd/engineiq)
 
 ---
 
@@ -44,7 +44,7 @@ Architecture-aware **AI pull request review** for teams standardising on **Anthr
 3. Register tenants: **production-shaped** — one per GitHub org (**therecord**, **billable**, **war-room**, **skillbay**); **Codist golden four** — bootstrap via **`scripts/register-internal-demo-tenants.sh`** only on greenfield DBs; treat those tenant rows as **permanent** (ongoing PRs); capture keys in **`scripts/demo-tenant-state.local.env`** (see **DEPLOYMENT.md §11** — unique **`installation_id`** per tenant).
 4. Run **`scripts/verify-deployment.sh`** from any machine once DNS/TLS are green.
 
-**Images:** push to GHCR via GitHub Actions ([`.github/workflows/publish-images.yml`](./.github/workflows/publish-images.yml)) or set `SKIP_PULL=1` and build on the server (see DEPLOYMENT).
+**Images:** push to **`ghcr.io/codist-pty-ltd/engineiq`** via GitHub Actions ([`.github/workflows/publish-images.yml`](./.github/workflows/publish-images.yml)); set `ENGINEIQ_REGISTRY` in `.env` to match. Or set `SKIP_PULL=1` and build on the server (see DEPLOYMENT).
 
 ---
 

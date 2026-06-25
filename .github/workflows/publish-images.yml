@@ -1,5 +1,5 @@
 # Builds and pushes all EngineIQ images to GHCR for Hetzner pull-based deploy.
-# Server .env: ENGINEIQ_REGISTRY=ghcr.io/ntokyb/engineiq  ENGINEIQ_TAG=main (or latest)
+# Server .env: ENGINEIQ_REGISTRY=ghcr.io/codist-pty-ltd/engineiq  ENGINEIQ_TAG=main (or latest)
 name: Publish Docker images
 
 on:

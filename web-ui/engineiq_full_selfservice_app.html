@@ -181,7 +181,7 @@
             <div class="card-sub">EngineIQ installs as a GitHub App. It receives webhooks when pull requests are opened and posts AI reviews as comments — no server access, no code stored.</div>
             <button class="gh-btn" onclick="goStep(2)">
               <div class="gh-ico"><i class="ti ti-brand-github" style="font-size:14px;color:var(--color-background-primary)" aria-hidden="true"></i></div>
-              Install on ntokyb (personal)
+              Install on codist-pty-ltd (personal)
             </button>
             <button class="gh-btn" onclick="goStep(2)">
               <div class="gh-ico"><i class="ti ti-brand-github" style="font-size:14px;color:var(--color-background-primary)" aria-hidden="true"></i></div>
@@ -372,11 +372,11 @@
 
 <script>
 const REPOS=[
-  {grp:'ntokyb',name:'billable',stk:'.NET 8 · Angular',ok:true,reviews:12},
-  {grp:'ntokyb',name:'engineiq',stk:'.NET 8 · Next.js',ok:true,reviews:3},
-  {grp:'ntokyb',name:'therecord',stk:'Next.js · NestJS',ok:true,reviews:8},
-  {grp:'ntokyb',name:'maemo-compliance',stk:'.NET 8 · Angular',ok:true,reviews:5},
-  {grp:'ntokyb',name:'warroom',stk:'React · Node',ok:true,reviews:2},
+  {grp:'codist-pty-ltd',name:'billable',stk:'.NET 8 · Angular',ok:true,reviews:12},
+  {grp:'codist-pty-ltd',name:'engineiq',stk:'.NET 8 · Next.js',ok:true,reviews:3},
+  {grp:'codist-pty-ltd',name:'therecord',stk:'Next.js · NestJS',ok:true,reviews:8},
+  {grp:'codist-pty-ltd',name:'maemo-compliance',stk:'.NET 8 · Angular',ok:true,reviews:5},
+  {grp:'codist-pty-ltd',name:'warroom',stk:'React · Node',ok:true,reviews:2},
   {grp:'codist-dev',name:'sac-api',stk:'.NET 8',ok:true,reviews:7},
   {grp:'codist-dev',name:'sac-web',stk:'Next.js 14',ok:true,reviews:4},
   {grp:'codist-dev',name:'sac-admin',stk:'Next.js 14',ok:true,reviews:2},
@@ -388,7 +388,7 @@ const REPOS=[
 ];
 
 const REVIEWS=[
-  {id:1,repo:'ntokyb/billable',pr:47,title:'Fix CORS middleware order',time:'12 min ago',issues:[
+  {id:1,repo:'codist-pty-ltd/billable',pr:47,title:'Fix CORS middleware order',time:'12 min ago',issues:[
     {sev:'critical',lbl:'Critical — Security',file:'Program.cs · Line 47',body:'UseCors() is called after UseAuthentication(). Preflight OPTIONS requests fail before CORS headers are added. All users in cross-origin browsers will see CORS errors.',fix:'Move UseCors("SacPolicy") to before UseAuthentication() in the middleware pipeline.'},
     {sev:'high',lbl:'High — Pattern violation',file:'InvoiceController.cs · Line 23',body:'AmountDue is declared as decimal. Codist rule: all monetary amounts must be stored as int (cents). Decimal types risk floating-point precision errors in financial calculations.',fix:'Change to int. Store 500000 for R5,000.00. Divide by 100 for display only.'},
     {sev:'medium',lbl:'Medium — Missing validation',file:'CreateInvoiceRequest.cs · Line 8',body:'No MaxLength constraint on InvoiceNumber. A client could send a very long string that bypasses application validation.',fix:'Add [MaxLength(50)] or FluentValidation rule: RuleFor(x => x.InvoiceNumber).MaximumLength(50).'}
@@ -397,7 +397,7 @@ const REVIEWS=[
     {sev:'critical',lbl:'Critical — POPIA violation',file:'EcoCashProvider.cs · Line 34',body:'Mobile number is logged before encryption. Any mobile number passed to this method appears in plaintext in production logs, violating POPIA.',fix:'Remove the log line entirely. If logging is required, hash the number: _logger.LogInformation("Payout for hash {Hash}", Hash(mobileNumber))'},
     {sev:'high',lbl:'High — Feature flag missing',file:'AfricaPayoutsController.cs · Line 12',body:'The EcoCash endpoint does not check the africa.zimbabwe feature flag. All Africa routes must check their flag before executing.',fix:'Inject IFeatureFlagService and call IsEnabledAsync("africa.zimbabwe") at the top of the handler. Return 503 if disabled.'}
   ]},
-  {id:3,repo:'ntokyb/therecord',pr:31,title:'Add commission cost comparison chart',time:'3 hours ago',issues:[
+  {id:3,repo:'codist-pty-ltd/therecord',pr:31,title:'Add commission cost comparison chart',time:'3 hours ago',issues:[
     {sev:'medium',lbl:'Medium — N+1 query',file:'CommissionsController.cs · Line 88',body:'Commission list loads all records then accesses .Reports navigation property in a loop. This generates one SQL query per commission record.',fix:'Add .Include(c => c.Reports) to the initial query. EF Core will join in a single SQL statement.'},
     {sev:'suggestion',lbl:'Suggestion — Data integrity',file:'CommissionDto.cs · Line 14',body:'cost_rands is typed as decimal in the DTO. The database stores this as bigint (cents). Confirm the mapping divides by 100 to avoid displaying raw cents as rands.',fix:'Verify: public decimal CostRands => CostCents / 100m; in the mapping.'}
   ]},
@@ -540,7 +540,7 @@ function openReview(id){
 function buildInstalls(){
   const el=document.getElementById('inst-list');
   el.innerHTML=[
-    {acct:'ntokyb',type:'personal',repos:['billable','engineiq','therecord','maemo-compliance','warroom'],status:'ok'},
+    {acct:'codist-pty-ltd',type:'personal',repos:['billable','engineiq','therecord','maemo-compliance','warroom'],status:'ok'},
     {acct:'codist-dev',type:'organisation',repos:['sac-api','sac-web','sac-admin','sac-mobile','sac-workers','sac-notifications','sac-media','sac-africa'],status:'ok'},
   ].map(inst=>`
     <div class="inst-card">
@@ -564,9 +564,9 @@ function buildInstalls(){
 function buildNotifs(){
   const el=document.getElementById('notif-list');
   el.innerHTML=[
-    {ico:'ti-alert-triangle',icobg:'#FAEEDA',icoc:'#854F0B',title:'Critical issue found',sub:'ntokyb/billable · PR #47 — CORS middleware order',time:'12m'},
+    {ico:'ti-alert-triangle',icobg:'#FAEEDA',icoc:'#854F0B',title:'Critical issue found',sub:'codist-pty-ltd/billable · PR #47 — CORS middleware order',time:'12m'},
     {ico:'ti-circle-check',icobg:'#EAF3DE',icoc:'#27500A',title:'Review complete',sub:'codist-dev/sac-api · PR #12 — 2 issues found',time:'1h'},
-    {ico:'ti-git-pull-request',icobg:'#EEEDFE',icoc:'#534AB7',title:'New PR detected',sub:'ntokyb/therecord · PR #31 opened by ntokyb',time:'3h'},
+    {ico:'ti-git-pull-request',icobg:'#EEEDFE',icoc:'#534AB7',title:'New PR detected',sub:'codist-pty-ltd/therecord · PR #31 opened by codist-pty-ltd',time:'3h'},
     {ico:'ti-circle-check',icobg:'#EAF3DE',icoc:'#27500A',title:'Review complete',sub:'codist-dev/sac-web · PR #8 — 1 suggestion',time:'5h'},
     {ico:'ti-brand-github',icobg:'var(--color-background-secondary)',icoc:'var(--color-text-secondary)',title:'GitHub App installed',sub:'codist-dev organisation · 8 repositories connected',time:'2d'},
   ].map(n=>`

@@ -2,7 +2,7 @@
 
 This document is the **single source of truth** for bringing an empty Hetzner server and an empty GitHub repo to a **working production stack**, including TLS, database migrations, Docker topology, and onboarding **four** GitHub organisations as tenants.
 
-**Canonical code repo:** [github.com/ntokyb/engineiq](https://github.com/ntokyb/engineiq)
+**Canonical code repo:** [github.com/Codist-Pty-Ltd/engineiq](https://github.com/Codist-Pty-Ltd/engineiq)
 
 ---
 
@@ -59,7 +59,7 @@ Complete these **in order**; missing any item breaks “first shot” deploy.
 
 ### 2.2 GitHub App (single app, multiple installs)
 
-Create **one** GitHub App (organisation or user-owned — typically user/org that owns **ntokyb/engineiq**):
+Create **one** GitHub App (organisation or user-owned — typically under **Codist-Pty-Ltd** / this repo):
 
 1. **GitHub → Settings → Developer settings → GitHub Apps → New GitHub App**
 2. **Webhook URL:** `https://api.engineiq.co.za/webhooks/github`
@@ -141,7 +141,7 @@ sudo ufw enable
 ```bash
 sudo mkdir -p /opt/engineiq && sudo chown "$USER:$USER" /opt/engineiq
 cd /opt/engineiq
-git clone https://github.com/ntokyb/engineiq.git .
+git clone https://github.com/Codist-Pty-Ltd/engineiq.git .
 # You must be in the repository root (directory that contains docker-compose.yml and deploy.sh).
 ```
 
@@ -182,13 +182,15 @@ Use quoted multiline PEM **or** single line with `\n` escapes. Docker Compose mu
 2. Packages: make container images **public** or configure PAT on server:
 
    ```bash
-   echo "<GITHUB_PAT_WITH_READ_PACKAGES>" | docker login ghcr.io -u ntokyb --password-stdin
+   echo "<GITHUB_PAT_WITH_READ_PACKAGES>" | docker login ghcr.io -u <GITHUB_USERNAME> --password-stdin
    ```
+
+   PAT must have **`read:packages`** for **`ghcr.io/codist-pty-ltd/engineiq`**.
 
 3. In `.env`:
 
    ```env
-   ENGINEIQ_REGISTRY=ghcr.io/ntokyb/engineiq
+   ENGINEIQ_REGISTRY=ghcr.io/codist-pty-ltd/engineiq
    ENGINEIQ_TAG=latest
    SKIP_PULL=0
    ```
@@ -326,7 +328,7 @@ Consequences:
 | Scenario | Result |
 |----------|--------|
 | **Production clients** — each org installs the app once | Distinct installation IDs → **one tenant per customer org**. Correct forever. |
-| **Codist internal testing** — multiple tenant rows (four personas) but **one** GitHub user/account (e.g. personal **`ntokyb`**) with **one** installation ID | **Only one** tenant row may hold that **`git_hub_app_installation_id`**. That tenant receives **live webhook reviews** for repos under that installation. The **other** persona tenants remain valid for **portal / admin / support demos** (log in with each **`tenant_id` + `api_key`**) but **will not** receive PR events from that installation until they have **their own** install (e.g. separate GitHub org per product). |
+| **Codist internal testing** — multiple tenant rows (four personas) but **one** GitHub org or account with **one** installation ID | **Only one** tenant row may hold that **`git_hub_app_installation_id`**. That tenant receives **live webhook reviews** for repos under that installation. The **other** persona tenants remain valid for **portal / admin / support demos** (log in with each **`tenant_id` + `api_key`**) but **will not** receive PR events from that installation until they have **their own** install (e.g. separate GitHub org per product). |
 
 **Practical recommendation**
 
