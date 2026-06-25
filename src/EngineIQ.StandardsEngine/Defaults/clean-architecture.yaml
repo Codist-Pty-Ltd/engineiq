@@ -1,0 +1,38 @@
+# EngineIQ Standards Configuration — Clean Architecture (.NET)
+architecture:
+  style: clean-architecture
+  layers:
+    - name: Domain
+      folders: [Domain, Core]
+    - name: Application
+      folders: [Application, UseCases]
+    - name: Infrastructure
+      folders: [Infrastructure, Persistence]
+    - name: API
+      folders: [API, Controllers, WebAPI]
+
+rules:
+  - id: ARCH-001
+    name: No domain dependency on infrastructure
+    severity: critical
+    check: layer_dependency
+    from: Domain
+    disallows: [Infrastructure, API]
+
+  - id: ARCH-002
+    name: No business logic in controllers
+    severity: high
+    check: layer_logic
+    layer: API
+    disallow_patterns: [if, switch, calculation]
+
+  - id: SEC-001
+    name: No hardcoded secrets or connection strings
+    severity: critical
+    check: secret_pattern
+
+  - id: PERF-001
+    name: No synchronous database calls in async context
+    severity: high
+    check: async_pattern
+    disallow: [.Result, .Wait(), GetAwaiter().GetResult()]

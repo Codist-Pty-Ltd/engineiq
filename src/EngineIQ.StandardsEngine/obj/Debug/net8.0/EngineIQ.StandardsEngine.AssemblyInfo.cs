@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EngineIQ.StandardsEngine")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8f0d592093bdad3db1aa457d6defbe088d486998")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2de6f503bac785b576b1149c6198a444b6eb4cbb")]
 [assembly: System.Reflection.AssemblyProductAttribute("EngineIQ.StandardsEngine")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EngineIQ.StandardsEngine")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
