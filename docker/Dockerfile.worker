@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-ARG DOTNET_SDK_IMAGE=public.ecr.aws/dotnet/sdk:8.0
-ARG DOTNET_RUNTIME_IMAGE=public.ecr.aws/dotnet/runtime:8.0
+ARG DOTNET_SDK_IMAGE=mcr.microsoft.com/dotnet/sdk:8.0
+ARG DOTNET_RUNTIME_IMAGE=mcr.microsoft.com/dotnet/runtime:8.0
 
 FROM ${DOTNET_SDK_IMAGE} AS build
 WORKDIR /src
