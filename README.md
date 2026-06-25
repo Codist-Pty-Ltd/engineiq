@@ -11,6 +11,7 @@ Architecture-aware **AI pull request review** for teams standardising on **Anthr
 | Document | Purpose |
 |----------|---------|
 | **[DEPLOYMENT.md](./DEPLOYMENT.md)** | **Production handover:** Hetzner, Docker, DNS (cPanel), TLS, secrets, first `./deploy.sh`, onboarding **four** GitHub orgs (therecord, billable, war-room, skillbay), verification, ops. |
+| **[RUNBOOK.md](./RUNBOOK.md)** | **Operator procedures:** tenant API key loss / rotation via internal admin. |
 | [.env.example](./.env.example) | Every production env var (copy → `.env`, never commit `.env`). |
 | [.cursor/rules/engineiq.mdc](./.cursor/rules/engineiq.mdc) | Engineering constraints (no source persistence, tenant isolation, model choice). |
 

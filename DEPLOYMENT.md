@@ -401,6 +401,7 @@ Validate each org can open a test PR and receive a review comment (Worker + Anth
 
 | Task | Command / note |
 |------|----------------|
+| **Tenant lost API key** | **`RUNBOOK.md`** — SSH tunnel → admin **`POST .../rotate-key`** → deliver new key once |
 | Logs API | `docker compose logs -f engineiq-api` |
 | Logs worker | `docker compose logs -f engineiq-worker` |
 | Restart stack | `docker compose --profile platform restart` |
