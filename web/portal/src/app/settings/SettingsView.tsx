@@ -186,6 +186,11 @@ export function SettingsView() {
               </tbody>
             </table>
           ) : null}
+          <div style={{ marginTop: 14 }}>
+            <Link href="/billing" className="eq-btn eq-btn--secondary">
+              Manage billing →
+            </Link>
+          </div>
           {account ? (
             <GitHubConnectPanel
               githubOrg={account.github_org}

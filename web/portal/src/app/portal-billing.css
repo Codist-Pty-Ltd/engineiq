@@ -1,0 +1,104 @@
+.eq-billing-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.08);
+  margin-bottom: 20px;
+}
+
+.eq-billing-banner--danger {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.eq-billing-banner__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--eq-amber);
+}
+
+.eq-billing-banner--danger .eq-billing-banner__title {
+  color: var(--eq-red);
+}
+
+.eq-billing-metric {
+  display: grid;
+  gap: 6px;
+}
+
+.eq-billing-metric__label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--eq-text-dim);
+}
+
+.eq-billing-metric__value {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.eq-plan-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+@media (min-width: 720px) {
+  .eq-plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .eq-plan-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.eq-plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--eq-border);
+  background: var(--eq-card);
+}
+
+.eq-plan-card--current {
+  border-color: rgba(124, 58, 237, 0.45);
+  box-shadow: 0 0 0 1px var(--eq-accent-glow);
+}
+
+.eq-plan-card__price {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.eq-usage-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--eq-border);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.eq-usage-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--eq-accent), var(--eq-accent-light));
+  transition: width 0.2s ease;
+}
+
+.eq-usage-bar__fill--warn {
+  background: linear-gradient(90deg, var(--eq-amber), #fbbf24);
+}
+
+.eq-usage-bar__fill--over {
+  background: linear-gradient(90deg, var(--eq-red), #f87171);
+}

@@ -14,6 +14,7 @@ const links = [
   { href: "/notifications", label: "Notifications" },
   { href: "/repositories", label: "Repositories" },
   { href: "/usage", label: "Usage" },
+  { href: "/billing", label: "Billing" },
   { href: "/settings", label: "Settings" },
   { href: "/reports", label: "Reports" },
 ];
@@ -64,7 +65,7 @@ export function ClientPortalLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!ready || pathname === "/login") return;
     if (onboardingStatus !== "pending_github_install") return;
-    if (pathname.startsWith("/onboarding") || pathname === "/installations" || pathname === "/settings") return;
+    if (pathname.startsWith("/onboarding") || pathname === "/installations" || pathname === "/settings" || pathname === "/billing") return;
     router.replace("/onboarding");
   }, [ready, onboardingStatus, pathname, router]);
 
