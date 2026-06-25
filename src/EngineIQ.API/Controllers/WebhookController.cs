@@ -120,7 +120,7 @@ public class WebhookController : ControllerBase
             return NotFound("unknown_installation");
         }
 
-        if (!enqueue.Created)
+        if (!enqueue.Created && !enqueue.NeedsRepublish)
         {
             if (string.Equals(enqueue.BlockReason, "suspended", StringComparison.OrdinalIgnoreCase))
             {
@@ -141,6 +141,13 @@ public class WebhookController : ControllerBase
             return Ok();
         }
 
+        if (enqueue.NeedsRepublish)
+        {
+            _logger.LogInformation(
+                "GitHub delivery {DeliveryId} still pending RabbitMQ publish; retrying enqueue.",
+                deliveryId);
+        }
+
         using var logScope = ReviewLogScope.Begin(
             _logger,
             enqueue.TenantId!.Value,
@@ -155,7 +162,11 @@ public class WebhookController : ControllerBase
                         ?? new TenantPortalPreferences();
         if (!ReviewEnqueuePolicy.ShouldEnqueue(preferences, isDraft, out var skipReason))
         {
-            await _jobRepository.DeleteQueuedJobAsync(enqueue.TenantId!.Value, enqueue.JobId!.Value, cancellationToken);
+            await _jobRepository.MarkJobSkippedAsync(
+                enqueue.TenantId!.Value,
+                enqueue.JobId!.Value,
+                skipReason,
+                cancellationToken);
             _logger.LogInformation(
                 "Skipping review enqueue for tenant {TenantId} PR {Repo}#{Pr}: {Reason}",
                 enqueue.TenantId,
@@ -180,17 +191,27 @@ public class WebhookController : ControllerBase
             using var enqueueActivity = ReviewTelemetry.StartActivity("review.enqueue");
             ReviewTelemetry.SetReviewTags(enqueueActivity, enqueue.TenantId.Value, enqueue.JobId.Value, prNumber);
             await _publisher.PublishAsync(jobMessage, budget.Token);
+            await _jobRepository.MarkJobQueuedAfterPublishAsync(
+                enqueue.TenantId.Value,
+                enqueue.JobId.Value,
+                cancellationToken);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            await _jobRepository.DeleteQueuedJobAsync(enqueue.TenantId.Value, enqueue.JobId.Value, cancellationToken);
-            _logger.LogWarning("RabbitMQ publish exceeded time budget ({Ms} ms).", sw.ElapsedMilliseconds);
+            _logger.LogWarning(
+                "RabbitMQ publish exceeded time budget ({Ms} ms); job {JobId} remains PendingPublish for reconciler/GitHub redelivery.",
+                sw.ElapsedMilliseconds,
+                enqueue.JobId);
+            ReviewTelemetry.RecordWebhookEnqueue("publish_failed", sw.Elapsed.TotalMilliseconds);
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "temporarily_unavailable");
         }
         catch (Exception ex)
         {
-            await _jobRepository.DeleteQueuedJobAsync(enqueue.TenantId.Value, enqueue.JobId.Value, cancellationToken);
-            _logger.LogError(ex, "Failed to enqueue PR review job.");
+            _logger.LogError(
+                ex,
+                "Failed to enqueue PR review job {JobId}; row remains PendingPublish for reconciler/GitHub redelivery.",
+                enqueue.JobId);
+            ReviewTelemetry.RecordWebhookEnqueue("publish_failed", sw.Elapsed.TotalMilliseconds);
             return StatusCode(StatusCodes.Status503ServiceUnavailable, "enqueue_failed");
         }
 

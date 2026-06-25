@@ -72,7 +72,7 @@ public sealed class JobRepository : IJobRepository
                     RepositoryId = repository.Id,
                     PrNumber = prNumber,
                     GithubDeliveryId = githubDeliveryId,
-                    Status = ReviewJobStatuses.Queued,
+                    Status = ReviewJobStatuses.PendingPublish,
                     CreatedAt = DateTimeOffset.UtcNow
                 };
 
@@ -84,8 +84,13 @@ public sealed class JobRepository : IJobRepository
             catch (DbUpdateException ex) when (IsUniqueViolation(ex))
             {
                 await tx.RollbackAsync(cancellationToken);
-                if (await IsDeliveryAlreadyQueuedAsync(tenantId.Value, githubDeliveryId, cancellationToken))
-                    return new PrJobEnqueueResult(false, tenantId, null, null, githubAppInstallationId, "duplicate");
+                var duplicate = await TryResolveDuplicateDeliveryAsync(
+                    tenantId.Value,
+                    githubDeliveryId,
+                    githubAppInstallationId,
+                    cancellationToken);
+                if (duplicate is not null)
+                    return duplicate;
 
                 // Repository (tenant_id, full_name) race — retry
             }
@@ -94,11 +99,33 @@ public sealed class JobRepository : IJobRepository
         return new PrJobEnqueueResult(false, tenantId, null, null, githubAppInstallationId, "enqueue_failed");
     }
 
-    private async Task<bool> IsDeliveryAlreadyQueuedAsync(Guid tenantId, string githubDeliveryId, CancellationToken cancellationToken)
+    private async Task<PrJobEnqueueResult?> TryResolveDuplicateDeliveryAsync(
+        Guid tenantId,
+        string githubDeliveryId,
+        long githubAppInstallationId,
+        CancellationToken cancellationToken)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
         await db.SetCurrentTenantAsync(tenantId, cancellationToken);
-        return await db.PrReviewJobs.AnyAsync(j => j.GithubDeliveryId == githubDeliveryId, cancellationToken);
+        var existing = await db.PrReviewJobs.AsNoTracking()
+            .Where(j => j.GithubDeliveryId == githubDeliveryId)
+            .Select(j => new { j.Id, j.RepositoryId, j.Status })
+            .FirstOrDefaultAsync(cancellationToken);
+        if (existing is null)
+            return null;
+
+        if (string.Equals(existing.Status, ReviewJobStatuses.PendingPublish, StringComparison.Ordinal))
+        {
+            return new PrJobEnqueueResult(
+                false,
+                tenantId,
+                existing.RepositoryId,
+                existing.Id,
+                githubAppInstallationId,
+                NeedsRepublish: true);
+        }
+
+        return new PrJobEnqueueResult(false, tenantId, null, null, githubAppInstallationId, "duplicate");
     }
 
     private static bool IsUniqueViolation(DbUpdateException ex) =>
@@ -128,6 +155,89 @@ public sealed class JobRepository : IJobRepository
         if (job is null) return;
         job.Status = ReviewJobStatuses.Processing;
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> TryMarkJobProcessingIfQueuedAsync(
+        Guid tenantId,
+        Guid jobId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+        var updated = await db.PrReviewJobs
+            .Where(j =>
+                j.TenantId == tenantId
+                && j.Id == jobId
+                && (j.Status == ReviewJobStatuses.Queued || j.Status == ReviewJobStatuses.PendingPublish))
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(j => j.Status, ReviewJobStatuses.Processing),
+                cancellationToken);
+        return updated > 0;
+    }
+
+    public async Task<bool> MarkJobQueuedAfterPublishAsync(
+        Guid tenantId,
+        Guid jobId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+        var updated = await db.PrReviewJobs
+            .Where(j => j.TenantId == tenantId && j.Id == jobId && j.Status == ReviewJobStatuses.PendingPublish)
+            .ExecuteUpdateAsync(
+                s => s.SetProperty(j => j.Status, ReviewJobStatuses.Queued),
+                cancellationToken);
+        return updated > 0;
+    }
+
+    public async Task<IReadOnlyList<PendingPublishJobInfo>> ListStalePendingPublishJobsAsync(
+        TimeSpan staleOlderThan,
+        int limit = 50,
+        CancellationToken cancellationToken = default)
+    {
+        limit = Math.Clamp(limit, 1, 200);
+        var cutoff = DateTimeOffset.UtcNow - staleOlderThan;
+
+        await using var root = await _factory.CreateDbContextAsync(cancellationToken);
+        var tenants = await root.Tenants.AsNoTracking()
+            .Where(t => t.GitHubAppInstallationId != null)
+            .Select(t => new { t.Id, InstallationId = t.GitHubAppInstallationId!.Value })
+            .ToListAsync(cancellationToken);
+
+        var results = new List<PendingPublishJobInfo>();
+        foreach (var tenant in tenants)
+        {
+            if (results.Count >= limit)
+                break;
+
+            await using var scoped = await _factory.CreateDbContextAsync(cancellationToken);
+            await scoped.SetCurrentTenantAsync(tenant.Id, cancellationToken);
+            var jobs = await scoped.PrReviewJobs.AsNoTracking()
+                .Include(j => j.Repository)
+                .Where(j => j.TenantId == tenant.Id && j.Status == ReviewJobStatuses.PendingPublish)
+                .ToListAsync(cancellationToken);
+
+            foreach (var job in jobs
+                .Where(j => j.CreatedAt <= cutoff)
+                .OrderBy(j => j.CreatedAt)
+                .Take(limit - results.Count))
+            {
+                var (owner, repo) = ParseOwnerRepo(job.Repository!.FullName);
+                if (string.IsNullOrEmpty(owner) || string.IsNullOrEmpty(repo))
+                    continue;
+
+                results.Add(new PendingPublishJobInfo(
+                    tenant.Id,
+                    job.Id,
+                    job.RepositoryId,
+                    tenant.InstallationId,
+                    owner,
+                    repo,
+                    job.PrNumber));
+            }
+        }
+
+        return results;
     }
 
     public async Task MarkJobCompletedAsync(
@@ -404,7 +514,7 @@ public sealed class JobRepository : IJobRepository
             .Include(j => j.Repository)
             .Where(j =>
                 j.TenantId == tenantId
-                && j.Status == ReviewJobStatuses.Queued
+                && (j.Status == ReviewJobStatuses.Queued || j.Status == ReviewJobStatuses.PendingPublish)
                 && j.CreatedAt >= cutoff
                 && j.Repository != null)
             .OrderByDescending(j => j.CreatedAt)

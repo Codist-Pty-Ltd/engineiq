@@ -19,10 +19,12 @@ builder.Services.Configure<GitHubClientOptions>(builder.Configuration.GetSection
 builder.Services.Configure<AnthropicOptions>(builder.Configuration.GetSection(AnthropicOptions.SectionName));
 builder.Services.Configure<TrustOptions>(builder.Configuration.GetSection(TrustOptions.SectionName));
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.SectionName));
+builder.Services.Configure<PendingPublishRelayOptions>(builder.Configuration.GetSection(PendingPublishRelayOptions.SectionName));
 builder.Services.Configure<EngineIQDashboardOptions>(builder.Configuration.GetSection(EngineIQDashboardOptions.SectionName));
 
 builder.Services.AddEngineIQObservability(builder.Configuration, "engineiq-worker");
 builder.Services.AddEngineIQPersistence(builder.Configuration);
+builder.Services.AddRabbitMqJobPublisher(builder.Configuration);
 builder.Services.AddEngineIQEmail(builder.Configuration);
 builder.Services.AddEngineIQRedis(builder.Configuration);
 builder.Services.Configure<RedisContextOptions>(builder.Configuration.GetSection(RedisContextOptions.SectionName));
@@ -39,6 +41,7 @@ builder.Services.AddSingleton<IAIEngine, ReviewService>();
 builder.Services.AddSingleton<IReviewOrchestrator, ReviewOrchestrator>();
 
 builder.Services.AddHostedService<PullReviewJobConsumer>();
+builder.Services.AddHostedService<PendingPublishRelayService>();
 builder.Services.AddHostedService<RabbitMqQueueDepthCollector>();
 
 var app = builder.Build();

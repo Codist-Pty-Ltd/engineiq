@@ -19,6 +19,9 @@ public sealed class EngineIQDbContext : DbContext
 
     public Task SetCurrentTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
+        if (Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
+            return Task.CompletedTask;
+
         // set_config's second argument must be text; passing a Guid parameter becomes uuid and fails (42883).
         var tenantIdText = tenantId.ToString("D");
         return Database.ExecuteSqlInterpolatedAsync(

@@ -10,8 +10,10 @@ namespace EngineIQ.Domain.Interfaces;
 public interface IJobRepository
 {
     /// <summary>
-    /// Resolves tenant by GitHub App installation id, upserts repository, inserts queued job.
-    /// Duplicate (tenant_id, github_delivery_id) returns Created=false.
+    /// Resolves tenant by GitHub App installation id, upserts repository, inserts job in
+    /// <see cref="Persistence.ReviewJobStatuses.PendingPublish"/>.
+    /// Duplicate delivery returns Created=false; if the existing row is still PendingPublish,
+    /// <see cref="PrJobEnqueueResult.NeedsRepublish"/> is true so the webhook can retry publish.
     /// </summary>
     Task<PrJobEnqueueResult> TryCreateQueuedJobAsync(
         long githubAppInstallationId,
@@ -21,6 +23,18 @@ public interface IJobRepository
         CancellationToken cancellationToken = default);
 
     Task MarkJobProcessingAsync(Guid tenantId, Guid jobId, CancellationToken cancellationToken = default);
+
+    /// <summary>Consumer idempotency: only transitions from Queued or PendingPublish to Processing.</summary>
+    Task<bool> TryMarkJobProcessingIfQueuedAsync(Guid tenantId, Guid jobId, CancellationToken cancellationToken = default);
+
+    /// <summary>After a successful RabbitMQ publish, moves PendingPublish → Queued.</summary>
+    Task<bool> MarkJobQueuedAfterPublishAsync(Guid tenantId, Guid jobId, CancellationToken cancellationToken = default);
+
+    /// <summary>Reconciler: jobs stuck in PendingPublish older than <paramref name="staleOlderThan"/>.</summary>
+    Task<IReadOnlyList<PendingPublishJobInfo>> ListStalePendingPublishJobsAsync(
+        TimeSpan staleOlderThan,
+        int limit = 50,
+        CancellationToken cancellationToken = default);
 
     Task MarkJobCompletedAsync(
         Guid tenantId,
@@ -69,7 +83,7 @@ public interface IJobRepository
 
     Task MarkJobFailedAsync(Guid tenantId, Guid jobId, long? durationMs, CancellationToken cancellationToken = default);
 
-    /// <summary>Removes queued job row when RabbitMQ publish fails after insert (webhook rollback).</summary>
+    /// <summary>Removes a job row (e.g. abandoned test data). Prefer <see cref="MarkJobSkippedAsync"/> for policy skips.</summary>
     Task DeleteQueuedJobAsync(Guid tenantId, Guid jobId, CancellationToken cancellationToken = default);
 
     /// <summary>Admin: if job status is Failed, reset to Queued and return payload for republish.</summary>
@@ -82,7 +96,17 @@ public sealed record PrJobEnqueueResult(
     Guid? RepositoryId,
     Guid? JobId,
     long GithubAppInstallationId,
-    string? BlockReason = null);
+    string? BlockReason = null,
+    bool NeedsRepublish = false);
+
+public sealed record PendingPublishJobInfo(
+    Guid TenantId,
+    Guid JobId,
+    Guid RepositoryId,
+    long InstallationId,
+    string Owner,
+    string Repo,
+    int PrNumber);
 
 public sealed record FailedJobRetryInfo(
     Guid TenantId,

@@ -137,7 +137,14 @@ public sealed class PullReviewJobConsumer : BackgroundService
                 job.Repo);
             ReviewTelemetry.SetReviewTags(activity, job.TenantId, job.JobId, job.PrNumber);
 
-            await _jobRepository.MarkJobProcessingAsync(job.TenantId, job.JobId, stoppingToken);
+            if (!await _jobRepository.TryMarkJobProcessingIfQueuedAsync(job.TenantId, job.JobId, stoppingToken))
+            {
+                _logger.LogInformation(
+                    "Skipping duplicate or stale queue message for job {JobId} (not Queued).",
+                    job.JobId);
+                channel.BasicAck(ea.DeliveryTag, multiple: false);
+                return;
+            }
 
             using var reviewCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
             reviewCts.CancelAfter(TimeSpan.FromSeconds(90));
