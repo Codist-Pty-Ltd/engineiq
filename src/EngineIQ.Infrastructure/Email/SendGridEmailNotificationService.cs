@@ -55,15 +55,41 @@ public sealed class SendGridEmailNotificationService : IEmailNotificationService
     public Task SendThirtyDayReportAsync(string toEmail, object templateData, CancellationToken cancellationToken = default) =>
         SendTemplateDynamicAsync(toEmail, _options.TemplateThirtyDayReport, templateData, cancellationToken);
 
+    public Task SendCriticalIssuesNotificationAsync(
+        CriticalIssuesEmailRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var findingMessages = request.FindingMessages.Count == 0
+            ? string.Empty
+            : string.Join("\n", request.FindingMessages.Select(m => $"• {m}"));
+
+        return SendTemplateAsync(
+            request.ToEmail,
+            _options.TemplateCriticalIssues,
+            new Dictionary<string, string?>
+            {
+                ["company_name"] = request.CompanyName,
+                ["repository_full_name"] = request.RepositoryFullName,
+                ["pr_number"] = request.PrNumber.ToString(),
+                ["critical_count"] = request.CriticalCount.ToString(),
+                ["finding_messages"] = findingMessages,
+                ["job_detail_url"] = request.JobDetailUrl,
+                ["job_url"] = request.JobDetailUrl
+            },
+            cancellationToken,
+            skipLogMessage: "SendGrid critical-issues email skipped (template or API key not configured).");
+    }
+
     private async Task SendTemplateAsync(
         string toEmail,
         string templateId,
         IReadOnlyDictionary<string, string?> data,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        string? skipLogMessage = null)
     {
         if (string.IsNullOrWhiteSpace(templateId) || string.IsNullOrWhiteSpace(_options.ApiKey))
         {
-            _logger.LogInformation("SendGrid welcome/live email skipped (template or API key not configured).");
+            _logger.LogInformation(skipLogMessage ?? "SendGrid welcome/live email skipped (template or API key not configured).");
             return;
         }
 

@@ -13,4 +13,5 @@ public sealed class SendGridOptions
     public string TemplateWelcome { get; set; } = string.Empty;
     public string TemplateLiveConfirmation { get; set; } = string.Empty;
     public string TemplateThirtyDayReport { get; set; } = string.Empty;
+    public string TemplateCriticalIssues { get; set; } = string.Empty;
 }

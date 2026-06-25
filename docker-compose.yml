@@ -124,6 +124,11 @@ services:
       Trust__DataLocation: ${TRUST_DATA_LOCATION:-Hetzner SA / Johannesburg}
       Trust__DpaPdfUrl: ${TRUST_DPA_PDF_URL:-https://engineiq.co.za/legal/dpa.pdf}
       Trust__AiProvider: ${TRUST_AI_PROVIDER:-Anthropic}
+      EngineIQ__DashboardBaseUrl: ${ENGINEIQ_DASHBOARD_BASE_URL:-https://app.engineiq.co.za}
+      SendGrid__ApiKey: ${SENDGRID_API_KEY:-}
+      SendGrid__FromEmail: ${SENDGRID_FROM_EMAIL:-noreply@engineiq.co.za}
+      SendGrid__FromName: ${SENDGRID_FROM_NAME:-EngineIQ}
+      SendGrid__TemplateCriticalIssues: ${SENDGRID_TEMPLATE_CRITICAL_ISSUES:-}
 
   engineiq-admin:
     profiles: [platform]

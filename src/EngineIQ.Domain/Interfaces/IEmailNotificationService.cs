@@ -15,4 +15,17 @@ public interface IEmailNotificationService
 
     /// <summary>Reserved for scheduled reporting; template id configured via SendGrid options.</summary>
     Task SendThirtyDayReportAsync(string toEmail, object templateData, CancellationToken cancellationToken = default);
+
+    Task SendCriticalIssuesNotificationAsync(
+        CriticalIssuesEmailRequest request,
+        CancellationToken cancellationToken = default);
 }
+
+public sealed record CriticalIssuesEmailRequest(
+    string ToEmail,
+    string CompanyName,
+    string RepositoryFullName,
+    int PrNumber,
+    int CriticalCount,
+    IReadOnlyList<string> FindingMessages,
+    string JobDetailUrl);

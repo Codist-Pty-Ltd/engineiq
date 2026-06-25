@@ -2,11 +2,13 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using EngineIQ.AIEngine;
+using EngineIQ.Domain.Configuration;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Messaging;
 using EngineIQ.Domain.Reviews;
 using EngineIQ.Domain.Tenants;
 using EngineIQ.Infrastructure;
+using EngineIQ.Infrastructure.Email;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -30,6 +32,9 @@ public sealed class PullReviewJobConsumer : BackgroundService
     private readonly IFindingRepository _findings;
     private readonly ITenantMetricsRepository _tenantMetrics;
     private readonly ITenantRepository _tenants;
+    private readonly IEmailNotificationService _email;
+    private readonly IOptions<SendGridOptions> _sendGridOptions;
+    private readonly IOptions<EngineIQDashboardOptions> _dashboardOptions;
     private readonly ILogger<PullReviewJobConsumer> _logger;
 
     public PullReviewJobConsumer(
@@ -39,6 +44,9 @@ public sealed class PullReviewJobConsumer : BackgroundService
         IFindingRepository findings,
         ITenantMetricsRepository tenantMetrics,
         ITenantRepository tenants,
+        IEmailNotificationService email,
+        IOptions<SendGridOptions> sendGridOptions,
+        IOptions<EngineIQDashboardOptions> dashboardOptions,
         ILogger<PullReviewJobConsumer> logger)
     {
         _rabbitOptions = rabbitOptions;
@@ -47,6 +55,9 @@ public sealed class PullReviewJobConsumer : BackgroundService
         _findings = findings;
         _tenantMetrics = tenantMetrics;
         _tenants = tenants;
+        _email = email;
+        _sendGridOptions = sendGridOptions;
+        _dashboardOptions = dashboardOptions;
         _logger = logger;
     }
 
@@ -167,6 +178,17 @@ public sealed class PullReviewJobConsumer : BackgroundService
                 outcome.ParsedFindings.Count,
                 sw.ElapsedMilliseconds,
                 outcome.EstimatedCostZar,
+                _logger,
+                stoppingToken);
+
+            await ReviewCriticalIssuesEmailNotifier.TryNotifyAsync(
+                _email,
+                _tenants,
+                _dashboardOptions.Value.DashboardBaseUrl,
+                job,
+                outcome.ParsedFindings,
+                preferences,
+                SendGridEmailSettings.IsCriticalIssuesConfigured(_sendGridOptions.Value),
                 _logger,
                 stoppingToken);
 
