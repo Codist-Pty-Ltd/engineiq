@@ -38,6 +38,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddEngineIQPersistence(builder.Configuration);
+builder.Services.AddEngineIQPaystack(builder.Configuration);
 builder.Services.AddEngineIQEmail(builder.Configuration);
 builder.Services.AddRabbitMqJobPublisher(builder.Configuration);
 

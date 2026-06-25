@@ -33,6 +33,15 @@ public static class DependencyInjection
         return services;
     }
 
+    /// <summary>Paystack billing client and tenant subscription orchestration.</summary>
+    public static IServiceCollection AddEngineIQPaystack(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<Paystack.PaystackOptions>(configuration.GetSection(Paystack.PaystackOptions.SectionName));
+        services.AddHttpClient<IPaystackClient, Paystack.PaystackClient>();
+        services.AddScoped<ITenantBillingService, Paystack.TenantBillingService>();
+        return services;
+    }
+
     public static IServiceCollection AddEngineIQEmail(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<SendGridOptions>(configuration.GetSection(SendGridOptions.SectionName));

@@ -83,6 +83,12 @@ services:
       SendGrid__TemplateWelcome: ${SENDGRID_TEMPLATE_WELCOME:-}
       SendGrid__TemplateLiveConfirmation: ${SENDGRID_TEMPLATE_LIVE_CONFIRMATION:-}
       SendGrid__TemplateThirtyDayReport: ${SENDGRID_TEMPLATE_THIRTY_DAY_REPORT:-}
+      Paystack__SecretKey: ${PAYSTACK_SECRET_KEY:-}
+      Paystack__PublicKey: ${PAYSTACK_PUBLIC_KEY:-}
+      Paystack__WebhookSecret: ${PAYSTACK_WEBHOOK_SECRET:-}
+      Paystack__PlanStarter: ${PAYSTACK_PLAN_STARTER:-}
+      Paystack__PlanGrowth: ${PAYSTACK_PLAN_GROWTH:-}
+      Paystack__PlanScale: ${PAYSTACK_PLAN_SCALE:-}
     depends_on:
       postgres:
         condition: service_healthy

@@ -119,6 +119,22 @@ public class CriticalIssuesEmailTests
 
         public Task<IReadOnlyList<TenantRepositoryRow>> ListRepositoriesAsync(Guid tenantId, CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
+
+        public Task<TenantBillingRow?> GetBillingRowAsync(Guid tenantId, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
+
+        public Task UpdatePaystackCustomerCodeAsync(Guid tenantId, string paystackCustomerCode, CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
+
+        public Task ApplyPaidPlanAsync(
+            Guid tenantId,
+            string plan,
+            string? featureFlagsJson,
+            string billingStatus,
+            string paystackSubscriptionCode,
+            string? paystackCustomerCode,
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
     }
 
     private static PullReviewJobMessage SampleJob() =>

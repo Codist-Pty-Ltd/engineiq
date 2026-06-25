@@ -49,6 +49,9 @@ public sealed class EngineIQDbContext : DbContext
             e.Property(x => x.FeatureFlagsJson).HasColumnType("jsonb");
             e.Property(x => x.PortalPreferencesJson).HasColumnType("jsonb");
             e.Property(x => x.DpaAcceptedIp).HasMaxLength(64);
+            e.Property(x => x.PaystackCustomerCode).HasMaxLength(128);
+            e.Property(x => x.PaystackSubscriptionCode).HasMaxLength(128);
+            e.Property(x => x.BillingStatus).HasMaxLength(64).IsRequired();
         });
 
         modelBuilder.Entity<Repository>(e =>

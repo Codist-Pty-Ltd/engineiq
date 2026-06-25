@@ -43,4 +43,20 @@ public interface ITenantRepository
     Task<TenantDashboardAnalytics?> GetDashboardAnalyticsAsync(Guid tenantId, int days, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<TenantRepositoryRow>> ListRepositoriesAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
+    Task<TenantBillingRow?> GetBillingRowAsync(Guid tenantId, CancellationToken cancellationToken = default);
+
+    Task UpdatePaystackCustomerCodeAsync(
+        Guid tenantId,
+        string paystackCustomerCode,
+        CancellationToken cancellationToken = default);
+
+    Task ApplyPaidPlanAsync(
+        Guid tenantId,
+        string plan,
+        string? featureFlagsJson,
+        string billingStatus,
+        string paystackSubscriptionCode,
+        string? paystackCustomerCode,
+        CancellationToken cancellationToken = default);
 }

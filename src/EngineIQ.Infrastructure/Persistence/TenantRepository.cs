@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using EngineIQ.Domain.Billing;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Persistence;
 using EngineIQ.Domain.Security;
@@ -31,6 +32,7 @@ public sealed class TenantRepository : ITenantRepository
         var webhookSecretHash = SHA256.HashData(Encoding.UTF8.GetBytes(webhookSecret));
         var dpaAt = DateTimeOffset.UtcNow;
         var dpaIp = TruncateDpaIp(command.DpaAcceptedIp);
+        var isInternal = InternalTenantBilling.IsInternalEmail(command.Email);
 
         for (var i = 0; i < 5; i++)
         {
@@ -52,7 +54,9 @@ public sealed class TenantRepository : ITenantRepository
                 Status = "AwaitingGitHubInstall",
                 ConfigYaml = null,
                 DpaAcceptedAt = dpaAt,
-                DpaAcceptedIp = dpaIp
+                DpaAcceptedIp = dpaIp,
+                BillingStatus = isInternal ? BillingStatuses.Internal : BillingStatuses.Trialing,
+                TrialEndsAt = isInternal ? null : dpaAt.AddDays(30),
             };
 
             db.Tenants.Add(tenant);
@@ -369,6 +373,71 @@ public sealed class TenantRepository : ITenantRepository
             .OrderBy(r => r.FullName)
             .Select(r => new TenantRepositoryRow(r.Id, r.FullName, r.Jobs.Count))
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<TenantBillingRow?> GetBillingRowAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+        var t = await db.Tenants.AsNoTracking().FirstOrDefaultAsync(x => x.Id == tenantId, cancellationToken);
+        if (t is null)
+            return null;
+
+        return new TenantBillingRow(
+            t.Id,
+            t.Plan,
+            t.BillingStatus,
+            t.TrialEndsAt,
+            t.ContactEmail,
+            t.PaystackCustomerCode,
+            t.PaystackSubscriptionCode);
+    }
+
+    public async Task UpdatePaystackCustomerCodeAsync(
+        Guid tenantId,
+        string paystackCustomerCode,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+        if (tenant is null)
+            return;
+
+        tenant.PaystackCustomerCode = paystackCustomerCode.Trim();
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task ApplyPaidPlanAsync(
+        Guid tenantId,
+        string plan,
+        string? featureFlagsJson,
+        string billingStatus,
+        string paystackSubscriptionCode,
+        string? paystackCustomerCode,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantId, cancellationToken);
+        if (tenant is null)
+            return;
+
+        tenant.Plan = plan.Trim();
+        tenant.BillingStatus = billingStatus.Trim();
+        tenant.PaystackSubscriptionCode = paystackSubscriptionCode.Trim();
+        tenant.TrialEndsAt = null;
+        if (!string.IsNullOrWhiteSpace(paystackCustomerCode))
+            tenant.PaystackCustomerCode = paystackCustomerCode.Trim();
+        if (featureFlagsJson is not null)
+            tenant.FeatureFlagsJson = string.IsNullOrWhiteSpace(featureFlagsJson) ? null : featureFlagsJson.Trim();
+
+        await db.SaveChangesAsync(cancellationToken);
+        _logger.LogInformation(
+            "Tenant {TenantId} billing updated: plan={Plan}, status={BillingStatus}.",
+            tenantId,
+            tenant.Plan,
+            tenant.BillingStatus);
     }
 
     private static bool IsUniqueViolation(DbUpdateException ex) =>

@@ -22,5 +22,10 @@ public sealed class Tenant
     public DateTimeOffset? DpaAcceptedAt { get; set; }
     public string? DpaAcceptedIp { get; set; }
 
+    public string? PaystackCustomerCode { get; set; }
+    public string? PaystackSubscriptionCode { get; set; }
+    public string BillingStatus { get; set; } = string.Empty;
+    public DateTimeOffset? TrialEndsAt { get; set; }
+
     public ICollection<Repository> Repositories { get; set; } = new List<Repository>();
 }

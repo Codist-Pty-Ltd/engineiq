@@ -18,6 +18,7 @@ namespace EngineIQ.API.Controllers;
 public sealed class TenantController : ControllerBase
 {
     private readonly ITenantRepository _tenants;
+    private readonly ITenantBillingService _billing;
     private readonly IFindingRepository _findings;
     private readonly IJobRepository _jobs;
     private readonly StandardsConfigYamlValidator _yamlValidator;
@@ -26,6 +27,7 @@ public sealed class TenantController : ControllerBase
 
     public TenantController(
         ITenantRepository tenants,
+        ITenantBillingService billing,
         IFindingRepository findings,
         IJobRepository jobs,
         StandardsConfigYamlValidator yamlValidator,
@@ -33,6 +35,7 @@ public sealed class TenantController : ControllerBase
         ILogger<TenantController> logger)
     {
         _tenants = tenants;
+        _billing = billing;
         _findings = findings;
         _jobs = jobs;
         _yamlValidator = yamlValidator;
@@ -87,6 +90,103 @@ public sealed class TenantController : ControllerBase
             $"https://github.com/apps/{slug}/installations/new?state={Uri.EscapeDataString(installState!)}";
 
         return Ok(new TenantInstallUrlResponse(installUrl, account.GitHubOrgLogin));
+    }
+
+    [HttpGet("billing")]
+    public async Task<ActionResult<TenantBillingResponse>> Billing(Guid id, CancellationToken cancellationToken)
+    {
+        var billing = await _billing.GetBillingAsync(id, cancellationToken);
+        if (billing is null)
+            return NotFound();
+
+        return Ok(new TenantBillingResponse(
+            billing.Plan,
+            billing.BillingStatus,
+            billing.TrialEndsAt,
+            billing.PaystackCustomerCode,
+            billing.PaystackSubscriptionCode,
+            billing.PaystackRequired));
+    }
+
+    [HttpPost("billing/subscribe")]
+    public async Task<ActionResult<BillingSubscribeResponse>> BillingSubscribe(
+        Guid id,
+        [FromBody] BillingSubscribeRequest body,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(body.CallbackUrl))
+            return BadRequest(new { error = "callback_url_required" });
+
+        try
+        {
+            var result = await _billing.StartSubscriptionCheckoutAsync(
+                id,
+                body.Plan.Trim(),
+                body.CallbackUrl.Trim(),
+                cancellationToken);
+            return Ok(new BillingSubscribeResponse(result.Reference, result.AuthorizationUrl));
+        }
+        catch (InvalidOperationException ex) when (ex.Message is "billing_not_required")
+        {
+            return Conflict(new { error = "billing_not_required" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message is "paystack_not_configured")
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "paystack_not_configured" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message is "unknown_plan")
+        {
+            return BadRequest(new { error = "unknown_plan" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message is "paystack_plan_not_configured")
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "paystack_plan_not_configured" });
+        }
+        catch (InvalidOperationException ex) when (ex.Message is "missing_contact_email")
+        {
+            return BadRequest(new { error = "missing_contact_email" });
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpPost("billing/confirm")]
+    public async Task<ActionResult<BillingConfirmResponse>> BillingConfirm(
+        Guid id,
+        [FromBody] BillingConfirmRequest body,
+        CancellationToken cancellationToken)
+    {
+        var result = await _billing.ConfirmSubscriptionAsync(id, body.Reference, cancellationToken);
+        if (!result.Ok)
+            return BadRequest(new BillingConfirmResponse(false, result.BillingStatus, result.PaystackSubscriptionCode, result.Error));
+
+        return Ok(new BillingConfirmResponse(true, result.BillingStatus, result.PaystackSubscriptionCode, null));
+    }
+
+    [HttpPost("billing/change-plan")]
+    public async Task<ActionResult<BillingChangePlanResponse>> BillingChangePlan(
+        Guid id,
+        [FromBody] BillingChangePlanRequest body,
+        CancellationToken cancellationToken)
+    {
+        var result = await _billing.ChangePlanAsync(id, body.Plan.Trim(), cancellationToken);
+        if (!result.Ok)
+        {
+            return result.Error switch
+            {
+                "billing_not_required" => Conflict(new { error = result.Error }),
+                "paystack_not_configured" => StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = result.Error }),
+                "no_active_subscription" => Conflict(new { error = result.Error }),
+                "unknown_plan" => BadRequest(new { error = result.Error }),
+                "paystack_plan_not_configured" => StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = result.Error }),
+                "tenant_not_found" => NotFound(),
+                _ => BadRequest(new BillingChangePlanResponse(false, null, result.Error)),
+            };
+        }
+
+        return Ok(new BillingChangePlanResponse(true, result.Plan, null));
     }
 
     [HttpGet("account")]
@@ -517,4 +617,48 @@ public sealed class TenantController : ControllerBase
         [property: JsonPropertyName("errors")] IReadOnlyList<string> Errors);
 
     public sealed record TenantRotateKeyResponse([property: JsonPropertyName("api_key")] string ApiKey);
+
+    public sealed record TenantBillingResponse(
+        [property: JsonPropertyName("plan")] string Plan,
+        [property: JsonPropertyName("billing_status")] string BillingStatus,
+        [property: JsonPropertyName("trial_ends_at")] DateTimeOffset? TrialEndsAt,
+        [property: JsonPropertyName("paystack_customer_code")] string? PaystackCustomerCode,
+        [property: JsonPropertyName("paystack_subscription_code")] string? PaystackSubscriptionCode,
+        [property: JsonPropertyName("paystack_required")] bool PaystackRequired);
+
+    public sealed class BillingSubscribeRequest
+    {
+        [JsonPropertyName("plan")]
+        public string Plan { get; set; } = string.Empty;
+
+        [JsonPropertyName("callback_url")]
+        public string CallbackUrl { get; set; } = string.Empty;
+    }
+
+    public sealed record BillingSubscribeResponse(
+        [property: JsonPropertyName("reference")] string Reference,
+        [property: JsonPropertyName("authorization_url")] string AuthorizationUrl);
+
+    public sealed class BillingConfirmRequest
+    {
+        [JsonPropertyName("reference")]
+        public string Reference { get; set; } = string.Empty;
+    }
+
+    public sealed record BillingConfirmResponse(
+        [property: JsonPropertyName("ok")] bool Ok,
+        [property: JsonPropertyName("billing_status")] string? BillingStatus,
+        [property: JsonPropertyName("paystack_subscription_code")] string? PaystackSubscriptionCode,
+        [property: JsonPropertyName("error")] string? Error);
+
+    public sealed class BillingChangePlanRequest
+    {
+        [JsonPropertyName("plan")]
+        public string Plan { get; set; } = string.Empty;
+    }
+
+    public sealed record BillingChangePlanResponse(
+        [property: JsonPropertyName("ok")] bool Ok,
+        [property: JsonPropertyName("plan")] string? Plan,
+        [property: JsonPropertyName("error")] string? Error);
 }

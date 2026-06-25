@@ -18,6 +18,7 @@ namespace EngineIQ.API.Controllers;
 public sealed class OnboardingController : ControllerBase
 {
     private readonly ITenantRepository _tenants;
+    private readonly ITenantBillingService _billing;
     private readonly IEmailNotificationService _email;
     private readonly IOptions<GitHubClientOptions> _gitHub;
     private readonly IOptions<EngineIQAppOptions> _app;
@@ -26,6 +27,7 @@ public sealed class OnboardingController : ControllerBase
 
     public OnboardingController(
         ITenantRepository tenants,
+        ITenantBillingService billing,
         IEmailNotificationService email,
         IOptions<GitHubClientOptions> gitHub,
         IOptions<EngineIQAppOptions> app,
@@ -33,6 +35,7 @@ public sealed class OnboardingController : ControllerBase
         ILogger<OnboardingController> logger)
     {
         _tenants = tenants;
+        _billing = billing;
         _email = email;
         _gitHub = gitHub;
         _app = app;
@@ -72,6 +75,22 @@ public sealed class OnboardingController : ControllerBase
         {
             _logger.LogError(ex, "Tenant registration failed.");
             return StatusCode(StatusCodes.Status500InternalServerError, new { error = "registration_failed" });
+        }
+
+        try
+        {
+            await _billing.ProvisionCustomerAfterRegisterAsync(
+                created.TenantId,
+                cmd.Email,
+                cmd.CompanyName,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Paystack customer provisioning failed; tenant {TenantId} remains in Trialing.",
+                created.TenantId);
         }
 
         var slug = _gitHub.Value.AppSlug.Trim();
