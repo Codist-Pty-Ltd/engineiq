@@ -26,6 +26,7 @@ public static class DependencyInjection
 
         services.AddSingleton<IJobRepository, JobRepository>();
         services.AddSingleton<IFindingRepository, FindingRepository>();
+        services.AddSingleton<ITenantMetricsRepository, TenantMetricsRepository>();
         services.AddSingleton<ITenantRepository, TenantRepository>();
 
         return services;

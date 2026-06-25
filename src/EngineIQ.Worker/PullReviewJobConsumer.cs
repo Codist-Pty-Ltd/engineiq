@@ -28,6 +28,7 @@ public sealed class PullReviewJobConsumer : BackgroundService
     private readonly IReviewOrchestrator _orchestrator;
     private readonly IJobRepository _jobRepository;
     private readonly IFindingRepository _findings;
+    private readonly ITenantMetricsRepository _tenantMetrics;
     private readonly ITenantRepository _tenants;
     private readonly ILogger<PullReviewJobConsumer> _logger;
 
@@ -36,6 +37,7 @@ public sealed class PullReviewJobConsumer : BackgroundService
         IReviewOrchestrator orchestrator,
         IJobRepository jobRepository,
         IFindingRepository findings,
+        ITenantMetricsRepository tenantMetrics,
         ITenantRepository tenants,
         ILogger<PullReviewJobConsumer> logger)
     {
@@ -43,6 +45,7 @@ public sealed class PullReviewJobConsumer : BackgroundService
         _orchestrator = orchestrator;
         _jobRepository = jobRepository;
         _findings = findings;
+        _tenantMetrics = tenantMetrics;
         _tenants = tenants;
         _logger = logger;
     }
@@ -153,6 +156,17 @@ public sealed class PullReviewJobConsumer : BackgroundService
                 job.TenantId,
                 job.JobId,
                 outcome.ParsedFindings,
+                _logger,
+                stoppingToken);
+
+            var metricsDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            await ReviewTenantMetricsPersistence.TryRecordJobCompletionAsync(
+                _tenantMetrics,
+                job.TenantId,
+                metricsDate,
+                outcome.ParsedFindings.Count,
+                sw.ElapsedMilliseconds,
+                outcome.EstimatedCostZar,
                 _logger,
                 stoppingToken);
 
