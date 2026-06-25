@@ -1,10 +1,15 @@
+using System.Text;
+using EngineIQ.Domain.Context;
 using EngineIQ.Domain.Tenants;
 
 namespace EngineIQ.AIEngine;
 
 public static class ReviewPromptBuilder
 {
-    public static string BuildSystemPrompt(TenantPortalPreferences preferences, string? standardsConfigYaml)
+    public static string BuildSystemPrompt(
+        TenantPortalPreferences preferences,
+        string? standardsConfigYaml,
+        RepoContext? repoContext = null)
     {
         var lines = new List<string>
         {
@@ -21,6 +26,22 @@ public static class ReviewPromptBuilder
         if (preferences.MonetaryTypeSafetyChecks)
         {
             lines.Add("- Flag decimal/double/float types used for money; prefer integer cents for monetary amounts.");
+        }
+
+        if (repoContext is not null)
+        {
+            lines.Add("");
+            lines.Add("Repository architecture context (use these real layer folders when discussing layering violations):");
+            lines.Add($"- Detected style: {repoContext.DetectedStyle}");
+            foreach (var (layer, folders) in repoContext.LayerFolderMap.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+            {
+                lines.Add($"- {layer}: {string.Join(", ", folders)}");
+            }
+
+            foreach (var pattern in repoContext.NotablePatterns)
+                lines.Add($"- {pattern}");
+
+            lines.Add("- Reference the actual layer names and folder paths above when flagging architecture issues (e.g. Domain depending on Infrastructure).");
         }
 
         if (!string.IsNullOrWhiteSpace(standardsConfigYaml))

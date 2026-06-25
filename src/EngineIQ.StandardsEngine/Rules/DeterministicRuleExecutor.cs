@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using EngineIQ.Domain.Context;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Persistence;
 using EngineIQ.StandardsEngine.Config;
@@ -48,7 +49,8 @@ internal static class DeterministicRuleExecutor
 
     public static IReadOnlyList<FindingWriteDto> Execute(
         IReadOnlyList<DiffHunk> hunks,
-        StandardsConfigDocument config)
+        StandardsConfigDocument config,
+        RepoContext? repoContext = null)
     {
         var rulesById = config.Rules
             .Where(r => !string.IsNullOrWhiteSpace(r.Id))
@@ -57,9 +59,9 @@ internal static class DeterministicRuleExecutor
 
         var violations = new List<RuleViolation>();
         if (rulesById.ContainsKey("ARCH-001"))
-            violations.AddRange(CheckArch001(hunks, rulesById["ARCH-001"]));
+            violations.AddRange(CheckArch001(hunks, rulesById["ARCH-001"], repoContext));
         if (rulesById.ContainsKey("ARCH-002"))
-            violations.AddRange(CheckArch002(hunks, rulesById["ARCH-002"]));
+            violations.AddRange(CheckArch002(hunks, rulesById["ARCH-002"], repoContext));
         if (rulesById.ContainsKey("SEC-001"))
             violations.AddRange(CheckSec001(hunks, rulesById["SEC-001"]));
         if (rulesById.ContainsKey("PERF-001"))
@@ -71,11 +73,14 @@ internal static class DeterministicRuleExecutor
             .ToList();
     }
 
-    private static IEnumerable<RuleViolation> CheckArch001(IReadOnlyList<DiffHunk> hunks, StandardsRuleDefinition rule)
+    private static IEnumerable<RuleViolation> CheckArch001(
+        IReadOnlyList<DiffHunk> hunks,
+        StandardsRuleDefinition rule,
+        RepoContext? repoContext)
     {
         foreach (var hunk in hunks)
         {
-            if (!LayerPathMatcher.IsInLayer(hunk.Path, "Domain"))
+            if (!LayerPathMatcher.IsInLayer(hunk.Path, "Domain", repoContext))
                 continue;
 
             foreach (var added in hunk.AddedLines)
@@ -111,11 +116,15 @@ internal static class DeterministicRuleExecutor
         }
     }
 
-    private static IEnumerable<RuleViolation> CheckArch002(IReadOnlyList<DiffHunk> hunks, StandardsRuleDefinition rule)
+    private static IEnumerable<RuleViolation> CheckArch002(
+        IReadOnlyList<DiffHunk> hunks,
+        StandardsRuleDefinition rule,
+        RepoContext? repoContext)
     {
         foreach (var hunk in hunks)
         {
-            if (!LayerPathMatcher.IsInLayer(hunk.Path, "API"))
+            if (!LayerPathMatcher.IsInLayer(hunk.Path, "API", repoContext)
+                && !LayerPathMatcher.IsInLayer(hunk.Path, "Presentation", repoContext))
                 continue;
 
             foreach (var added in hunk.AddedLines)

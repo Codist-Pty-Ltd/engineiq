@@ -22,4 +22,11 @@ public interface IGitHubClient
     /// Posts a review comment to the pull request.
     /// </summary>
     Task PostReviewCommentAsync(long installationId, string owner, string repo, int prNumber, string body, CancellationToken cancellationToken = default);
+
+    /// <summary>All file paths in the default branch (for architecture context indexing).</summary>
+    Task<IReadOnlyList<string>> GetRepositoryFilePathsAsync(
+        long installationId,
+        string owner,
+        string repo,
+        CancellationToken cancellationToken = default);
 }

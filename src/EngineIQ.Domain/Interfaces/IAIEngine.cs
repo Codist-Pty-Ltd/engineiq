@@ -1,3 +1,4 @@
+using EngineIQ.Domain.Context;
 using EngineIQ.Domain.Reviews;
 using EngineIQ.Domain.Tenants;
 
@@ -15,5 +16,6 @@ public interface IAIEngine
         string diff,
         TenantPortalPreferences? preferences = null,
         string? standardsConfigYaml = null,
+        RepoContext? repoContext = null,
         CancellationToken cancellationToken = default);
 }

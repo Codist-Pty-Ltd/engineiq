@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using EngineIQ.AIEngine.Anthropic;
+using EngineIQ.Domain.Context;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Reviews;
 using EngineIQ.Domain.Tenants;
@@ -47,10 +48,11 @@ Keep the review actionable and friendly. Use bullet points. Do not include the d
         string diff,
         TenantPortalPreferences? preferences = null,
         string? standardsConfigYaml = null,
+        RepoContext? repoContext = null,
         CancellationToken cancellationToken = default)
     {
         var prefs = preferences ?? new TenantPortalPreferences();
-        var systemPrompt = ReviewPromptBuilder.BuildSystemPrompt(prefs, standardsConfigYaml);
+        var systemPrompt = ReviewPromptBuilder.BuildSystemPrompt(prefs, standardsConfigYaml, repoContext);
         var footer = AnthropicReviewResponseParser.BuildTrustFooter(_trust.PublicApiBaseUrl);
         if (string.IsNullOrWhiteSpace(diff))
         {

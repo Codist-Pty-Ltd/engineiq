@@ -1,4 +1,5 @@
 using EngineIQ.AIEngine;
+using EngineIQ.ContextBuilder;
 using EngineIQ.Domain.Configuration;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Trust;
@@ -17,6 +18,8 @@ builder.Services.Configure<EngineIQDashboardOptions>(builder.Configuration.GetSe
 
 builder.Services.AddEngineIQPersistence(builder.Configuration);
 builder.Services.AddEngineIQEmail(builder.Configuration);
+builder.Services.AddEngineIQRedis(builder.Configuration);
+builder.Services.Configure<RedisContextOptions>(builder.Configuration.GetSection(RedisContextOptions.SectionName));
 
 builder.Services.AddHttpClient(ReviewService.AnthropicHttpClientName, client =>
 {
@@ -25,6 +28,7 @@ builder.Services.AddHttpClient(ReviewService.AnthropicHttpClientName, client =>
 
 builder.Services.AddSingleton<IGitHubClient, GitHubAppClient>();
 builder.Services.AddSingleton<IStandardsEngine, EngineIQ.StandardsEngine.StandardsEngine>();
+builder.Services.AddSingleton<IContextBuilder, ContextBuilderService>();
 builder.Services.AddSingleton<IAIEngine, ReviewService>();
 builder.Services.AddSingleton<IReviewOrchestrator, ReviewOrchestrator>();
 

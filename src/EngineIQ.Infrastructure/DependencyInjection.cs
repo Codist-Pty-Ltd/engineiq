@@ -4,6 +4,7 @@ using EngineIQ.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace EngineIQ.Infrastructure;
 
@@ -45,6 +46,24 @@ public static class DependencyInjection
     {
         services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.SectionName));
         services.AddSingleton<IPullReviewJobPublisher, RabbitMqPullReviewJobPublisher>();
+        return services;
+    }
+
+    /// <summary>Redis connection and repo-context cache (Worker).</summary>
+    public static IServiceCollection AddEngineIQRedis(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<RedisOptions>(configuration.GetSection(RedisOptions.SectionName));
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<RedisOptions>>().Value;
+            var connectionString = string.IsNullOrWhiteSpace(options.ConnectionString)
+                ? "localhost:6379"
+                : options.ConnectionString;
+            return ConnectionMultiplexer.Connect(connectionString);
+        });
+
+        services.AddSingleton<IRepoContextCache, Caching.RepoContextRedisCache>();
         return services;
     }
 }

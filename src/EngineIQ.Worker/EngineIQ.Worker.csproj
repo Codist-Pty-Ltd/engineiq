@@ -19,5 +19,6 @@
     <ProjectReference Include="..\EngineIQ.Infrastructure\EngineIQ.Infrastructure.csproj" />
     <ProjectReference Include="..\EngineIQ.GitHub\EngineIQ.GitHub.csproj" />
     <ProjectReference Include="..\EngineIQ.AIEngine\EngineIQ.AIEngine.csproj" />
+    <ProjectReference Include="..\EngineIQ.ContextBuilder\EngineIQ.ContextBuilder.csproj" />
   </ItemGroup>
 </Project>

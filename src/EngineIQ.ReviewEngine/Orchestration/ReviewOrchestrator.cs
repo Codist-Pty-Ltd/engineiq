@@ -1,33 +1,41 @@
 using EngineIQ.AIEngine.Anthropic;
+using EngineIQ.ContextBuilder.Parsing;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Reviews;
 using EngineIQ.Domain.Tenants;
 using EngineIQ.Domain.Trust;
 using EngineIQ.FeedbackGenerator;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace EngineIQ.ReviewEngine.Orchestration;
 
 /// <summary>
-/// In-memory PR review: diff → standards rules → Claude → merged comment (no source persisted).
+/// In-memory PR review: diff → repo context → standards rules → Claude → merged comment (no source persisted).
 /// </summary>
 public sealed class ReviewOrchestrator : IReviewOrchestrator
 {
     private readonly IGitHubClient _gitHubClient;
+    private readonly IContextBuilder _contextBuilder;
     private readonly IStandardsEngine _standardsEngine;
     private readonly IAIEngine _aiEngine;
     private readonly TrustOptions _trust;
+    private readonly ILogger<ReviewOrchestrator> _logger;
 
     public ReviewOrchestrator(
         IGitHubClient gitHubClient,
+        IContextBuilder contextBuilder,
         IStandardsEngine standardsEngine,
         IAIEngine aiEngine,
-        IOptions<TrustOptions> trust)
+        IOptions<TrustOptions> trust,
+        ILogger<ReviewOrchestrator> logger)
     {
         _gitHubClient = gitHubClient;
+        _contextBuilder = contextBuilder;
         _standardsEngine = standardsEngine;
         _aiEngine = aiEngine;
         _trust = trust.Value;
+        _logger = logger;
     }
 
     public async Task<PrReviewJobResult> ReviewPullRequestAsync(
@@ -71,11 +79,15 @@ public sealed class ReviewOrchestrator : IReviewOrchestrator
             return new PrReviewJobResult(false, null, emptyOutcome);
         }
 
-        var ruleFindings = _standardsEngine.EvaluateDiff(diff, command.StandardsConfigYaml);
+        var prFilePaths = DiffPathExtractor.ExtractFilePaths(diff);
+        var repoContext = await TryGetRepoContextAsync(command, prFilePaths, cancellationToken);
+
+        var ruleFindings = _standardsEngine.EvaluateDiff(diff, command.StandardsConfigYaml, repoContext);
         var aiOutcome = await _aiEngine.ReviewDiffAsync(
             diff,
             command.Preferences,
             command.StandardsConfigYaml,
+            repoContext,
             cancellationToken);
 
         var mergedFindings = ReviewFindingsMerger.Merge(ruleFindings, aiOutcome.ParsedFindings);
@@ -99,5 +111,31 @@ public sealed class ReviewOrchestrator : IReviewOrchestrator
             cancellationToken);
 
         return new PrReviewJobResult(false, null, outcome);
+    }
+
+    private async Task<Domain.Context.RepoContext?> TryGetRepoContextAsync(
+        PrReviewJobCommand command,
+        IReadOnlyList<string> prFilePaths,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await _contextBuilder.GetOrBuildAsync(
+                command.TenantId,
+                command.InstallationId,
+                command.Owner,
+                command.Repo,
+                prFilePaths,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(
+                ex,
+                "Repo context unavailable for {Owner}/{Repo}; continuing diff-only review",
+                command.Owner,
+                command.Repo);
+            return null;
+        }
     }
 }
