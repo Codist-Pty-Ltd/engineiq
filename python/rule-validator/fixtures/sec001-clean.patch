@@ -1,0 +1,12 @@
+diff --git a/src/Acme.Infrastructure/DbConfig.cs b/src/Acme.Infrastructure/DbConfig.cs
+index 1111111..2222222 100644
+--- a/src/Acme.Infrastructure/DbConfig.cs
++++ b/src/Acme.Infrastructure/DbConfig.cs
+@@ -1,4 +1,6 @@
+ namespace Acme.Infrastructure;
+ 
+-public sealed class DbConfig { }
++public sealed class DbConfig(IConfiguration config)
++{
++    public string Conn => config.GetConnectionString("Default")!;
++}

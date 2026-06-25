@@ -1,0 +1,10 @@
+diff --git a/src/Acme.Domain/Order.cs b/src/Acme.Domain/Order.cs
+index 1111111..2222222 100644
+--- a/src/Acme.Domain/Order.cs
++++ b/src/Acme.Domain/Order.cs
+@@ -2,4 +2,5 @@ namespace Acme.Domain;
+ 
+ public sealed class Order
+ {
++    public decimal Total { get; init; }
+ }

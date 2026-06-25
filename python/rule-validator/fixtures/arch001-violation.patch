@@ -1,0 +1,9 @@
+diff --git a/src/Acme.Domain/Order.cs b/src/Acme.Domain/Order.cs
+index 1111111..2222222 100644
+--- a/src/Acme.Domain/Order.cs
++++ b/src/Acme.Domain/Order.cs
+@@ -1,4 +1,5 @@
+ namespace Acme.Domain;
+ 
++using Acme.Infrastructure.Persistence;
+ public sealed class Order { }

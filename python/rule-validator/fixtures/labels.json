@@ -1,0 +1,10 @@
+{
+  "arch001-violation.patch": { "rule_id": "ARCH-001", "should_find": true },
+  "arch001-clean.patch": { "rule_id": "ARCH-001", "should_find": false },
+  "arch002-violation.patch": { "rule_id": "ARCH-002", "should_find": true },
+  "arch002-clean.patch": { "rule_id": "ARCH-002", "should_find": false },
+  "sec001-violation.patch": { "rule_id": "SEC-001", "should_find": true },
+  "sec001-clean.patch": { "rule_id": "SEC-001", "should_find": false },
+  "perf001-violation.patch": { "rule_id": "PERF-001", "should_find": true },
+  "perf001-clean.patch": { "rule_id": "PERF-001", "should_find": false }
+}

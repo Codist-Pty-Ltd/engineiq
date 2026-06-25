@@ -1,0 +1,9 @@
+diff --git a/src/Acme.Infrastructure/OrderRepository.cs b/src/Acme.Infrastructure/OrderRepository.cs
+index 1111111..2222222 100644
+--- a/src/Acme.Infrastructure/OrderRepository.cs
++++ b/src/Acme.Infrastructure/OrderRepository.cs
+@@ -8,4 +8,5 @@ public sealed class OrderRepository(DbContext db)
+     public Task<Order?> FindAsync(Guid id, CancellationToken ct) =>
+-        db.Orders.FirstOrDefaultAsync(x => x.Id == id, ct);
++        Task.FromResult(db.Orders.FirstOrDefaultAsync(x => x.Id == id, ct).Result);
+ }

@@ -1,0 +1,14 @@
+diff --git a/src/Acme.API/Controllers/OrdersController.cs b/src/Acme.API/Controllers/OrdersController.cs
+index 1111111..2222222 100644
+--- a/src/Acme.API/Controllers/OrdersController.cs
++++ b/src/Acme.API/Controllers/OrdersController.cs
+@@ -10,4 +10,8 @@ public sealed class OrdersController : ControllerBase
+     public OrdersController(IOrderService orders) => _orders = orders;
+ 
+     [HttpGet("{id}")]
++    public async Task<IActionResult> Get(Guid id)
++    {
++        if (id == Guid.Empty) return BadRequest();
++        return Ok(await _orders.GetAsync(id));
++    }
+ }
