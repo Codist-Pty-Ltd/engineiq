@@ -24,6 +24,10 @@ scripts/demo-tenant-state.local.env
 # Admin SPA emitted into wwwroot by Docker / local npm run build
 src/EngineIQ.Admin/wwwroot/admin/
 
+# Interview prep (local War Room / senior prep — do not commit)
+INTERVIEW_PREP.md
+interview-prep/
+
 # OS / tooling
 .DS_Store
 Thumbs.db
