@@ -57,7 +57,9 @@ public sealed class RabbitMqQueueDepthCollector : BackgroundService
 
         using var connection = factory.CreateConnection("EngineIQ.Worker.QueueDepth");
         using var channel = connection.CreateModel();
-        var declare = channel.QueueDeclarePassive(opts.QueueName);
-        return (int)declare.MessageCount;
+        var prDepth = (int)channel.QueueDeclarePassive(opts.QueueName).MessageCount;
+        var jiraDepth = (int)channel.QueueDeclarePassive(opts.JiraQueueName).MessageCount;
+        _logger.LogDebug("Queue depth PR={PrDepth} Jira={JiraDepth}", prDepth, jiraDepth);
+        return Math.Max(prDepth, jiraDepth);
     }
 }

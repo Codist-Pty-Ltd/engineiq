@@ -14,4 +14,14 @@ public interface ITenantMetricsRepository
         long durationMs,
         decimal tokenCostZar,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Upserts the UTC-day row: +1 issue analyzed, +token cost ZAR. Does not increment PR counters.
+    /// </summary>
+    Task RecordIssueAnalysisCompletionAsync(
+        Guid tenantId,
+        DateOnly date,
+        long durationMs,
+        decimal tokenCostZar,
+        CancellationToken cancellationToken = default);
 }

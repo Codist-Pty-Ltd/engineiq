@@ -4,7 +4,7 @@ using EngineIQ.Domain.Interfaces;
 namespace EngineIQ.API.Middleware;
 
 /// <summary>
-/// Requires <c>X-Api-Key</c> for <c>/api/v1/*</c> except onboarding register and GitHub install callback.
+/// Requires <c>X-Api-Key</c> for <c>/api/v1/*</c> except onboarding register, GitHub install callback, and Jira webhooks.
 /// For <c>/api/v1/tenant/{id}/...</c>, the key must belong to that tenant id.
 /// Sets <see cref="HttpContext.Items"/> <c>TenantId</c> for per-tenant rate limiting.
 /// </summary>
@@ -36,6 +36,13 @@ public sealed class ApiKeyTenantMiddleware
         }
 
         if (IsOnboardingPublicPath(path, context.Request.Method))
+        {
+            await _next(context);
+            return;
+        }
+
+        // Jira Cloud webhooks authenticate via the per-connection secret in the URL path.
+        if (path.StartsWithSegments("/api/v1/webhooks/jira", StringComparison.OrdinalIgnoreCase))
         {
             await _next(context);
             return;

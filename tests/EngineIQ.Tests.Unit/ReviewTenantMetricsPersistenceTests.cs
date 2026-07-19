@@ -31,6 +31,14 @@ public class ReviewTenantMetricsPersistenceTests
             TokenCostZar = tokenCostZar;
             return Task.CompletedTask;
         }
+
+        public Task RecordIssueAnalysisCompletionAsync(
+            Guid tenantId,
+            DateOnly date,
+            long durationMs,
+            decimal tokenCostZar,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     [Fact]

@@ -26,6 +26,8 @@
     <ProjectReference Include="..\..\src\EngineIQ.API\EngineIQ.API.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.Domain\EngineIQ.Domain.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.Infrastructure\EngineIQ.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\EngineIQ.Jira\EngineIQ.Jira.csproj" />
+    <ProjectReference Include="..\..\src\EngineIQ.ReviewEngine\EngineIQ.ReviewEngine.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.StandardsEngine\EngineIQ.StandardsEngine.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.FeedbackGenerator\EngineIQ.FeedbackGenerator.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.AIEngine\EngineIQ.AIEngine.csproj" />

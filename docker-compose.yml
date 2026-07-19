@@ -62,6 +62,9 @@ services:
       RabbitMq__ConnectionString: amqp://${RABBITMQ_USER:-engineiq}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       RabbitMq__QueueName: ${RABBITMQ_QUEUE_NAME:-pr-review-jobs}
       RabbitMq__DeadLetterQueueName: ${RABBITMQ_DLQ_NAME:-pr-review-jobs-dlq}
+      RabbitMq__JiraQueueName: ${RABBITMQ_JIRA_QUEUE_NAME:-jira-issue-jobs}
+      RabbitMq__JiraDeadLetterQueueName: ${RABBITMQ_JIRA_DLQ_NAME:-jira-issue-jobs-dlq}
+      Jira__TimeoutSeconds: ${JIRA_TIMEOUT_SECONDS:-15}
       GitHub__AppId: ${GITHUB_APP_ID:?}
       GitHub__AppSlug: ${GITHUB_APP_SLUG:-}
       GitHub__PrivateKeyPem: ${GITHUB_PRIVATE_KEY_PEM:?}
@@ -123,6 +126,9 @@ services:
       RabbitMq__ConnectionString: amqp://${RABBITMQ_USER:-engineiq}:${RABBITMQ_PASSWORD}@rabbitmq:5672/
       RabbitMq__QueueName: ${RABBITMQ_QUEUE_NAME:-pr-review-jobs}
       RabbitMq__DeadLetterQueueName: ${RABBITMQ_DLQ_NAME:-pr-review-jobs-dlq}
+      RabbitMq__JiraQueueName: ${RABBITMQ_JIRA_QUEUE_NAME:-jira-issue-jobs}
+      RabbitMq__JiraDeadLetterQueueName: ${RABBITMQ_JIRA_DLQ_NAME:-jira-issue-jobs-dlq}
+      Jira__TimeoutSeconds: ${JIRA_TIMEOUT_SECONDS:-15}
       Redis__ConnectionString: ${REDIS_CONNECTION_STRING:-redis:6379}
       Redis__ContextCacheTtlHours: ${REDIS_CONTEXT_CACHE_TTL_HOURS:-24}
       Observability__Enabled: ${OBSERVABILITY_ENABLED:-true}

@@ -1,6 +1,9 @@
 using EngineIQ.Domain.Interfaces;
+using EngineIQ.Domain.Trust;
 using EngineIQ.Infrastructure.Email;
+using EngineIQ.Infrastructure.Jira;
 using EngineIQ.Infrastructure.Persistence;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +17,7 @@ public static class DependencyInjection
     public static IServiceCollection AddEngineIQPersistence(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<PostgresOptions>(configuration.GetSection(PostgresOptions.SectionName));
+        services.Configure<TrustOptions>(configuration.GetSection(TrustOptions.SectionName));
 
         var connectionString = configuration.GetSection(PostgresOptions.SectionName)["ConnectionString"]
             ?? string.Empty;
@@ -25,10 +29,24 @@ public static class DependencyInjection
                 .UseSnakeCaseNamingConvention();
         });
 
+        // Scoped DbContext for Data Protection key ring persistence.
+        services.AddDbContext<EngineIQDbContext>(options =>
+        {
+            options.UseNpgsql(connectionString, npgsql =>
+                    npgsql.MigrationsAssembly(typeof(EngineIQDbContext).Assembly.GetName().Name!))
+                .UseSnakeCaseNamingConvention();
+        });
+        services.AddDataProtection()
+            .PersistKeysToDbContext<EngineIQDbContext>()
+            .SetApplicationName("EngineIQ");
+
+        services.AddSingleton<IJiraApiTokenProtector, JiraApiTokenProtector>();
         services.AddSingleton<IJobRepository, JobRepository>();
         services.AddSingleton<IFindingRepository, FindingRepository>();
         services.AddSingleton<ITenantMetricsRepository, TenantMetricsRepository>();
         services.AddSingleton<ITenantRepository, TenantRepository>();
+        services.AddSingleton<IJiraConnectionRepository, JiraConnectionRepository>();
+        services.AddSingleton<IIssueAnalysisJobRepository, IssueAnalysisJobRepository>();
 
         return services;
     }
@@ -52,11 +70,12 @@ public static class DependencyInjection
         return services;
     }
 
-    /// <summary>RabbitMQ publisher for PR review jobs (API host).</summary>
+    /// <summary>RabbitMQ publishers for PR review and Jira issue analysis jobs.</summary>
     public static IServiceCollection AddRabbitMqJobPublisher(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.SectionName));
         services.AddSingleton<IPullReviewJobPublisher, RabbitMqPullReviewJobPublisher>();
+        services.AddSingleton<IJiraIssueAnalysisJobPublisher, RabbitMqJiraJobPublisher>();
         return services;
     }
 

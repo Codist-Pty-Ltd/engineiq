@@ -8,6 +8,8 @@ public sealed class TenantMetric
     public int ViolationsFound { get; set; }
     public double AvgReviewMs { get; set; }
     public decimal TokenCostZar { get; set; }
+    /// <summary>Completed Jira issue-analysis jobs for the UTC day (additive; does not affect PrsReviewed).</summary>
+    public int IssuesAnalyzed { get; set; }
 
     public Tenant? Tenant { get; set; }
 }

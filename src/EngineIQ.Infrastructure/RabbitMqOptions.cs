@@ -9,4 +9,8 @@ public class RabbitMqOptions
     public string QueueName { get; set; } = "pr-review-jobs";
 
     public string DeadLetterQueueName { get; set; } = "pr-review-jobs-dlq";
+
+    public string JiraQueueName { get; set; } = "jira-issue-jobs";
+
+    public string JiraDeadLetterQueueName { get; set; } = "jira-issue-jobs-dlq";
 }

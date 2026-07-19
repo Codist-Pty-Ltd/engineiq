@@ -1,10 +1,11 @@
 using EngineIQ.Domain.Persistence;
 using EngineIQ.Infrastructure.Persistence.Entities;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace EngineIQ.Infrastructure.Persistence;
 
-public sealed class EngineIQDbContext : DbContext
+public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
 {
     public EngineIQDbContext(DbContextOptions<EngineIQDbContext> options)
         : base(options)
@@ -17,6 +18,10 @@ public sealed class EngineIQDbContext : DbContext
     public DbSet<Finding> Findings => Set<Finding>();
     public DbSet<TenantMetric> TenantMetrics => Set<TenantMetric>();
     public DbSet<PaystackWebhookEvent> PaystackWebhookEvents => Set<PaystackWebhookEvent>();
+    public DbSet<JiraConnection> JiraConnections => Set<JiraConnection>();
+    public DbSet<IssueAnalysisJob> IssueAnalysisJobs => Set<IssueAnalysisJob>();
+
+    public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public Task SetCurrentTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
@@ -100,6 +105,7 @@ public sealed class EngineIQDbContext : DbContext
             e.ToTable("tenant_metrics");
             e.HasKey(x => new { x.TenantId, x.Date });
             e.Property(x => x.TokenCostZar).HasPrecision(18, 6);
+            e.Property(x => x.IssuesAnalyzed);
             e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -109,6 +115,40 @@ public sealed class EngineIQDbContext : DbContext
             e.HasKey(x => x.EventKey);
             e.Property(x => x.EventKey).HasMaxLength(256);
             e.Property(x => x.EventType).HasMaxLength(128).IsRequired();
+        });
+
+        modelBuilder.Entity<JiraConnection>(e =>
+        {
+            e.ToTable("jira_connections");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => x.WebhookSecret).IsUnique();
+            e.HasIndex(x => x.TenantId);
+            e.Property(x => x.SiteBaseUrl).HasMaxLength(512).IsRequired();
+            e.Property(x => x.Email).HasMaxLength(320).IsRequired();
+            e.Property(x => x.ApiTokenProtected).HasColumnType("text").IsRequired();
+            e.Property(x => x.WebhookSecret).HasMaxLength(128).IsRequired();
+            e.Property(x => x.ProjectKeysCsv).HasMaxLength(1024);
+            e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<IssueAnalysisJob>(e =>
+        {
+            e.ToTable("issue_analysis_jobs");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.DedupeKey }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.Status });
+            e.Property(x => x.IssueKey).HasMaxLength(64).IsRequired();
+            e.Property(x => x.DedupeKey).HasMaxLength(256).IsRequired();
+            e.Property(x => x.Status).HasMaxLength(64).IsRequired();
+            e.Property(x => x.FailureReason).HasMaxLength(512);
+            e.Property(x => x.EstimatedCostZar).HasPrecision(18, 6);
+            e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.JiraConnection).WithMany().HasForeignKey(x => x.JiraConnectionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<DataProtectionKey>(e =>
+        {
+            e.ToTable("data_protection_keys");
         });
 
         modelBuilder.Entity<Tenant>().HasData(

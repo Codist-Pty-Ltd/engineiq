@@ -7,6 +7,7 @@
     <Project Path="src/EngineIQ.FeedbackGenerator/EngineIQ.FeedbackGenerator.csproj" />
     <Project Path="src/EngineIQ.GitHub/EngineIQ.GitHub.csproj" />
     <Project Path="src/EngineIQ.Infrastructure/EngineIQ.Infrastructure.csproj" />
+    <Project Path="src/EngineIQ.Jira/EngineIQ.Jira.csproj" />
     <Project Path="src/EngineIQ.ReviewEngine/EngineIQ.ReviewEngine.csproj" />
     <Project Path="src/EngineIQ.StandardsEngine/EngineIQ.StandardsEngine.csproj" />
     <Project Path="src/EngineIQ.Worker/EngineIQ.Worker.csproj" />

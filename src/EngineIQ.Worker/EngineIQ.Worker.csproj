@@ -18,7 +18,9 @@
     <ProjectReference Include="..\EngineIQ.ReviewEngine\EngineIQ.ReviewEngine.csproj" />
     <ProjectReference Include="..\EngineIQ.Infrastructure\EngineIQ.Infrastructure.csproj" />
     <ProjectReference Include="..\EngineIQ.GitHub\EngineIQ.GitHub.csproj" />
+    <ProjectReference Include="..\EngineIQ.Jira\EngineIQ.Jira.csproj" />
     <ProjectReference Include="..\EngineIQ.AIEngine\EngineIQ.AIEngine.csproj" />
+    <ProjectReference Include="..\EngineIQ.FeedbackGenerator\EngineIQ.FeedbackGenerator.csproj" />
     <ProjectReference Include="..\EngineIQ.ContextBuilder\EngineIQ.ContextBuilder.csproj" />
     <ProjectReference Include="..\EngineIQ.Observability\EngineIQ.Observability.csproj" />
   </ItemGroup>

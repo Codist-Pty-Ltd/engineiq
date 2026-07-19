@@ -1,4 +1,5 @@
 using EngineIQ.AIEngine;
+using EngineIQ.AIEngine.IssueImprovement;
 using EngineIQ.ContextBuilder;
 using EngineIQ.Domain.Configuration;
 using EngineIQ.Domain.Interfaces;
@@ -6,6 +7,7 @@ using EngineIQ.Domain.Trust;
 using EngineIQ.GitHub;
 using EngineIQ.Infrastructure;
 using EngineIQ.Infrastructure.Email;
+using EngineIQ.Jira;
 using EngineIQ.Observability;
 using EngineIQ.ReviewEngine.Orchestration;
 using EngineIQ.Worker;
@@ -21,6 +23,7 @@ builder.Services.Configure<TrustOptions>(builder.Configuration.GetSection(TrustO
 builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.SectionName));
 builder.Services.Configure<PendingPublishRelayOptions>(builder.Configuration.GetSection(PendingPublishRelayOptions.SectionName));
 builder.Services.Configure<EngineIQDashboardOptions>(builder.Configuration.GetSection(EngineIQDashboardOptions.SectionName));
+builder.Services.Configure<JiraClientOptions>(builder.Configuration.GetSection(JiraClientOptions.SectionName));
 
 builder.Services.AddEngineIQObservability(builder.Configuration, "engineiq-worker");
 builder.Services.AddEngineIQPersistence(builder.Configuration);
@@ -34,13 +37,24 @@ builder.Services.AddHttpClient(ReviewService.AnthropicHttpClientName, client =>
     client.BaseAddress = new Uri("https://api.anthropic.com/");
 });
 
+builder.Services.AddHttpClient(JiraCloudClient.HttpClientName, (sp, client) =>
+{
+    var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<JiraClientOptions>>().Value;
+    client.Timeout = TimeSpan.FromSeconds(Math.Max(5, opts.TimeoutSeconds));
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(opts.UserAgent);
+});
+
 builder.Services.AddSingleton<IGitHubClient, GitHubAppClient>();
+builder.Services.AddSingleton<IJiraClient, JiraCloudClient>();
 builder.Services.AddSingleton<IStandardsEngine, EngineIQ.StandardsEngine.StandardsEngine>();
 builder.Services.AddSingleton<IContextBuilder, ContextBuilderService>();
 builder.Services.AddSingleton<IAIEngine, ReviewService>();
+builder.Services.AddSingleton<IJiraIssueImprovementService, IssueImprovementService>();
 builder.Services.AddSingleton<IReviewOrchestrator, ReviewOrchestrator>();
+builder.Services.AddSingleton<IIssueAnalysisOrchestrator, IssueAnalysisOrchestrator>();
 
 builder.Services.AddHostedService<PullReviewJobConsumer>();
+builder.Services.AddHostedService<JiraIssueJobConsumer>();
 builder.Services.AddHostedService<PendingPublishRelayService>();
 builder.Services.AddHostedService<RabbitMqQueueDepthCollector>();
 

@@ -3,9 +3,11 @@ using EngineIQ.API.Cors;
 using EngineIQ.API.Middleware;
 using EngineIQ.API.Options;
 using EngineIQ.API.Validation;
+using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Trust;
 using EngineIQ.GitHub;
 using EngineIQ.Infrastructure;
+using EngineIQ.Jira;
 using EngineIQ.Observability;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
@@ -23,6 +25,7 @@ builder.Services.Configure<GitHubClientOptions>(builder.Configuration.GetSection
 builder.Services.Configure<EngineIQAppOptions>(builder.Configuration.GetSection(EngineIQAppOptions.SectionName));
 builder.Services.Configure<TrustOptions>(builder.Configuration.GetSection(TrustOptions.SectionName));
 builder.Services.Configure<CorsOptions>(builder.Configuration.GetSection(CorsOptions.SectionName));
+builder.Services.Configure<JiraClientOptions>(builder.Configuration.GetSection(JiraClientOptions.SectionName));
 
 var corsOrigins = CorsOriginResolver.Resolve(builder.Configuration);
 
@@ -41,6 +44,15 @@ builder.Services.AddEngineIQPersistence(builder.Configuration);
 builder.Services.AddEngineIQPaystack(builder.Configuration);
 builder.Services.AddEngineIQEmail(builder.Configuration);
 builder.Services.AddRabbitMqJobPublisher(builder.Configuration);
+
+builder.Services.AddHttpClient(JiraCloudClient.HttpClientName, (sp, client) =>
+{
+    var opts = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<JiraClientOptions>>().Value;
+    client.Timeout = TimeSpan.FromSeconds(Math.Max(5, opts.TimeoutSeconds));
+    client.DefaultRequestHeaders.UserAgent.ParseAdd(opts.UserAgent);
+});
+builder.Services.AddSingleton<IJiraClient, JiraCloudClient>();
+builder.Services.AddSingleton<JiraWebhookValidator>();
 
 builder.Services.AddSingleton<StandardsConfigYamlValidator>();
 
