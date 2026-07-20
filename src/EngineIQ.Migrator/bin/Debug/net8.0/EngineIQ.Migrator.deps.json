@@ -24,7 +24,8 @@
         "runtime": {
           "lib/net8.0/EFCore.NamingConventions.dll": {
             "assemblyVersion": "8.0.3.0",
-            "fileVersion": "8.0.3.0"
+            "fileVersion": "8.0.3.0",
+            "localPath": "EFCore.NamingConventions.dll"
           }
         }
       },
@@ -37,7 +38,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.EntityFrameworkCore.dll": {
             "assemblyVersion": "8.0.11.0",
-            "fileVersion": "8.0.1124.52104"
+            "fileVersion": "8.0.1124.52104",
+            "localPath": "Microsoft.EntityFrameworkCore.dll"
           }
         }
       },
@@ -45,7 +47,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.EntityFrameworkCore.Abstractions.dll": {
             "assemblyVersion": "8.0.11.0",
-            "fileVersion": "8.0.1124.52104"
+            "fileVersion": "8.0.1124.52104",
+            "localPath": "Microsoft.EntityFrameworkCore.Abstractions.dll"
           }
         }
       },
@@ -57,7 +60,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.EntityFrameworkCore.Relational.dll": {
             "assemblyVersion": "8.0.11.0",
-            "fileVersion": "8.0.1124.52104"
+            "fileVersion": "8.0.1124.52104",
+            "localPath": "Microsoft.EntityFrameworkCore.Relational.dll"
           }
         }
       },
@@ -68,7 +72,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Caching.Abstractions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.Caching.Abstractions.dll"
           }
         }
       },
@@ -83,7 +88,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Caching.Memory.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Caching.Memory.dll"
           }
         }
       },
@@ -95,7 +101,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Configuration.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.Configuration.dll"
           }
         }
       },
@@ -106,7 +113,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Configuration.Abstractions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.Configuration.Abstractions.dll"
           }
         }
       },
@@ -117,7 +125,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Configuration.Binder.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.724.31311"
+            "fileVersion": "8.0.724.31311",
+            "localPath": "Microsoft.Extensions.Configuration.Binder.dll"
           }
         }
       },
@@ -129,7 +138,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Configuration.CommandLine.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.Configuration.CommandLine.dll"
           }
         }
       },
@@ -141,7 +151,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Configuration.EnvironmentVariables.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.Configuration.EnvironmentVariables.dll"
           }
         }
       },
@@ -156,7 +167,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Configuration.FileExtensions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.724.31311"
+            "fileVersion": "8.0.724.31311",
+            "localPath": "Microsoft.Extensions.Configuration.FileExtensions.dll"
           }
         }
       },
@@ -170,7 +182,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Configuration.Json.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Configuration.Json.dll"
           }
         }
       },
@@ -184,7 +197,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Configuration.UserSecrets.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Configuration.UserSecrets.dll"
           }
         }
       },
@@ -195,7 +209,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.DependencyInjection.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.DependencyInjection.dll"
           }
         }
       },
@@ -203,7 +218,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.DependencyInjection.Abstractions.dll"
           }
         }
       },
@@ -216,7 +232,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Diagnostics.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Diagnostics.dll"
           }
         }
       },
@@ -228,7 +245,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Diagnostics.Abstractions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Diagnostics.Abstractions.dll"
           }
         }
       },
@@ -239,7 +257,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.FileProviders.Abstractions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.FileProviders.Abstractions.dll"
           }
         }
       },
@@ -252,7 +271,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.FileProviders.Physical.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.FileProviders.Physical.dll"
           }
         }
       },
@@ -260,7 +280,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.FileSystemGlobbing.dll"
           }
         }
       },
@@ -292,7 +313,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Hosting.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Hosting.dll"
           }
         }
       },
@@ -307,7 +329,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Hosting.Abstractions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Hosting.Abstractions.dll"
           }
         }
       },
@@ -323,7 +346,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Http.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Http.dll"
           }
         }
       },
@@ -336,7 +360,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Logging.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Logging.dll"
           }
         }
       },
@@ -347,7 +372,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Logging.Abstractions.dll"
           }
         }
       },
@@ -365,7 +391,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Logging.Configuration.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Logging.Configuration.dll"
           }
         }
       },
@@ -380,7 +407,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Logging.Console.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Logging.Console.dll"
           }
         }
       },
@@ -393,7 +421,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Logging.Debug.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Logging.Debug.dll"
           }
         }
       },
@@ -408,7 +437,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Logging.EventLog.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Logging.EventLog.dll"
           }
         }
       },
@@ -423,7 +453,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Logging.EventSource.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "Microsoft.Extensions.Logging.EventSource.dll"
           }
         }
       },
@@ -435,7 +466,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Options.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.224.6711"
+            "fileVersion": "8.0.224.6711",
+            "localPath": "Microsoft.Extensions.Options.dll"
           }
         }
       },
@@ -450,7 +482,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.Options.ConfigurationExtensions.dll"
           }
         }
       },
@@ -458,7 +491,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Primitives.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.Primitives.dll"
           }
         }
       },
@@ -469,7 +503,8 @@
         "runtime": {
           "lib/net8.0/Npgsql.dll": {
             "assemblyVersion": "8.0.6.0",
-            "fileVersion": "8.0.6.0"
+            "fileVersion": "8.0.6.0",
+            "localPath": "Npgsql.dll"
           }
         }
       },
@@ -483,7 +518,32 @@
         "runtime": {
           "lib/net8.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll": {
             "assemblyVersion": "8.0.11.0",
-            "fileVersion": "8.0.11.0"
+            "fileVersion": "8.0.11.0",
+            "localPath": "Npgsql.EntityFrameworkCore.PostgreSQL.dll"
+          }
+        }
+      },
+      "OpenTelemetry.Api/1.11.2": {
+        "dependencies": {
+          "System.Diagnostics.DiagnosticSource": "9.0.0"
+        },
+        "runtime": {
+          "lib/net8.0/OpenTelemetry.Api.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.11.2.1586",
+            "localPath": "OpenTelemetry.Api.dll"
+          }
+        }
+      },
+      "Pipelines.Sockets.Unofficial/2.2.8": {
+        "dependencies": {
+          "System.IO.Pipelines": "5.0.1"
+        },
+        "runtime": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "2.2.8.1080",
+            "localPath": "Pipelines.Sockets.Unofficial.dll"
           }
         }
       },
@@ -491,7 +551,30 @@
         "runtime": {
           "lib/netstandard2.0/RabbitMQ.Client.dll": {
             "assemblyVersion": "6.0.0.0",
-            "fileVersion": "6.8.1.0"
+            "fileVersion": "6.8.1.0",
+            "localPath": "RabbitMQ.Client.dll"
+          }
+        }
+      },
+      "StackExchange.Redis/2.8.16": {
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
+          "Pipelines.Sockets.Unofficial": "2.2.8"
+        },
+        "runtime": {
+          "lib/net6.0/StackExchange.Redis.dll": {
+            "assemblyVersion": "2.0.0.0",
+            "fileVersion": "2.8.16.12844",
+            "localPath": "StackExchange.Redis.dll"
+          }
+        }
+      },
+      "System.Diagnostics.DiagnosticSource/9.0.0": {
+        "runtime": {
+          "lib/net8.0/System.Diagnostics.DiagnosticSource.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.24.52809",
+            "localPath": "System.Diagnostics.DiagnosticSource.dll"
           }
         }
       },
@@ -499,7 +582,8 @@
         "runtime": {
           "lib/net8.0/System.Diagnostics.EventLog.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "System.Diagnostics.EventLog.dll"
           }
         },
         "runtimeTargets": {
@@ -507,13 +591,24 @@
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "0.0.0.0"
+            "fileVersion": "0.0.0.0",
+            "localPath": "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.Messages.dll"
           },
           "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.dll": {
             "rid": "win",
             "assetType": "runtime",
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.1024.46610"
+            "fileVersion": "8.0.1024.46610",
+            "localPath": "runtimes/win/lib/net8.0/System.Diagnostics.EventLog.dll"
+          }
+        }
+      },
+      "System.IO.Pipelines/5.0.1": {
+        "runtime": {
+          "lib/netcoreapp3.0/System.IO.Pipelines.dll": {
+            "assemblyVersion": "5.0.0.1",
+            "fileVersion": "5.0.120.57516",
+            "localPath": "System.IO.Pipelines.dll"
           }
         }
       },
@@ -537,7 +632,9 @@
           "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
           "Npgsql": "8.0.6",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "8.0.11",
-          "RabbitMQ.Client": "6.8.1"
+          "OpenTelemetry.Api": "1.11.2",
+          "RabbitMQ.Client": "6.8.1",
+          "StackExchange.Redis": "2.8.16"
         },
         "runtime": {
           "EngineIQ.Infrastructure.dll": {
@@ -806,6 +903,20 @@
       "path": "npgsql.entityframeworkcore.postgresql/8.0.11",
       "hashPath": "npgsql.entityframeworkcore.postgresql.8.0.11.nupkg.sha512"
     },
+    "OpenTelemetry.Api/1.11.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-jgSd/FvtxPPc6nLaZnFj+bulHM2iQjy+NBCY5MbQjH6vkW/SfcXD9NMP3pKCmdF+SbZpgL+EoLQc+PmcnYYLlA==",
+      "path": "opentelemetry.api/1.11.2",
+      "hashPath": "opentelemetry.api.1.11.2.nupkg.sha512"
+    },
+    "Pipelines.Sockets.Unofficial/2.2.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ==",
+      "path": "pipelines.sockets.unofficial/2.2.8",
+      "hashPath": "pipelines.sockets.unofficial.2.2.8.nupkg.sha512"
+    },
     "RabbitMQ.Client/6.8.1": {
       "type": "package",
       "serviceable": true,
@@ -813,12 +924,33 @@
       "path": "rabbitmq.client/6.8.1",
       "hashPath": "rabbitmq.client.6.8.1.nupkg.sha512"
     },
+    "StackExchange.Redis/2.8.16": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WaoulkOqOC9jHepca3JZKFTqndCWab5uYS7qCzmiQDlrTkFaDN7eLSlEfHycBxipRnQY9ppZM7QSsWAwUEGblw==",
+      "path": "stackexchange.redis/2.8.16",
+      "hashPath": "stackexchange.redis.2.8.16.nupkg.sha512"
+    },
+    "System.Diagnostics.DiagnosticSource/9.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ddppcFpnbohLWdYKr/ZeLZHmmI+DXFgZ3Snq+/E7SwcdW4UnvxmaugkwGywvGVWkHPGCSZjCP+MLzu23AL5SDw==",
+      "path": "system.diagnostics.diagnosticsource/9.0.0",
+      "hashPath": "system.diagnostics.diagnosticsource.9.0.0.nupkg.sha512"
+    },
     "System.Diagnostics.EventLog/8.0.1": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-n1ZP7NM2Gkn/MgD8+eOT5MulMj6wfeQMNS2Pizvq5GHCZfjlFMXV2irQlQmJhwA2VABC57M0auudO89Iu2uRLg==",
       "path": "system.diagnostics.eventlog/8.0.1",
       "hashPath": "system.diagnostics.eventlog.8.0.1.nupkg.sha512"
+    },
+    "System.IO.Pipelines/5.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qEePWsaq9LoEEIqhbGe6D5J8c9IqQOUuTzzV6wn1POlfdLkJliZY3OlB0j0f17uMWlqZYjH7txj+2YbyrIA8Yg==",
+      "path": "system.io.pipelines/5.0.1",
+      "hashPath": "system.io.pipelines.5.0.1.nupkg.sha512"
     },
     "EngineIQ.Domain/1.0.0": {
       "type": "project",

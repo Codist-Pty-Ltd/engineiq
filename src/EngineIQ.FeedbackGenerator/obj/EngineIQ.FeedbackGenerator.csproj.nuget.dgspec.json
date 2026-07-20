@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\EngineIQ.FeedbackGenerator.csproj": {}
+    "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\EngineIQ.FeedbackGenerator.csproj": {}
   },
   "projects": {
-    "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
+    "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj",
+        "projectUniqueName": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj",
         "projectName": "EngineIQ.Domain",
-        "projectPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj",
+        "projectPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj",
         "packagesPath": "C:\\Users\\ntoko\\.nuget\\packages\\",
-        "outputPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\obj\\",
+        "outputPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -31,6 +31,7 @@
         },
         "frameworks": {
           "net8.0": {
+            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -45,10 +46,11 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "11.0.100"
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "imports": [
             "net461",
@@ -66,18 +68,18 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\11.0.100-preview.5.26302.115/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\EngineIQ.FeedbackGenerator.csproj": {
+    "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\EngineIQ.FeedbackGenerator.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\EngineIQ.FeedbackGenerator.csproj",
+        "projectUniqueName": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\EngineIQ.FeedbackGenerator.csproj",
         "projectName": "EngineIQ.FeedbackGenerator",
-        "projectPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\EngineIQ.FeedbackGenerator.csproj",
+        "projectPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\EngineIQ.FeedbackGenerator.csproj",
         "packagesPath": "C:\\Users\\ntoko\\.nuget\\packages\\",
-        "outputPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\obj\\",
+        "outputPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.FeedbackGenerator\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -97,10 +99,11 @@
         },
         "frameworks": {
           "net8.0": {
+            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
-                "projectPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj"
+              "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
+                "projectPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj"
               }
             }
           }
@@ -115,10 +118,11 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "11.0.100"
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "imports": [
             "net461",
@@ -136,7 +140,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\11.0.100-preview.5.26302.115/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

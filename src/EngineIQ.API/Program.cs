@@ -53,6 +53,8 @@ builder.Services.AddHttpClient(JiraCloudClient.HttpClientName, (sp, client) =>
 });
 builder.Services.AddSingleton<IJiraClient, JiraCloudClient>();
 builder.Services.AddSingleton<JiraWebhookValidator>();
+builder.Services.AddSingleton<GitHubInstallationAuthenticator>();
+builder.Services.AddSingleton<IRepoArchiveClient, RepoArchiveClient>();
 
 builder.Services.AddSingleton<StandardsConfigYamlValidator>();
 

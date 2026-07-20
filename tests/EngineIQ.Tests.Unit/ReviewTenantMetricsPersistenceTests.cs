@@ -39,6 +39,13 @@ public class ReviewTenantMetricsPersistenceTests
             decimal tokenCostZar,
             CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        public Task RecordChunksEmbeddedAsync(
+            Guid tenantId,
+            DateOnly date,
+            int chunksEmbedded,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     [Fact]

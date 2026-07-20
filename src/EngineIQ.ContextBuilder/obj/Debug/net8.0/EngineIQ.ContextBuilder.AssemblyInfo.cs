@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EngineIQ.ContextBuilder")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8f0d592093bdad3db1aa457d6defbe088d486998")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+228f53b998b1d522f4a0ac7636c7eab0203f2b2a")]
 [assembly: System.Reflection.AssemblyProductAttribute("EngineIQ.ContextBuilder")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EngineIQ.ContextBuilder")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

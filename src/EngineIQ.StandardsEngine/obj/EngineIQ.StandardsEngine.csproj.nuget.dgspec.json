@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\EngineIQ.StandardsEngine.csproj": {}
+    "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\EngineIQ.StandardsEngine.csproj": {}
   },
   "projects": {
-    "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
+    "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj",
+        "projectUniqueName": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj",
         "projectName": "EngineIQ.Domain",
-        "projectPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj",
+        "projectPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj",
         "packagesPath": "C:\\Users\\ntoko\\.nuget\\packages\\",
-        "outputPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\obj\\",
+        "outputPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -72,14 +72,14 @@
         }
       }
     },
-    "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\EngineIQ.StandardsEngine.csproj": {
+    "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\EngineIQ.StandardsEngine.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\EngineIQ.StandardsEngine.csproj",
+        "projectUniqueName": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\EngineIQ.StandardsEngine.csproj",
         "projectName": "EngineIQ.StandardsEngine",
-        "projectPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\EngineIQ.StandardsEngine.csproj",
+        "projectPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\EngineIQ.StandardsEngine.csproj",
         "packagesPath": "C:\\Users\\ntoko\\.nuget\\packages\\",
-        "outputPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\obj\\",
+        "outputPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.StandardsEngine\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -102,8 +102,8 @@
             "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
-                "projectPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj"
+              "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
+                "projectPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj"
               }
             }
           }

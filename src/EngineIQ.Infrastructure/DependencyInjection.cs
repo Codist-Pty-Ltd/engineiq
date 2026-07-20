@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Pgvector.EntityFrameworkCore;
 using StackExchange.Redis;
 
 namespace EngineIQ.Infrastructure;
@@ -25,7 +26,8 @@ public static class DependencyInjection
         services.AddDbContextFactory<EngineIQDbContext>(options =>
         {
             options.UseNpgsql(connectionString, npgsql =>
-                    npgsql.MigrationsAssembly(typeof(EngineIQDbContext).Assembly.GetName().Name!))
+                    npgsql.MigrationsAssembly(typeof(EngineIQDbContext).Assembly.GetName().Name!)
+                        .UseVector())
                 .UseSnakeCaseNamingConvention();
         });
 
@@ -33,7 +35,8 @@ public static class DependencyInjection
         services.AddDbContext<EngineIQDbContext>(options =>
         {
             options.UseNpgsql(connectionString, npgsql =>
-                    npgsql.MigrationsAssembly(typeof(EngineIQDbContext).Assembly.GetName().Name!))
+                    npgsql.MigrationsAssembly(typeof(EngineIQDbContext).Assembly.GetName().Name!)
+                        .UseVector())
                 .UseSnakeCaseNamingConvention();
         });
         services.AddDataProtection()
@@ -47,6 +50,9 @@ public static class DependencyInjection
         services.AddSingleton<ITenantRepository, TenantRepository>();
         services.AddSingleton<IJiraConnectionRepository, JiraConnectionRepository>();
         services.AddSingleton<IIssueAnalysisJobRepository, IssueAnalysisJobRepository>();
+        services.AddSingleton<IRepositoryRepository, RepositoryRepository>();
+        services.AddSingleton<ICodeChunkRepository, CodeChunkRepository>();
+        services.AddSingleton<IRepoIndexJobRepository, RepoIndexJobRepository>();
 
         return services;
     }
@@ -76,6 +82,19 @@ public static class DependencyInjection
         services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.SectionName));
         services.AddSingleton<IPullReviewJobPublisher, RabbitMqPullReviewJobPublisher>();
         services.AddSingleton<IJiraIssueAnalysisJobPublisher, RabbitMqJiraJobPublisher>();
+        services.AddSingleton<IRepoIndexJobPublisher, RabbitMqRepoIndexJobPublisher>();
+        return services;
+    }
+
+    /// <summary>Voyage embeddings client for code-chunk indexing (Session13).</summary>
+    public static IServiceCollection AddEngineIQEmbeddings(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<Embeddings.VoyageOptions>(configuration.GetSection(Embeddings.VoyageOptions.SectionName));
+        services.AddHttpClient<IEmbeddingClient, Embeddings.VoyageEmbeddingClient>(client =>
+        {
+            client.BaseAddress = new Uri("https://api.voyageai.com/");
+            client.Timeout = TimeSpan.FromSeconds(60);
+        });
         return services;
     }
 

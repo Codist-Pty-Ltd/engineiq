@@ -34,14 +34,10 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.AssemblyInfo.cs
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.csproj.CoreCompileInputs.cache
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.MvcApplicationPartsAssemblyInfo.cache
-C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.RazorAssemblyInfo.cache
-C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.RazorAssemblyInfo.cs
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
-C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\scopedcss\Pages\Shared\_Layout.cshtml.rz.scp.css
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\scopedcss\bundle\EngineIQ.Admin.styles.css
-C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\scopedcss\projectbundle\EngineIQ.Admin.bundle.scp.css
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\staticwebassets.build.json
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\staticwebassets.build.json.cache
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\staticwebassets.development.json
@@ -54,3 +50,4 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.genruntimeconfig.cache
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\ref\EngineIQ.Admin.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\EngineIQ.Admin.sourcelink.json
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Admin\obj\Debug\net8.0\scopedcss\scopedcss.cache

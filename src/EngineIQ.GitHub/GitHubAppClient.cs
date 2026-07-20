@@ -1,21 +1,17 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
 using System.Text;
 using EiqGitHubClient = EngineIQ.Domain.Interfaces.IGitHubClient;
 using GitHubPullRequestInfo = EngineIQ.Domain.Interfaces.GitHubPullRequestInfo;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Octokit;
 
 namespace EngineIQ.GitHub;
 
 public class GitHubAppClient : EiqGitHubClient
 {
-    private readonly GitHubClientOptions _options;
+    private readonly GitHubInstallationAuthenticator _authenticator;
 
-    public GitHubAppClient(IOptions<GitHubClientOptions> options)
+    public GitHubAppClient(GitHubInstallationAuthenticator authenticator)
     {
-        _options = options.Value;
+        _authenticator = authenticator;
     }
 
     public async Task<string> GetPullRequestDiffAsync(long installationId, string owner, string repo, int prNumber, CancellationToken cancellationToken = default)
@@ -53,35 +49,8 @@ public class GitHubAppClient : EiqGitHubClient
 
     private async Task<EiqGitHubClient> GetInstallationClientAsync(long installationId, CancellationToken cancellationToken)
     {
-        var jwt = CreateJwt();
-        var appClient = new GitHubClient(new ProductHeaderValue("EngineIQ"))
-        {
-            Credentials = new Credentials(jwt, AuthenticationType.Bearer)
-        };
-        var token = await appClient.GitHubApps.CreateInstallationToken(installationId);
-        var installationClient = new GitHubClient(new ProductHeaderValue("EngineIQ"))
-        {
-            Credentials = new Credentials(token.Token, AuthenticationType.Bearer)
-        };
+        var installationClient = await _authenticator.GetInstallationClientAsync(installationId, cancellationToken);
         return new InstallationGitHubClient(installationClient);
-    }
-
-    private string CreateJwt()
-    {
-        using var rsa = RSA.Create();
-        rsa.ImportFromPem(_options.PrivateKeyPem);
-        var key = new RsaSecurityKey(rsa.ExportParameters(true));
-        var now = DateTime.UtcNow;
-        var descriptor = new SecurityTokenDescriptor
-        {
-            Issuer = _options.AppId.ToString(),
-            IssuedAt = now.AddSeconds(-60),
-            Expires = now.AddMinutes(10),
-            SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256)
-        };
-        var handler = new JwtSecurityTokenHandler();
-        var token = handler.CreateToken(descriptor);
-        return handler.WriteToken(token);
     }
 
     private class InstallationGitHubClient : EiqGitHubClient

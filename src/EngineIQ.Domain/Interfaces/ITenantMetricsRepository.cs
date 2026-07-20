@@ -24,4 +24,11 @@ public interface ITenantMetricsRepository
         long durationMs,
         decimal tokenCostZar,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Upserts the UTC-day row: +<paramref name="chunksEmbedded"/> code chunks embedded (repo indexing).</summary>
+    Task RecordChunksEmbeddedAsync(
+        Guid tenantId,
+        DateOnly date,
+        int chunksEmbedded,
+        CancellationToken cancellationToken = default);
 }

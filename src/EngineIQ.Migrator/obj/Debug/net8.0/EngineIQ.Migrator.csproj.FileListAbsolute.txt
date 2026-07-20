@@ -59,3 +59,8 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\obj\Debug\net8.0\EngineIQ.Migrator.genruntimeconfig.cache
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\obj\Debug\net8.0\ref\EngineIQ.Migrator.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\obj\Debug\net8.0\EngineIQ.Migrator.sourcelink.json
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\bin\Debug\net8.0\OpenTelemetry.Api.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\bin\Debug\net8.0\Pipelines.Sockets.Unofficial.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\bin\Debug\net8.0\StackExchange.Redis.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\bin\Debug\net8.0\System.Diagnostics.DiagnosticSource.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.Migrator\bin\Debug\net8.0\System.IO.Pipelines.dll

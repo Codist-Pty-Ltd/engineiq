@@ -15,6 +15,8 @@ public sealed class PendingPublishRelayService : BackgroundService
     private readonly IPullReviewJobPublisher _publisher;
     private readonly IIssueAnalysisJobRepository _jiraJobs;
     private readonly IJiraIssueAnalysisJobPublisher _jiraPublisher;
+    private readonly IRepoIndexJobRepository _indexJobs;
+    private readonly IRepoIndexJobPublisher _indexPublisher;
     private readonly IOptions<PendingPublishRelayOptions> _options;
     private readonly ILogger<PendingPublishRelayService> _logger;
 
@@ -23,6 +25,8 @@ public sealed class PendingPublishRelayService : BackgroundService
         IPullReviewJobPublisher publisher,
         IIssueAnalysisJobRepository jiraJobs,
         IJiraIssueAnalysisJobPublisher jiraPublisher,
+        IRepoIndexJobRepository indexJobs,
+        IRepoIndexJobPublisher indexPublisher,
         IOptions<PendingPublishRelayOptions> options,
         ILogger<PendingPublishRelayService> logger)
     {
@@ -30,6 +34,8 @@ public sealed class PendingPublishRelayService : BackgroundService
         _publisher = publisher;
         _jiraJobs = jiraJobs;
         _jiraPublisher = jiraPublisher;
+        _indexJobs = indexJobs;
+        _indexPublisher = indexPublisher;
         _options = options;
         _logger = logger;
     }
@@ -46,6 +52,7 @@ public sealed class PendingPublishRelayService : BackgroundService
             {
                 await RelayStaleJobsAsync(staleAfter, stoppingToken);
                 await RelayStaleJiraJobsAsync(staleAfter, stoppingToken);
+                await RelayStaleIndexJobsAsync(staleAfter, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -162,6 +169,57 @@ public sealed class PendingPublishRelayService : BackgroundService
                 _logger.LogWarning(
                     ex,
                     "Reconciler could not publish Jira job {JobId}; will retry on next poll or Jira redelivery.",
+                    job.JobId);
+            }
+        }
+    }
+    private async Task RelayStaleIndexJobsAsync(TimeSpan staleAfter, CancellationToken cancellationToken)
+    {
+        var pending = await _indexJobs.ListStalePendingPublishJobsAsync(staleAfter, limit: 50, cancellationToken);
+        if (pending.Count == 0)
+            return;
+
+        _logger.LogInformation("Reconciling {Count} stale PendingPublish repo index job(s).", pending.Count);
+
+        foreach (var job in pending)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                break;
+
+            var message = new RepoIndexJobMessage(
+                job.TenantId,
+                job.JobId,
+                job.RepositoryId,
+                job.InstallationId,
+                job.Owner,
+                job.Repo,
+                job.HeadSha,
+                job.BaseSha,
+                Attempt: 0);
+
+            try
+            {
+                await _indexPublisher.PublishAsync(message, cancellationToken);
+                var marked = await _indexJobs.MarkJobQueuedAfterPublishAsync(job.TenantId, job.JobId, cancellationToken);
+                if (marked)
+                {
+                    _logger.LogInformation(
+                        "Reconciler published repo index job {JobId} for tenant {TenantId}.",
+                        job.JobId,
+                        job.TenantId);
+                }
+                else
+                {
+                    _logger.LogDebug(
+                        "Repo index job {JobId} was no longer PendingPublish after reconciler publish (likely webhook race).",
+                        job.JobId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Reconciler could not publish repo index job {JobId}; will retry on next poll or webhook redelivery.",
                     job.JobId);
             }
         }

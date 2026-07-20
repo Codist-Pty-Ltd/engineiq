@@ -8,9 +8,11 @@ C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBu
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.AssemblyInfoInputs.cache
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.AssemblyInfo.cs
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.csproj.CoreCompileInputs.cache
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.sourcelink.json
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.1163BEE9.Up2Date
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\refint\EngineIQ.ContextBuilder.dll
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.pdb
 C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\ref\EngineIQ.ContextBuilder.dll
-C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\obj\Debug\net8.0\EngineIQ.ContextBuilder.sourcelink.json
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\bin\Debug\net8.0\EngineIQ.GitHub.dll
+C:\projects\codist\ai\EngineIQ_Platform\engineiq_platform\src\EngineIQ.ContextBuilder\bin\Debug\net8.0\EngineIQ.GitHub.pdb

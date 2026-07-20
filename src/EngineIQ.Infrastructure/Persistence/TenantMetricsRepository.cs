@@ -89,4 +89,34 @@ public sealed class TenantMetricsRepository : ITenantMetricsRepository
         _ = durationMs;
         await db.SaveChangesAsync(cancellationToken);
     }
+
+    public async Task RecordChunksEmbeddedAsync(
+        Guid tenantId,
+        DateOnly date,
+        int chunksEmbedded,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+
+        var row = await db.TenantMetrics
+            .FirstOrDefaultAsync(m => m.TenantId == tenantId && m.Date == date, cancellationToken);
+
+        if (row is null)
+        {
+            row = new TenantMetric
+            {
+                TenantId = tenantId,
+                Date = date,
+                ChunksEmbedded = chunksEmbedded,
+            };
+            db.TenantMetrics.Add(row);
+        }
+        else
+        {
+            row.ChunksEmbedded += chunksEmbedded;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
 }

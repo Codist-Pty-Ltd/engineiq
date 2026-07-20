@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "NzfPSbby+CA=",
+  "dgSpecHash": "/Q0kxgcu8Hw=",
   "success": true,
   "projectFilePath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Migrator\\EngineIQ.Migrator.csproj",
   "expectedPackageFiles": [
@@ -41,8 +41,13 @@
     "C:\\Users\\ntoko\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
     "C:\\Users\\ntoko\\.nuget\\packages\\npgsql\\8.0.6\\npgsql.8.0.6.nupkg.sha512",
     "C:\\Users\\ntoko\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\8.0.11\\npgsql.entityframeworkcore.postgresql.8.0.11.nupkg.sha512",
+    "C:\\Users\\ntoko\\.nuget\\packages\\opentelemetry.api\\1.11.2\\opentelemetry.api.1.11.2.nupkg.sha512",
+    "C:\\Users\\ntoko\\.nuget\\packages\\pipelines.sockets.unofficial\\2.2.8\\pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "C:\\Users\\ntoko\\.nuget\\packages\\rabbitmq.client\\6.8.1\\rabbitmq.client.6.8.1.nupkg.sha512",
+    "C:\\Users\\ntoko\\.nuget\\packages\\stackexchange.redis\\2.8.16\\stackexchange.redis.2.8.16.nupkg.sha512",
+    "C:\\Users\\ntoko\\.nuget\\packages\\system.diagnostics.diagnosticsource\\9.0.0\\system.diagnostics.diagnosticsource.9.0.0.nupkg.sha512",
     "C:\\Users\\ntoko\\.nuget\\packages\\system.diagnostics.eventlog\\8.0.1\\system.diagnostics.eventlog.8.0.1.nupkg.sha512",
+    "C:\\Users\\ntoko\\.nuget\\packages\\system.io.pipelines\\5.0.1\\system.io.pipelines.5.0.1.nupkg.sha512",
     "C:\\Users\\ntoko\\.nuget\\packages\\system.memory\\4.5.5\\system.memory.4.5.5.nupkg.sha512",
     "C:\\Users\\ntoko\\.nuget\\packages\\system.threading.channels\\7.0.0\\system.threading.channels.7.0.0.nupkg.sha512"
   ],

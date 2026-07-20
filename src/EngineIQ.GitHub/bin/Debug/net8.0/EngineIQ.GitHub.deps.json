@@ -22,7 +22,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411"
+            "fileVersion": "10.0.526.15411",
+            "localPath": "Microsoft.Extensions.DependencyInjection.Abstractions.dll"
           }
         }
       },
@@ -33,7 +34,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Logging.Abstractions.dll": {
             "assemblyVersion": "8.0.0.0",
-            "fileVersion": "8.0.23.53103"
+            "fileVersion": "8.0.23.53103",
+            "localPath": "Microsoft.Extensions.Logging.Abstractions.dll"
           }
         }
       },
@@ -45,7 +47,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Options.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411"
+            "fileVersion": "10.0.526.15411",
+            "localPath": "Microsoft.Extensions.Options.dll"
           }
         }
       },
@@ -53,7 +56,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.Extensions.Primitives.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411"
+            "fileVersion": "10.0.526.15411",
+            "localPath": "Microsoft.Extensions.Primitives.dll"
           }
         }
       },
@@ -61,7 +65,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.IdentityModel.Abstractions.dll": {
             "assemblyVersion": "8.16.0.0",
-            "fileVersion": "8.16.0.26043"
+            "fileVersion": "8.16.0.26043",
+            "localPath": "Microsoft.IdentityModel.Abstractions.dll"
           }
         }
       },
@@ -72,7 +77,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll": {
             "assemblyVersion": "8.16.0.0",
-            "fileVersion": "8.16.0.26043"
+            "fileVersion": "8.16.0.26043",
+            "localPath": "Microsoft.IdentityModel.JsonWebTokens.dll"
           }
         }
       },
@@ -83,7 +89,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.IdentityModel.Logging.dll": {
             "assemblyVersion": "8.16.0.0",
-            "fileVersion": "8.16.0.26043"
+            "fileVersion": "8.16.0.26043",
+            "localPath": "Microsoft.IdentityModel.Logging.dll"
           }
         }
       },
@@ -95,7 +102,8 @@
         "runtime": {
           "lib/net8.0/Microsoft.IdentityModel.Tokens.dll": {
             "assemblyVersion": "8.16.0.0",
-            "fileVersion": "8.16.0.26043"
+            "fileVersion": "8.16.0.26043",
+            "localPath": "Microsoft.IdentityModel.Tokens.dll"
           }
         }
       },
@@ -103,7 +111,8 @@
         "runtime": {
           "lib/netstandard2.0/Octokit.dll": {
             "assemblyVersion": "14.0.0.0",
-            "fileVersion": "14.0.0.0"
+            "fileVersion": "14.0.0.0",
+            "localPath": "Octokit.dll"
           }
         }
       },
@@ -115,7 +124,8 @@
         "runtime": {
           "lib/net8.0/System.IdentityModel.Tokens.Jwt.dll": {
             "assemblyVersion": "8.16.0.0",
-            "fileVersion": "8.16.0.26043"
+            "fileVersion": "8.16.0.26043",
+            "localPath": "System.IdentityModel.Tokens.Jwt.dll"
           }
         }
       },

@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using EngineIQ.API.Validation;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Jobs;
+using EngineIQ.Domain.Messaging;
 using EngineIQ.Domain.Tenants;
 using EngineIQ.GitHub;
 using Microsoft.AspNetCore.Cors;
@@ -21,6 +22,10 @@ public sealed class TenantController : ControllerBase
     private readonly ITenantBillingService _billing;
     private readonly IFindingRepository _findings;
     private readonly IJobRepository _jobs;
+    private readonly IRepositoryRepository _repositories;
+    private readonly IRepoIndexJobRepository _indexJobs;
+    private readonly IRepoIndexJobPublisher _indexPublisher;
+    private readonly IRepoArchiveClient _repoArchive;
     private readonly StandardsConfigYamlValidator _yamlValidator;
     private readonly IOptions<GitHubClientOptions> _gitHub;
     private readonly ILogger<TenantController> _logger;
@@ -30,6 +35,10 @@ public sealed class TenantController : ControllerBase
         ITenantBillingService billing,
         IFindingRepository findings,
         IJobRepository jobs,
+        IRepositoryRepository repositories,
+        IRepoIndexJobRepository indexJobs,
+        IRepoIndexJobPublisher indexPublisher,
+        IRepoArchiveClient repoArchive,
         StandardsConfigYamlValidator yamlValidator,
         IOptions<GitHubClientOptions> gitHub,
         ILogger<TenantController> logger)
@@ -38,6 +47,10 @@ public sealed class TenantController : ControllerBase
         _billing = billing;
         _findings = findings;
         _jobs = jobs;
+        _repositories = repositories;
+        _indexJobs = indexJobs;
+        _indexPublisher = indexPublisher;
+        _repoArchive = repoArchive;
         _yamlValidator = yamlValidator;
         _gitHub = gitHub;
         _logger = logger;
@@ -298,6 +311,86 @@ public sealed class TenantController : ControllerBase
 
         var rows = await _tenants.ListRepositoriesAsync(id, cancellationToken);
         return Ok(rows.Select(r => new TenantRepositoryRowResponse(r.Id, r.FullName, r.JobCount)).ToList());
+    }
+
+    /// <summary>Manually triggers a code-index job for the repository's default branch HEAD. Returns 202 once queued.</summary>
+    [HttpPost("repositories/{repositoryId:guid}/index")]
+    public async Task<IActionResult> TriggerIndex(Guid id, Guid repositoryId, CancellationToken cancellationToken)
+    {
+        var repository = await _repositories.GetByIdAsync(id, repositoryId, cancellationToken);
+        if (repository is null)
+            return NotFound();
+
+        if (await _indexJobs.FindActiveJobIdForRepoAsync(id, repositoryId, cancellationToken) is { } activeJobId)
+            return Conflict(new { error = "index_in_progress", job_id = activeJobId });
+
+        var (owner, repoName) = ParseOwnerRepo(repository.FullName);
+        if (string.IsNullOrEmpty(owner) || string.IsNullOrEmpty(repoName))
+            return BadRequest(new { error = "invalid_repository_full_name" });
+
+        string headSha;
+        try
+        {
+            headSha = await _repoArchive.GetDefaultBranchHeadShaAsync(repository.InstallationId, owner, repoName, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to resolve default branch HEAD for repository {RepositoryId}.", repositoryId);
+            return StatusCode(StatusCodes.Status502BadGateway, new { error = "github_unavailable" });
+        }
+
+        // Full index: BaseSha null. Dedupe by repository + head so re-triggering the same SHA is a no-op.
+        var dedupeKey = $"{repositoryId:D}:full:{headSha}";
+        var enqueue = await _indexJobs.TryCreateQueuedJobAsync(
+            id,
+            repositoryId,
+            repository.InstallationId,
+            owner,
+            repoName,
+            headSha,
+            baseSha: null,
+            dedupeKey,
+            cancellationToken);
+
+        if (!enqueue.Created && !enqueue.NeedsRepublish)
+        {
+            if (string.Equals(enqueue.BlockReason, "suspended", StringComparison.OrdinalIgnoreCase))
+                return StatusCode(StatusCodes.Status403Forbidden, new { error = "tenant_suspended" });
+
+            if (string.Equals(enqueue.BlockReason, "duplicate", StringComparison.OrdinalIgnoreCase))
+                return Accepted(new { already_indexed = true, head_sha = headSha, job_id = enqueue.JobId });
+
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "enqueue_failed" });
+        }
+
+        var jobMessage = new RepoIndexJobMessage(
+            id,
+            enqueue.JobId!.Value,
+            repositoryId,
+            repository.InstallationId,
+            owner,
+            repoName,
+            headSha,
+            BaseSha: null,
+            Attempt: 0);
+
+        try
+        {
+            await _indexPublisher.PublishAsync(jobMessage, cancellationToken);
+            await _indexJobs.MarkJobQueuedAfterPublishAsync(id, enqueue.JobId.Value, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to publish manual repo index job {JobId}; remains PendingPublish for reconciler.", enqueue.JobId);
+        }
+
+        return Accepted(new { job_id = enqueue.JobId });
+    }
+
+    private static (string Owner, string Repo) ParseOwnerRepo(string fullName)
+    {
+        var parts = fullName.Split('/', 2, StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length == 2 ? (parts[0], parts[1]) : (string.Empty, string.Empty);
     }
 
     [HttpGet("usage")]

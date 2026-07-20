@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "targets": {
     "net8.0": {
       "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.5": {
@@ -523,11 +523,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.GitHub\\EngineIQ.GitHub.csproj",
+      "projectUniqueName": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.GitHub\\EngineIQ.GitHub.csproj",
       "projectName": "EngineIQ.GitHub",
-      "projectPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.GitHub\\EngineIQ.GitHub.csproj",
+      "projectPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.GitHub\\EngineIQ.GitHub.csproj",
       "packagesPath": "C:\\Users\\ntoko\\.nuget\\packages\\",
-      "outputPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.GitHub\\obj\\",
+      "outputPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.GitHub\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -547,10 +547,11 @@
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
-              "projectPath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj"
+            "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj": {
+              "projectPath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.Domain\\EngineIQ.Domain.csproj"
             }
           }
         }
@@ -565,10 +566,11 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "10.0.200"
+      "SdkAnalysisLevel": "11.0.100"
     },
     "frameworks": {
       "net8.0": {
+        "framework": "net8.0",
         "targetAlias": "net8.0",
         "dependencies": {
           "Microsoft.Extensions.Options": {
@@ -604,7 +606,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\11.0.100-preview.5.26302.115/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

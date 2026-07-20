@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Pgvector;
 
 #nullable disable
 
@@ -21,7 +22,86 @@ namespace EngineIQ.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "8.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("EngineIQ.Infrastructure.Persistence.Entities.CodeChunk", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("ChunkIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("chunk_index");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("content");
+
+                    b.Property<string>("ContentSha256")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("content_sha256");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Vector>("Embedding")
+                        .HasColumnType("vector(1024)")
+                        .HasColumnName("embedding");
+
+                    b.Property<int>("EndLine")
+                        .HasColumnType("integer")
+                        .HasColumnName("end_line");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)")
+                        .HasColumnName("file_path");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid>("RepositoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("repository_id");
+
+                    b.Property<int>("StartLine")
+                        .HasColumnType("integer")
+                        .HasColumnName("start_line");
+
+                    b.Property<string>("SymbolName")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("symbol_name");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_code_chunks");
+
+                    b.HasIndex("RepositoryId")
+                        .HasDatabaseName("ix_code_chunks_repository_id");
+
+                    b.HasIndex("TenantId", "RepositoryId")
+                        .HasDatabaseName("ix_code_chunks_tenant_id_repository_id");
+
+                    b.HasIndex("TenantId", "RepositoryId", "FilePath", "ContentSha256")
+                        .IsUnique()
+                        .HasDatabaseName("ix_code_chunks_tenant_id_repository_id_file_path_content_sha256");
+
+                    b.ToTable("code_chunks", "public");
+                });
 
             modelBuilder.Entity("EngineIQ.Infrastructure.Persistence.Entities.Finding", b =>
                 {
@@ -353,6 +433,116 @@ namespace EngineIQ.Infrastructure.Migrations
                     b.ToTable("pr_review_jobs", "public");
                 });
 
+            modelBuilder.Entity("EngineIQ.Infrastructure.Persistence.Entities.RepoIndexJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempt")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt");
+
+                    b.Property<string>("BaseSha")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("base_sha");
+
+                    b.Property<int>("ChunksDeleted")
+                        .HasColumnType("integer")
+                        .HasColumnName("chunks_deleted");
+
+                    b.Property<int>("ChunksEmbedded")
+                        .HasColumnType("integer")
+                        .HasColumnName("chunks_embedded");
+
+                    b.Property<int>("ChunksTotal")
+                        .HasColumnType("integer")
+                        .HasColumnName("chunks_total");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DedupeKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("dedupe_key");
+
+                    b.Property<long?>("DurationMs")
+                        .HasColumnType("bigint")
+                        .HasColumnName("duration_ms");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)")
+                        .HasColumnName("failure_reason");
+
+                    b.Property<int>("FilesWalked")
+                        .HasColumnType("integer")
+                        .HasColumnName("files_walked");
+
+                    b.Property<string>("HeadSha")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("head_sha");
+
+                    b.Property<long>("InstallationId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("installation_id");
+
+                    b.Property<string>("Owner")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("owner");
+
+                    b.Property<string>("Repo")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("repo");
+
+                    b.Property<Guid>("RepositoryId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("repository_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_repo_index_jobs");
+
+                    b.HasIndex("RepositoryId")
+                        .HasDatabaseName("ix_repo_index_jobs_repository_id");
+
+                    b.HasIndex("TenantId", "DedupeKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_repo_index_jobs_tenant_id_dedupe_key");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("ix_repo_index_jobs_tenant_id_status");
+
+                    b.HasIndex("TenantId", "RepositoryId", "Status")
+                        .HasDatabaseName("ix_repo_index_jobs_tenant_id_repository_id_status");
+
+                    b.ToTable("repo_index_jobs", "public");
+                });
+
             modelBuilder.Entity("EngineIQ.Infrastructure.Persistence.Entities.Repository", b =>
                 {
                     b.Property<Guid>("Id")
@@ -371,9 +561,14 @@ namespace EngineIQ.Infrastructure.Migrations
                         .HasColumnType("character varying(512)")
                         .HasColumnName("full_name");
 
-                    b.Property<DateTimeOffset?>("LastIndexedAt")
+                    b.Property<DateTimeOffset?>("IndexedAt")
                         .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_indexed_at");
+                        .HasColumnName("indexed_at");
+
+                    b.Property<string>("IndexedCommitSha")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("indexed_commit_sha");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid")
@@ -531,6 +726,10 @@ namespace EngineIQ.Infrastructure.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("avg_review_ms");
 
+                    b.Property<int>("ChunksEmbedded")
+                        .HasColumnType("integer")
+                        .HasColumnName("chunks_embedded");
+
                     b.Property<int>("IssuesAnalyzed")
                         .HasColumnType("integer")
                         .HasColumnName("issues_analyzed");
@@ -575,6 +774,27 @@ namespace EngineIQ.Infrastructure.Migrations
                         .HasName("pk_data_protection_keys");
 
                     b.ToTable("data_protection_keys", "public");
+                });
+
+            modelBuilder.Entity("EngineIQ.Infrastructure.Persistence.Entities.CodeChunk", b =>
+                {
+                    b.HasOne("EngineIQ.Infrastructure.Persistence.Entities.Repository", "Repository")
+                        .WithMany()
+                        .HasForeignKey("RepositoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_code_chunks_repositories_repository_id");
+
+                    b.HasOne("EngineIQ.Infrastructure.Persistence.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_code_chunks_tenants_tenant_id");
+
+                    b.Navigation("Repository");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("EngineIQ.Infrastructure.Persistence.Entities.Finding", b =>
@@ -646,6 +866,27 @@ namespace EngineIQ.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_pr_review_jobs_tenants_tenant_id");
+
+                    b.Navigation("Repository");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("EngineIQ.Infrastructure.Persistence.Entities.RepoIndexJob", b =>
+                {
+                    b.HasOne("EngineIQ.Infrastructure.Persistence.Entities.Repository", "Repository")
+                        .WithMany()
+                        .HasForeignKey("RepositoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_repo_index_jobs_repositories_repository_id");
+
+                    b.HasOne("EngineIQ.Infrastructure.Persistence.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_repo_index_jobs_tenants_tenant_id");
 
                     b.Navigation("Repository");
 

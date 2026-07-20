@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
+using EngineIQ.API.Indexing;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Messaging;
 using EngineIQ.Domain.Models;
@@ -21,10 +22,14 @@ namespace EngineIQ.API.Controllers;
 public class WebhookController : ControllerBase
 {
     private const string GitHubDeliveryHeader = "X-GitHub-Delivery";
+    private const string GitHubEventHeader = "X-GitHub-Event";
 
     private readonly IPullReviewJobPublisher _publisher;
     private readonly IJobRepository _jobRepository;
     private readonly ITenantRepository _tenants;
+    private readonly IRepositoryRepository _repositories;
+    private readonly IRepoIndexJobRepository _indexJobRepository;
+    private readonly IRepoIndexJobPublisher _indexPublisher;
     private readonly IConfiguration _configuration;
     private readonly ILogger<WebhookController> _logger;
 
@@ -32,12 +37,18 @@ public class WebhookController : ControllerBase
         IPullReviewJobPublisher publisher,
         IJobRepository jobRepository,
         ITenantRepository tenants,
+        IRepositoryRepository repositories,
+        IRepoIndexJobRepository indexJobRepository,
+        IRepoIndexJobPublisher indexPublisher,
         IConfiguration configuration,
         ILogger<WebhookController> logger)
     {
         _publisher = publisher;
         _jobRepository = jobRepository;
         _tenants = tenants;
+        _repositories = repositories;
+        _indexJobRepository = indexJobRepository;
+        _indexPublisher = indexPublisher;
         _configuration = configuration;
         _logger = logger;
     }
@@ -67,6 +78,13 @@ public class WebhookController : ControllerBase
         {
             _logger.LogWarning("Missing {Header} header.", GitHubDeliveryHeader);
             return BadRequest();
+        }
+
+        var eventType = Request.Headers[GitHubEventHeader].FirstOrDefault();
+        if (string.Equals(eventType, "push", StringComparison.OrdinalIgnoreCase))
+        {
+            var pushPayload = JsonSerializer.Deserialize<GitHubWebhookPayload>(payloadBody);
+            return await HandlePushAsync(pushPayload, deliveryId, sw, cancellationToken);
         }
 
         var payload = JsonSerializer.Deserialize<GitHubWebhookPayload>(payloadBody);
@@ -221,6 +239,158 @@ public class WebhookController : ControllerBase
             _logger.LogWarning("Webhook handler took {Ms} ms (target under 500 ms).", sw.ElapsedMilliseconds);
         else
             _logger.LogDebug("Webhook enqueued in {Ms} ms.", sw.ElapsedMilliseconds);
+
+        return Ok();
+    }
+
+    private async Task<IActionResult> HandlePushAsync(
+        GitHubWebhookPayload? payload,
+        string deliveryId,
+        Stopwatch sw,
+        CancellationToken cancellationToken)
+    {
+        if (payload?.Installation is null || payload.Repository is null || string.IsNullOrEmpty(payload.After))
+        {
+            _logger.LogWarning("Invalid push webhook payload structure.");
+            return BadRequest();
+        }
+
+        if (payload.Deleted)
+        {
+            _logger.LogInformation("Ignoring push webhook for deleted ref (delivery {DeliveryId}).", deliveryId);
+            return Ok();
+        }
+
+        var defaultBranch = string.IsNullOrWhiteSpace(payload.Repository.DefaultBranch)
+            ? "main"
+            : payload.Repository.DefaultBranch;
+        if (!RepoIndexPushFilter.IsDefaultBranchPush(payload.Ref, defaultBranch))
+        {
+            _logger.LogInformation("Ignoring push webhook for non-default branch {Ref}.", payload.Ref);
+            return Ok();
+        }
+
+        var installationId = payload.Installation.Id;
+        var fullName = payload.Repository.FullName ?? payload.Repository.Name ?? "";
+        var (owner, repo) = ParseOwnerRepo(fullName);
+        if (string.IsNullOrEmpty(owner) || string.IsNullOrEmpty(repo))
+        {
+            _logger.LogWarning("Could not parse repository owner/name for push webhook.");
+            return BadRequest();
+        }
+
+        using var budget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        budget.CancelAfter(TimeSpan.FromMilliseconds(450));
+
+        RepositoryInstallationLookup? lookup;
+        try
+        {
+            lookup = await _repositories.TryResolveByInstallationAndFullNameAsync(installationId, fullName, budget.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning("Push webhook repository lookup exceeded time budget ({Ms} ms).", sw.ElapsedMilliseconds);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "temporarily_unavailable");
+        }
+
+        if (lookup is null)
+        {
+            _logger.LogWarning("Unknown GitHub installation {InstallationId} for push webhook.", installationId);
+            return NotFound("unknown_installation");
+        }
+
+        if (string.Equals(lookup.TenantStatus, "Suspended", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning("Push webhook rejected for suspended tenant {TenantId}.", lookup.TenantId);
+            return StatusCode(StatusCodes.Status403Forbidden, "tenant_suspended");
+        }
+
+        // Incremental without a prior full index is meaningless — skip until a manual index has run.
+        if (!RepoIndexPushFilter.CanEnqueueIncremental(lookup.IndexedCommitSha))
+        {
+            _logger.LogInformation(
+                "Ignoring push for never-indexed repository {RepositoryId}; run POST .../index first.",
+                lookup.RepositoryId);
+            return Ok();
+        }
+
+        var baseSha = lookup.IndexedCommitSha;
+        var dedupeKey = RepoIndexPushFilter.BuildPushDedupeKey(lookup.RepositoryId, payload.After);
+
+        RepoIndexJobEnqueueResult enqueue;
+        try
+        {
+            enqueue = await _indexJobRepository.TryCreateQueuedJobAsync(
+                lookup.TenantId,
+                lookup.RepositoryId,
+                installationId,
+                owner,
+                repo,
+                payload.After,
+                baseSha,
+                dedupeKey,
+                budget.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning("Repo index job enqueue exceeded time budget ({Ms} ms).", sw.ElapsedMilliseconds);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "temporarily_unavailable");
+        }
+
+        if (!enqueue.Created && !enqueue.NeedsRepublish)
+        {
+            if (string.Equals(enqueue.BlockReason, "suspended", StringComparison.OrdinalIgnoreCase))
+                return StatusCode(StatusCodes.Status403Forbidden, "tenant_suspended");
+
+            if (string.Equals(enqueue.BlockReason, "enqueue_failed", StringComparison.OrdinalIgnoreCase))
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, "enqueue_failed");
+
+            _logger.LogInformation(
+                "Duplicate push index for repository {RepositoryId} head {HeadSha}; skipping enqueue.",
+                lookup.RepositoryId,
+                payload.After);
+            return Ok();
+        }
+
+        var jobMessage = new RepoIndexJobMessage(
+            lookup.TenantId,
+            enqueue.JobId!.Value,
+            lookup.RepositoryId,
+            installationId,
+            owner,
+            repo,
+            payload.After,
+            baseSha,
+            Attempt: 0);
+
+        try
+        {
+            await _indexPublisher.PublishAsync(jobMessage, budget.Token);
+            await _indexJobRepository.MarkJobQueuedAfterPublishAsync(lookup.TenantId, enqueue.JobId.Value, cancellationToken);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning(
+                "RabbitMQ publish exceeded time budget ({Ms} ms); repo index job {JobId} remains PendingPublish for reconciler/GitHub redelivery.",
+                sw.ElapsedMilliseconds,
+                enqueue.JobId);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "temporarily_unavailable");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Failed to enqueue repo index job {JobId}; row remains PendingPublish for reconciler/GitHub redelivery.",
+                enqueue.JobId);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "enqueue_failed");
+        }
+
+        sw.Stop();
+        _logger.LogInformation(
+            "Repo index job {JobId} enqueued for tenant {TenantId} in {Ms} ms.",
+            enqueue.JobId,
+            lookup.TenantId,
+            sw.ElapsedMilliseconds);
 
         return Ok();
     }

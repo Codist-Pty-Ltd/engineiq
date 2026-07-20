@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "DWpluTmjnlY=",
+  "dgSpecHash": "xwAiTTbfdN8=",
   "success": true,
-  "projectFilePath": "C:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.GitHub\\EngineIQ.GitHub.csproj",
+  "projectFilePath": "c:\\projects\\codist\\ai\\EngineIQ_Platform\\engineiq_platform\\src\\EngineIQ.GitHub\\EngineIQ.GitHub.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ntoko\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.5\\microsoft.extensions.dependencyinjection.abstractions.10.0.5.nupkg.sha512",
     "C:\\Users\\ntoko\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.0\\microsoft.extensions.logging.abstractions.8.0.0.nupkg.sha512",

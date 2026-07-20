@@ -8,6 +8,7 @@ build_property.ProjectTypeGuids =
 build_property.InvariantGlobalization = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = EngineIQ.Admin
 build_property.RootNamespace = EngineIQ.Admin
@@ -21,39 +22,3 @@ build_property.MSBuildProjectDirectory = C:\projects\codist\ai\EngineIQ_Platform
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/Admin/Jobs/DeadLetter.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cSm9ic1xEZWFkTGV0dGVyLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/Admin/Metrics.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cTWV0cmljcy5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/Admin/Tenants/Findings.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cVGVuYW50c1xGaW5kaW5ncy5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/Admin/Tenants/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQWRtaW5cVGVuYW50c1xJbmRleC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/Error.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/Shared/_ValidationScriptsPartial.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/_ViewImports.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/_ViewStart.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX1ZpZXdTdGFydC5jc2h0bWw=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/projects/codist/ai/EngineIQ_Platform/engineiq_platform/src/EngineIQ.Admin/Pages/Shared/_Layout.cshtml]
-build_metadata.AdditionalFiles.TargetPath = UGFnZXNcU2hhcmVkXF9MYXlvdXQuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = b-fdeotzl4fr

@@ -30,7 +30,10 @@ builder.Services.AddEngineIQPersistence(builder.Configuration);
 builder.Services.AddRabbitMqJobPublisher(builder.Configuration);
 builder.Services.AddEngineIQEmail(builder.Configuration);
 builder.Services.AddEngineIQRedis(builder.Configuration);
+builder.Services.AddEngineIQEmbeddings(builder.Configuration);
 builder.Services.Configure<RedisContextOptions>(builder.Configuration.GetSection(RedisContextOptions.SectionName));
+builder.Services.Configure<EngineIQ.ContextBuilder.Indexing.IndexingOptions>(
+    builder.Configuration.GetSection(EngineIQ.ContextBuilder.Indexing.IndexingOptions.SectionName));
 
 builder.Services.AddHttpClient(ReviewService.AnthropicHttpClientName, client =>
 {
@@ -44,7 +47,9 @@ builder.Services.AddHttpClient(JiraCloudClient.HttpClientName, (sp, client) =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd(opts.UserAgent);
 });
 
+builder.Services.AddSingleton<GitHubInstallationAuthenticator>();
 builder.Services.AddSingleton<IGitHubClient, GitHubAppClient>();
+builder.Services.AddSingleton<IRepoArchiveClient, RepoArchiveClient>();
 builder.Services.AddSingleton<IJiraClient, JiraCloudClient>();
 builder.Services.AddSingleton<IStandardsEngine, EngineIQ.StandardsEngine.StandardsEngine>();
 builder.Services.AddSingleton<IContextBuilder, ContextBuilderService>();
@@ -52,9 +57,12 @@ builder.Services.AddSingleton<IAIEngine, ReviewService>();
 builder.Services.AddSingleton<IJiraIssueImprovementService, IssueImprovementService>();
 builder.Services.AddSingleton<IReviewOrchestrator, ReviewOrchestrator>();
 builder.Services.AddSingleton<IIssueAnalysisOrchestrator, IssueAnalysisOrchestrator>();
+builder.Services.AddSingleton<ICodeChunker, EngineIQ.ContextBuilder.Indexing.CompositeCodeChunker>();
+builder.Services.AddSingleton<IRepoIndexer, EngineIQ.ContextBuilder.Indexing.RepoIndexer>();
 
 builder.Services.AddHostedService<PullReviewJobConsumer>();
 builder.Services.AddHostedService<JiraIssueJobConsumer>();
+builder.Services.AddHostedService<RepoIndexJobConsumer>();
 builder.Services.AddHostedService<PendingPublishRelayService>();
 builder.Services.AddHostedService<RabbitMqQueueDepthCollector>();
 

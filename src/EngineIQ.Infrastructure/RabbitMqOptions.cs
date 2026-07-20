@@ -13,4 +13,9 @@ public class RabbitMqOptions
     public string JiraQueueName { get; set; } = "jira-issue-jobs";
 
     public string JiraDeadLetterQueueName { get; set; } = "jira-issue-jobs-dlq";
+
+    /// <summary>Repo code-index jobs queue (Session13).</summary>
+    public string IndexQueueName { get; set; } = "repo-index-jobs";
+
+    public string IndexDeadLetterQueueName { get; set; } = "repo-index-jobs-dlq";
 }

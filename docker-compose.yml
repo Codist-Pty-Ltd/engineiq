@@ -7,7 +7,8 @@ name: engineiq
 
 services:
   postgres:
-    image: postgres:16-alpine
+    # Session13 (Code Index) requires the vector extension, hence the pgvector image (Postgres 16 + pgvector).
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-engineiq}
@@ -64,6 +65,8 @@ services:
       RabbitMq__DeadLetterQueueName: ${RABBITMQ_DLQ_NAME:-pr-review-jobs-dlq}
       RabbitMq__JiraQueueName: ${RABBITMQ_JIRA_QUEUE_NAME:-jira-issue-jobs}
       RabbitMq__JiraDeadLetterQueueName: ${RABBITMQ_JIRA_DLQ_NAME:-jira-issue-jobs-dlq}
+      RabbitMq__IndexQueueName: ${RABBITMQ_INDEX_QUEUE_NAME:-repo-index-jobs}
+      RabbitMq__IndexDeadLetterQueueName: ${RABBITMQ_INDEX_DLQ_NAME:-repo-index-jobs-dlq}
       Jira__TimeoutSeconds: ${JIRA_TIMEOUT_SECONDS:-15}
       GitHub__AppId: ${GITHUB_APP_ID:?}
       GitHub__AppSlug: ${GITHUB_APP_SLUG:-}
@@ -128,9 +131,19 @@ services:
       RabbitMq__DeadLetterQueueName: ${RABBITMQ_DLQ_NAME:-pr-review-jobs-dlq}
       RabbitMq__JiraQueueName: ${RABBITMQ_JIRA_QUEUE_NAME:-jira-issue-jobs}
       RabbitMq__JiraDeadLetterQueueName: ${RABBITMQ_JIRA_DLQ_NAME:-jira-issue-jobs-dlq}
+      RabbitMq__IndexQueueName: ${RABBITMQ_INDEX_QUEUE_NAME:-repo-index-jobs}
+      RabbitMq__IndexDeadLetterQueueName: ${RABBITMQ_INDEX_DLQ_NAME:-repo-index-jobs-dlq}
       Jira__TimeoutSeconds: ${JIRA_TIMEOUT_SECONDS:-15}
       Redis__ConnectionString: ${REDIS_CONNECTION_STRING:-redis:6379}
       Redis__ContextCacheTtlHours: ${REDIS_CONTEXT_CACHE_TTL_HOURS:-24}
+      Voyage__ApiKey: ${VOYAGE_API_KEY:-}
+      Voyage__Model: ${VOYAGE_MODEL:-voyage-code-3}
+      Voyage__Dimensions: ${VOYAGE_DIMENSIONS:-1024}
+      Voyage__BatchSize: ${VOYAGE_BATCH_SIZE:-96}
+      Voyage__MaxInputChars: ${VOYAGE_MAX_INPUT_CHARS:-24000}
+      Indexing__MaxFileSizeKb: ${INDEXING_MAX_FILE_SIZE_KB:-200}
+      Indexing__EmbedBatchSize: ${INDEXING_EMBED_BATCH_SIZE:-96}
+      Indexing__JobTimeoutMinutes: ${INDEXING_JOB_TIMEOUT_MINUTES:-10}
       Observability__Enabled: ${OBSERVABILITY_ENABLED:-true}
       Observability__MetricsPort: ${OBSERVABILITY_WORKER_METRICS_PORT:-9465}
       GitHub__AppId: ${GITHUB_APP_ID:?}

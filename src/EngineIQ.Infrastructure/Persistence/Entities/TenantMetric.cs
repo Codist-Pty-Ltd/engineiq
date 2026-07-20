@@ -10,6 +10,8 @@ public sealed class TenantMetric
     public decimal TokenCostZar { get; set; }
     /// <summary>Completed Jira issue-analysis jobs for the UTC day (additive; does not affect PrsReviewed).</summary>
     public int IssuesAnalyzed { get; set; }
+    /// <summary>Code chunks embedded by repo-index jobs for the UTC day (additive; Session13).</summary>
+    public int ChunksEmbedded { get; set; }
 
     public Tenant? Tenant { get; set; }
 }

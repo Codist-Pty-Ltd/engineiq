@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EngineIQ.Migrator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ebe3fff588ef77958776de88e45938d066f245c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+172104d1d9bfe8620c87ace5d84b5587c5bd53de")]
 [assembly: System.Reflection.AssemblyProductAttribute("EngineIQ.Migrator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EngineIQ.Migrator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

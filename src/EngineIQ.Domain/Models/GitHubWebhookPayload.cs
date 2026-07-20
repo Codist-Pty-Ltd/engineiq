@@ -18,6 +18,22 @@ public class GitHubWebhookPayload
 
     [JsonPropertyName("repository")]
     public RepositoryInfo? Repository { get; set; }
+
+    /// <summary>Push event only: full ref pushed, e.g. <c>refs/heads/main</c>.</summary>
+    [JsonPropertyName("ref")]
+    public string? Ref { get; set; }
+
+    /// <summary>Push event only: head commit sha after the push.</summary>
+    [JsonPropertyName("after")]
+    public string? After { get; set; }
+
+    /// <summary>Push event only: head commit sha before the push (all-zero sha on branch creation).</summary>
+    [JsonPropertyName("before")]
+    public string? Before { get; set; }
+
+    /// <summary>Push event only: true when the ref was deleted rather than pushed to.</summary>
+    [JsonPropertyName("deleted")]
+    public bool Deleted { get; set; }
 }
 
 public class InstallationInfo
@@ -48,6 +64,10 @@ public class RepositoryInfo
 
     [JsonPropertyName("owner")]
     public OwnerInfo? Owner { get; set; }
+
+    /// <summary>Push event only: used to ignore pushes to non-default branches for code indexing.</summary>
+    [JsonPropertyName("default_branch")]
+    public string? DefaultBranch { get; set; }
 }
 
 public class OwnerInfo

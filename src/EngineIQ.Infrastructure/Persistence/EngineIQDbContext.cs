@@ -20,8 +20,13 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
     public DbSet<PaystackWebhookEvent> PaystackWebhookEvents => Set<PaystackWebhookEvent>();
     public DbSet<JiraConnection> JiraConnections => Set<JiraConnection>();
     public DbSet<IssueAnalysisJob> IssueAnalysisJobs => Set<IssueAnalysisJob>();
+    public DbSet<CodeChunk> CodeChunks => Set<CodeChunk>();
+    public DbSet<RepoIndexJob> RepoIndexJobs => Set<RepoIndexJob>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
+
+    /// <summary>Vector column dimensions (Voyage voyage-code-3 default); Session13 code index.</summary>
+    public const int EmbeddingDimensions = 1024;
 
     public Task SetCurrentTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
@@ -38,6 +43,8 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("public");
+        if (Database.IsNpgsql())
+            modelBuilder.HasPostgresExtension("vector");
 
         modelBuilder.Entity<Tenant>(e =>
         {
@@ -67,6 +74,7 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
             e.HasIndex(x => new { x.TenantId, x.FullName }).IsUnique();
             e.Property(x => x.FullName).HasMaxLength(512).IsRequired();
             e.Property(x => x.ArchitectureStyle).HasMaxLength(128);
+            e.Property(x => x.IndexedCommitSha).HasMaxLength(64);
             e.HasOne(x => x.Tenant).WithMany(x => x.Repositories).HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -106,6 +114,7 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
             e.HasKey(x => new { x.TenantId, x.Date });
             e.Property(x => x.TokenCostZar).HasPrecision(18, 6);
             e.Property(x => x.IssuesAnalyzed);
+            e.Property(x => x.ChunksEmbedded);
             e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -144,6 +153,46 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
             e.Property(x => x.EstimatedCostZar).HasPrecision(18, 6);
             e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.JiraConnection).WithMany().HasForeignKey(x => x.JiraConnectionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<CodeChunk>(e =>
+        {
+            e.ToTable("code_chunks");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.RepositoryId, x.FilePath, x.ContentSha256 }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.RepositoryId });
+            e.Property(x => x.FilePath).HasMaxLength(2048).IsRequired();
+            e.Property(x => x.ContentSha256).HasMaxLength(64).IsRequired();
+            e.Property(x => x.SymbolName).HasMaxLength(512);
+            e.Property(x => x.Kind).HasMaxLength(64);
+            e.Property(x => x.Content).HasColumnType("text").IsRequired();
+            e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Repository).WithMany().HasForeignKey(x => x.RepositoryId).OnDelete(DeleteBehavior.Cascade);
+
+            // pgvector's "vector" column type has no Sqlite equivalent; the unit-test Sqlite provider
+            // never persists CodeChunk rows, so the embedding column is simply excluded from that model.
+            if (Database.IsNpgsql())
+                e.Property(x => x.Embedding).HasColumnType($"vector({EmbeddingDimensions})");
+            else
+                e.Ignore(x => x.Embedding);
+        });
+
+        modelBuilder.Entity<RepoIndexJob>(e =>
+        {
+            e.ToTable("repo_index_jobs");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.DedupeKey }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.Status });
+            e.HasIndex(x => new { x.TenantId, x.RepositoryId, x.Status });
+            e.Property(x => x.Owner).HasMaxLength(256).IsRequired();
+            e.Property(x => x.Repo).HasMaxLength(256).IsRequired();
+            e.Property(x => x.HeadSha).HasMaxLength(64).IsRequired();
+            e.Property(x => x.BaseSha).HasMaxLength(64);
+            e.Property(x => x.DedupeKey).HasMaxLength(256).IsRequired();
+            e.Property(x => x.Status).HasMaxLength(64).IsRequired();
+            e.Property(x => x.FailureReason).HasMaxLength(512);
+            e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Repository).WithMany().HasForeignKey(x => x.RepositoryId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<DataProtectionKey>(e =>
