@@ -62,10 +62,12 @@ builder.Services.AddSingleton<IReviewOrchestrator, ReviewOrchestrator>();
 builder.Services.AddSingleton<IIssueAnalysisOrchestrator, IssueAnalysisOrchestrator>();
 builder.Services.AddSingleton<ICodeChunker, EngineIQ.ContextBuilder.Indexing.CompositeCodeChunker>();
 builder.Services.AddSingleton<IRepoIndexer, EngineIQ.ContextBuilder.Indexing.RepoIndexer>();
+builder.Services.AddSingleton<IBackfillPacer, TaskBackfillPacer>();
 
 builder.Services.AddHostedService<PullReviewJobConsumer>();
 builder.Services.AddHostedService<JiraIssueJobConsumer>();
 builder.Services.AddHostedService<RepoIndexJobConsumer>();
+builder.Services.AddHostedService<BacklogBackfillConsumer>();
 builder.Services.AddHostedService<PendingPublishRelayService>();
 builder.Services.AddHostedService<RabbitMqQueueDepthCollector>();
 

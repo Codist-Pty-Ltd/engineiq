@@ -1,4 +1,5 @@
 using EngineIQ.Domain.Jira;
+using EngineIQ.Domain.Messaging;
 using EngineIQ.FeedbackGenerator;
 
 namespace EngineIQ.Tests.Unit;
@@ -20,8 +21,11 @@ public class IssueAnalysisCommentFormatterSlice2bTests
                 "InvoiceServiceTests and migration 014",
                 new[] { "Open InvoiceService.Save", "Add null guard", "Extend unit tests" }));
 
-        var body = IssueAnalysisCommentFormatter.Format(result, "\n\n----\nfooter");
+        var analyzedAt = new DateTimeOffset(2026, 7, 20, 8, 0, 0, TimeSpan.Zero);
+        var body = IssueAnalysisCommentFormatter.Format(
+            result, "\n\n----\nfooter", AnalysisTrigger.Created, analyzedAt);
 
+        Assert.Contains("_EngineIQ analysis — new issue — updated 2026-07-20_", body);
         Assert.Contains("h3. Acceptance criteria", body);
         Assert.Contains("h3. Impact Analysis", body);
         Assert.Contains("*Likely files:*", body);
@@ -48,6 +52,7 @@ public class IssueAnalysisCommentFormatterSlice2bTests
             IsAlreadyWellFormed: false);
 
         var body = IssueAnalysisCommentFormatter.Format(result, "\nfooter");
+        Assert.StartsWith("_EngineIQ analysis —", body);
         Assert.DoesNotContain("Impact Analysis", body);
     }
 }

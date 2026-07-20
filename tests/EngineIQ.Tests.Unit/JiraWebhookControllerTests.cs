@@ -33,6 +33,41 @@ public class JiraWebhookControllerTests
     }
 
     [Fact]
+    public void ShouldEnqueue_issue_updated_with_label_trigger_enqueues()
+    {
+        var ok = JiraWebhookEventFilter.ShouldEnqueue(
+            "jira:issue_updated",
+            "Bug",
+            isSubtask: false,
+            "ENG",
+            null,
+            out var skipReason,
+            labelTriggerAdded: true);
+        Assert.True(ok);
+        Assert.Equal(string.Empty, skipReason);
+    }
+
+    [Fact]
+    public void WasTriggerLabelAdded_detects_new_label()
+    {
+        var items = new[]
+        {
+            new JiraChangelogLabelItem("labels", "bug urgent", "bug urgent engineiq"),
+        };
+        Assert.True(JiraWebhookEventFilter.WasTriggerLabelAdded(items, "engineiq"));
+    }
+
+    [Fact]
+    public void WasTriggerLabelAdded_false_when_already_present()
+    {
+        var items = new[]
+        {
+            new JiraChangelogLabelItem("labels", "engineiq bug", "engineiq bug urgent"),
+        };
+        Assert.False(JiraWebhookEventFilter.WasTriggerLabelAdded(items, "engineiq"));
+    }
+
+    [Fact]
     public void BuildDedupeKey_joins_issue_id_and_updated()
     {
         Assert.Equal("42:2026-07-19T10:00:00.000+0000", JiraWebhookEventFilter.BuildDedupeKey(42, "2026-07-19T10:00:00.000+0000"));

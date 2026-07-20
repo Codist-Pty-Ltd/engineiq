@@ -33,6 +33,7 @@
     <ProjectReference Include="..\..\src\EngineIQ.AIEngine\EngineIQ.AIEngine.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.ContextBuilder\EngineIQ.ContextBuilder.csproj" />
     <ProjectReference Include="..\..\src\EngineIQ.Observability\EngineIQ.Observability.csproj" />
+    <ProjectReference Include="..\..\src\EngineIQ.Worker\EngineIQ.Worker.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Jira;
+using EngineIQ.Domain.Messaging;
 using EngineIQ.Domain.Search;
 using EngineIQ.Domain.Trust;
 using EngineIQ.FeedbackGenerator;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace EngineIQ.ReviewEngine.Orchestration;
 
 /// <summary>
-/// In-memory Jira issue analysis: fetch issue → hybrid code search → Claude improvement → comment.
+/// In-memory Jira issue analysis: fetch → search → Claude → upsert living comment.
 /// </summary>
 public sealed class IssueAnalysisOrchestrator : IIssueAnalysisOrchestrator
 {
@@ -22,6 +23,7 @@ public sealed class IssueAnalysisOrchestrator : IIssueAnalysisOrchestrator
     private readonly IRepositoryRepository _repositories;
     private readonly ICodeSearchService _codeSearch;
     private readonly IContextBuilder _contextBuilder;
+    private readonly IAnalyzedIssueRepository _analyzedIssues;
     private readonly TrustOptions _trust;
     private readonly ILogger<IssueAnalysisOrchestrator> _logger;
 
@@ -32,6 +34,7 @@ public sealed class IssueAnalysisOrchestrator : IIssueAnalysisOrchestrator
         IRepositoryRepository repositories,
         ICodeSearchService codeSearch,
         IContextBuilder contextBuilder,
+        IAnalyzedIssueRepository analyzedIssues,
         IOptions<TrustOptions> trust,
         ILogger<IssueAnalysisOrchestrator> logger)
     {
@@ -41,6 +44,7 @@ public sealed class IssueAnalysisOrchestrator : IIssueAnalysisOrchestrator
         _repositories = repositories;
         _codeSearch = codeSearch;
         _contextBuilder = contextBuilder;
+        _analyzedIssues = analyzedIssues;
         _trust = trust.Value;
         _logger = logger;
     }
@@ -57,6 +61,19 @@ public sealed class IssueAnalysisOrchestrator : IIssueAnalysisOrchestrator
 
         if (issue is null)
             throw new IssueNotFoundException(command.IssueKey);
+
+        JiraParentSummary? parent = null;
+        if (!string.IsNullOrWhiteSpace(issue.ParentKey))
+        {
+            try
+            {
+                parent = await _jiraClient.GetParentAsync(command.Connection, issue.ParentKey!, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Parent epic fetch failed for {ParentKey}; continuing without it.", issue.ParentKey);
+            }
+        }
 
         var targetRepos = await ResolveTargetReposAsync(command, issue.ProjectKey, cancellationToken);
         var reposSearched = targetRepos.Count;
@@ -79,7 +96,7 @@ public sealed class IssueAnalysisOrchestrator : IIssueAnalysisOrchestrator
                 {
                     _logger.LogWarning(
                         ex,
-                        "Code search failed for {IssueKey}; continuing with Slice 1 improvement only.",
+                        "Code search failed for {IssueKey}; continuing without code context.",
                         command.IssueKey);
                     codeContext = CodeSearchResult.Empty;
                 }
@@ -102,21 +119,22 @@ public sealed class IssueAnalysisOrchestrator : IIssueAnalysisOrchestrator
         using (ReviewTelemetry.StartActivity("jira.issue.claude"))
         {
             (result, inputTokens, outputTokens, costZar) =
-                await _improvement.ImproveAsync(issue, codeContext, repoContext, cancellationToken);
+                await _improvement.ImproveAsync(issue, codeContext, repoContext, parent, cancellationToken);
         }
 
         var footer = BuildIssueTrustFooter(_trust.PublicApiBaseUrl);
-        var comment = IssueAnalysisCommentFormatter.Format(result, footer);
+        var comment = IssueAnalysisCommentFormatter.Format(result, footer, command.Trigger, DateTimeOffset.UtcNow);
 
-        using (ReviewTelemetry.StartActivity("jira.issue.comment.post"))
+        using (ReviewTelemetry.StartActivity("jira.issue.comment.upsert"))
         {
-            await _jiraClient.PostCommentAsync(command.Connection, command.IssueKey, comment, cancellationToken);
+            await UpsertCommentAsync(command, issue, comment, cancellationToken);
         }
 
         _logger.LogInformation(
-            "Jira issue analysis posted for {IssueKey} (tenant {TenantId}, repos={Repos}, chunks={Chunks}).",
+            "Jira issue analysis upserted for {IssueKey} (tenant {TenantId}, trigger={Trigger}, repos={Repos}, chunks={Chunks}).",
             command.IssueKey,
             command.TenantId,
+            command.Trigger,
             reposSearched,
             codeContext.Hits.Count);
 
@@ -126,6 +144,47 @@ public sealed class IssueAnalysisOrchestrator : IIssueAnalysisOrchestrator
             costZar,
             reposSearched,
             codeContext.Hits.Count);
+    }
+
+    public async Task UpsertCommentAsync(
+        JiraIssueAnalysisJobCommand command,
+        JiraIssueDetails issue,
+        string commentBody,
+        CancellationToken cancellationToken)
+    {
+        var existing = await _analyzedIssues.GetByIssueAsync(
+            command.TenantId,
+            command.JiraConnectionId,
+            issue.JiraIssueId,
+            cancellationToken);
+
+        string commentId;
+        if (existing is not null && !string.IsNullOrWhiteSpace(existing.JiraCommentId))
+        {
+            var updatedId = await _jiraClient.UpdateCommentAsync(
+                command.Connection,
+                command.IssueKey,
+                existing.JiraCommentId,
+                commentBody,
+                cancellationToken);
+            commentId = updatedId
+                        ?? await _jiraClient.PostCommentAsync(command.Connection, command.IssueKey, commentBody, cancellationToken);
+        }
+        else
+        {
+            commentId = await _jiraClient.PostCommentAsync(command.Connection, command.IssueKey, commentBody, cancellationToken);
+        }
+
+        var analyzedAt = issue.UpdatedAt ?? DateTimeOffset.UtcNow;
+        await _analyzedIssues.UpsertAsync(
+            command.TenantId,
+            command.JiraConnectionId,
+            issue.JiraIssueId,
+            issue.IssueKey,
+            commentId,
+            analyzedAt,
+            command.Trigger,
+            cancellationToken);
     }
 
     public static string BuildSearchQuery(JiraIssueDetails issue)

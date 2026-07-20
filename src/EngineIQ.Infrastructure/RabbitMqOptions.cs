@@ -18,4 +18,9 @@ public class RabbitMqOptions
     public string IndexQueueName { get; set; } = "repo-index-jobs";
 
     public string IndexDeadLetterQueueName { get; set; } = "repo-index-jobs-dlq";
+
+    /// <summary>Jira backlog backfill jobs queue (Session15).</summary>
+    public string BackfillQueueName { get; set; } = "jira-backfill-jobs";
+
+    public string BackfillDeadLetterQueueName { get; set; } = "jira-backfill-jobs-dlq";
 }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EngineIQ.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bc3136b423ed2aec17d24f82f060d9c904d9970")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2aff9b53f2323562dafa6911c8bb8163793cf8fd")]
 [assembly: System.Reflection.AssemblyProductAttribute("EngineIQ.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EngineIQ.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

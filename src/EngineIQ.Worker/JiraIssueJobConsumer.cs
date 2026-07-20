@@ -64,6 +64,7 @@ public sealed class JiraIssueJobConsumer : BackgroundService
 
         using var connection = factory.CreateConnection("EngineIQ.Worker.Jira");
         using var channel = connection.CreateModel();
+        channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
 
         channel.QueueDeclare(
             queue: opts.JiraQueueName,
@@ -177,7 +178,8 @@ public sealed class JiraIssueJobConsumer : BackgroundService
                 job.JiraConnectionId,
                 job.IssueKey,
                 job.JiraIssueId,
-                new JiraConnectionInfo(connectionRow.SiteBaseUrl, connectionRow.Email, apiToken));
+                new JiraConnectionInfo(connectionRow.SiteBaseUrl, connectionRow.Email, apiToken),
+                job.Trigger);
 
             var sw = Stopwatch.StartNew();
             using var analysisActivity = ReviewTelemetry.StartActivity("jira.issue.execute");
@@ -257,7 +259,8 @@ public sealed class JiraIssueJobConsumer : BackgroundService
                     job.JiraConnectionId,
                     job.IssueKey,
                     job.JiraIssueId,
-                    job.Attempt + 1);
+                    job.Attempt + 1,
+                    job.Trigger);
 
                 var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(retry, JsonOptions));
                 var props = channel.CreateBasicProperties();

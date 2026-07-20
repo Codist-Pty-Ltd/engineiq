@@ -67,7 +67,13 @@ services:
       RabbitMq__JiraDeadLetterQueueName: ${RABBITMQ_JIRA_DLQ_NAME:-jira-issue-jobs-dlq}
       RabbitMq__IndexQueueName: ${RABBITMQ_INDEX_QUEUE_NAME:-repo-index-jobs}
       RabbitMq__IndexDeadLetterQueueName: ${RABBITMQ_INDEX_DLQ_NAME:-repo-index-jobs-dlq}
+      RabbitMq__BackfillQueueName: ${RABBITMQ_BACKFILL_QUEUE_NAME:-jira-backfill-jobs}
+      RabbitMq__BackfillDeadLetterQueueName: ${RABBITMQ_BACKFILL_DLQ_NAME:-jira-backfill-jobs-dlq}
       Jira__TimeoutSeconds: ${JIRA_TIMEOUT_SECONDS:-15}
+      Jira__TriggerLabel: ${JIRA_TRIGGER_LABEL:-engineiq}
+      Jira__MaxBackfillIssues: ${JIRA_MAX_BACKFILL_ISSUES:-100}
+      Jira__BackfillDelayMs: ${JIRA_BACKFILL_DELAY_MS:-2000}
+      Jira__BackfillTimeoutMinutes: ${JIRA_BACKFILL_TIMEOUT_MINUTES:-30}
       GitHub__AppId: ${GITHUB_APP_ID:?}
       GitHub__AppSlug: ${GITHUB_APP_SLUG:-}
       GitHub__PrivateKeyPem: ${GITHUB_PRIVATE_KEY_PEM:?}
@@ -133,7 +139,13 @@ services:
       RabbitMq__JiraDeadLetterQueueName: ${RABBITMQ_JIRA_DLQ_NAME:-jira-issue-jobs-dlq}
       RabbitMq__IndexQueueName: ${RABBITMQ_INDEX_QUEUE_NAME:-repo-index-jobs}
       RabbitMq__IndexDeadLetterQueueName: ${RABBITMQ_INDEX_DLQ_NAME:-repo-index-jobs-dlq}
+      RabbitMq__BackfillQueueName: ${RABBITMQ_BACKFILL_QUEUE_NAME:-jira-backfill-jobs}
+      RabbitMq__BackfillDeadLetterQueueName: ${RABBITMQ_BACKFILL_DLQ_NAME:-jira-backfill-jobs-dlq}
       Jira__TimeoutSeconds: ${JIRA_TIMEOUT_SECONDS:-15}
+      Jira__TriggerLabel: ${JIRA_TRIGGER_LABEL:-engineiq}
+      Jira__MaxBackfillIssues: ${JIRA_MAX_BACKFILL_ISSUES:-100}
+      Jira__BackfillDelayMs: ${JIRA_BACKFILL_DELAY_MS:-2000}
+      Jira__BackfillTimeoutMinutes: ${JIRA_BACKFILL_TIMEOUT_MINUTES:-30}
       Redis__ConnectionString: ${REDIS_CONNECTION_STRING:-redis:6379}
       Redis__ContextCacheTtlHours: ${REDIS_CONTEXT_CACHE_TTL_HOURS:-24}
       Voyage__ApiKey: ${VOYAGE_API_KEY:-}

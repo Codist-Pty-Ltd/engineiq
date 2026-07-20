@@ -1,4 +1,5 @@
 using EngineIQ.Domain.Interfaces;
+using EngineIQ.Domain.Messaging;
 using EngineIQ.Domain.Persistence;
 using EngineIQ.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +27,8 @@ public sealed class IssueAnalysisJobRepository : IIssueAnalysisJobRepository
         string issueKey,
         long jiraIssueId,
         string dedupeKey,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        AnalysisTrigger trigger = AnalysisTrigger.Created)
     {
         await using (var gate = await _factory.CreateDbContextAsync(cancellationToken))
         {
@@ -55,6 +57,7 @@ public sealed class IssueAnalysisJobRepository : IIssueAnalysisJobRepository
                 Status = ReviewJobStatuses.PendingPublish,
                 Attempt = 0,
                 CreatedAt = DateTimeOffset.UtcNow,
+                Trigger = trigger.ToString(),
             };
             db.IssueAnalysisJobs.Add(job);
             await db.SaveChangesAsync(cancellationToken);
@@ -153,7 +156,7 @@ public sealed class IssueAnalysisJobRepository : IIssueAnalysisJobRepository
         await conn.OpenAsync(cancellationToken);
         await using var cmd = new NpgsqlCommand(
             """
-            SELECT tenant_id, job_id, jira_connection_id, issue_key, jira_issue_id
+            SELECT tenant_id, job_id, jira_connection_id, issue_key, jira_issue_id, "trigger"
             FROM public.fn_list_stale_pending_jira_jobs(@cutoff, @lim)
             """,
             conn);
@@ -164,12 +167,21 @@ public sealed class IssueAnalysisJobRepository : IIssueAnalysisJobRepository
         await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
         while (await reader.ReadAsync(cancellationToken))
         {
+            var trigger = AnalysisTrigger.Created;
+            if (!reader.IsDBNull(5))
+            {
+                var triggerText = reader.GetString(5);
+                if (!Enum.TryParse(triggerText, ignoreCase: true, out trigger))
+                    trigger = AnalysisTrigger.Created;
+            }
+
             results.Add(new PendingJiraPublishJobInfo(
                 reader.GetGuid(0),
                 reader.GetGuid(1),
                 reader.GetGuid(2),
                 reader.GetString(3),
-                reader.GetInt64(4)));
+                reader.GetInt64(4),
+                trigger));
         }
 
         return results;

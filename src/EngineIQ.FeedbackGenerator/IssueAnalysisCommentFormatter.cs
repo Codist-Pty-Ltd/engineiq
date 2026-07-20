@@ -1,17 +1,28 @@
 using System.Text;
 using EngineIQ.Domain.Jira;
+using EngineIQ.Domain.Messaging;
 
 namespace EngineIQ.FeedbackGenerator;
 
 /// <summary>Formats issue-improvement results into a Jira comment (wiki markup / plain text).</summary>
 public static class IssueAnalysisCommentFormatter
 {
-    public static string Format(IssueImprovementResult result, string trustFooter)
+    public static string Format(
+        IssueImprovementResult result,
+        string trustFooter,
+        AnalysisTrigger trigger = AnalysisTrigger.Created,
+        DateTimeOffset? analyzedAt = null)
     {
+        var when = (analyzedAt ?? DateTimeOffset.UtcNow).UtcDateTime.ToString("yyyy-MM-dd");
+        var triggerLabel = TriggerLabel(trigger);
+        var header = $"_EngineIQ analysis — {triggerLabel} — updated {when}_";
+
         if (result.IsAlreadyWellFormed)
-            return FormatWellFormed(result, trustFooter);
+            return header + "\n\n" + FormatWellFormedBody(result) + trustFooter;
 
         var sb = new StringBuilder();
+        sb.AppendLine(header);
+        sb.AppendLine();
         sb.AppendLine("h2. EngineIQ ticket improvement");
         sb.AppendLine();
 
@@ -36,7 +47,14 @@ public static class IssueAnalysisCommentFormatter
         return sb.ToString().TrimEnd() + trustFooter;
     }
 
-    private static string FormatWellFormed(IssueImprovementResult result, string trustFooter)
+    public static string TriggerLabel(AnalysisTrigger trigger) => trigger switch
+    {
+        AnalysisTrigger.Label => "requested via label",
+        AnalysisTrigger.Backfill => "backlog review",
+        _ => "new issue",
+    };
+
+    private static string FormatWellFormedBody(IssueImprovementResult result)
     {
         var sb = new StringBuilder();
         sb.AppendLine("h2. EngineIQ review");
@@ -53,7 +71,7 @@ public static class IssueAnalysisCommentFormatter
             sb.AppendLine();
         }
 
-        return sb.ToString().TrimEnd() + trustFooter;
+        return sb.ToString().TrimEnd();
     }
 
     internal static void AppendImpactAnalysis(StringBuilder sb, IssueImpactAnalysis? impact)

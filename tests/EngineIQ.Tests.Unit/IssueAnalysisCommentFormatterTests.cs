@@ -1,4 +1,5 @@
 using EngineIQ.Domain.Jira;
+using EngineIQ.Domain.Messaging;
 using EngineIQ.FeedbackGenerator;
 
 namespace EngineIQ.Tests.Unit;
@@ -15,8 +16,11 @@ public class IssueAnalysisCommentFormatterTests
             "High — data loss risk",
             IsAlreadyWellFormed: false);
 
-        var body = IssueAnalysisCommentFormatter.Format(result, "\n\n----\nfooter");
+        var analyzedAt = new DateTimeOffset(2026, 7, 20, 12, 0, 0, TimeSpan.Zero);
+        var body = IssueAnalysisCommentFormatter.Format(
+            result, "\n\n----\nfooter", AnalysisTrigger.Created, analyzedAt);
 
+        Assert.Contains("_EngineIQ analysis — new issue — updated 2026-07-20_", body);
         Assert.Contains("h2. EngineIQ ticket improvement", body);
         Assert.Contains("h3. Improved description", body);
         Assert.Contains("Improved body", body);
@@ -36,7 +40,10 @@ public class IssueAnalysisCommentFormatterTests
             "Low",
             IsAlreadyWellFormed: true);
 
-        var body = IssueAnalysisCommentFormatter.Format(result, "\nfooter");
+        var analyzedAt = new DateTimeOffset(2026, 7, 19, 0, 0, 0, TimeSpan.Zero);
+        var body = IssueAnalysisCommentFormatter.Format(
+            result, "\nfooter", AnalysisTrigger.Created, analyzedAt);
+        Assert.Contains("_EngineIQ analysis — new issue — updated 2026-07-19_", body);
         Assert.Contains("h2. EngineIQ review", body);
         Assert.Contains("well-formed", body);
         Assert.Contains("footer", body);

@@ -20,6 +20,8 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
     public DbSet<PaystackWebhookEvent> PaystackWebhookEvents => Set<PaystackWebhookEvent>();
     public DbSet<JiraConnection> JiraConnections => Set<JiraConnection>();
     public DbSet<IssueAnalysisJob> IssueAnalysisJobs => Set<IssueAnalysisJob>();
+    public DbSet<AnalyzedIssue> AnalyzedIssues => Set<AnalyzedIssue>();
+    public DbSet<BacklogBackfill> BacklogBackfills => Set<BacklogBackfill>();
     public DbSet<CodeChunk> CodeChunks => Set<CodeChunk>();
     public DbSet<RepoIndexJob> RepoIndexJobs => Set<RepoIndexJob>();
     public DbSet<JiraProjectRepoMapping> JiraProjectRepoMappings => Set<JiraProjectRepoMapping>();
@@ -151,7 +153,34 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
             e.Property(x => x.DedupeKey).HasMaxLength(256).IsRequired();
             e.Property(x => x.Status).HasMaxLength(64).IsRequired();
             e.Property(x => x.FailureReason).HasMaxLength(512);
+            e.Property(x => x.Trigger).HasMaxLength(32);
             e.Property(x => x.EstimatedCostZar).HasPrecision(18, 6);
+            e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.JiraConnection).WithMany().HasForeignKey(x => x.JiraConnectionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AnalyzedIssue>(e =>
+        {
+            e.ToTable("analyzed_issues");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.JiraConnectionId, x.JiraIssueId }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.JiraConnectionId });
+            e.Property(x => x.IssueKey).HasMaxLength(64).IsRequired();
+            e.Property(x => x.JiraCommentId).HasMaxLength(128).IsRequired();
+            e.Property(x => x.LastTrigger).HasMaxLength(32).IsRequired();
+            e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.JiraConnection).WithMany().HasForeignKey(x => x.JiraConnectionId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<BacklogBackfill>(e =>
+        {
+            e.ToTable("backlog_backfills");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.TenantId, x.Status });
+            e.HasIndex(x => new { x.TenantId, x.JiraConnectionId, x.Status });
+            e.Property(x => x.Jql).HasColumnType("text").IsRequired();
+            e.Property(x => x.Status).HasMaxLength(64).IsRequired();
+            e.Property(x => x.FailureReason).HasMaxLength(512);
             e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.JiraConnection).WithMany().HasForeignKey(x => x.JiraConnectionId).OnDelete(DeleteBehavior.Cascade);
         });

@@ -50,6 +50,8 @@ public static class DependencyInjection
         services.AddSingleton<ITenantRepository, TenantRepository>();
         services.AddSingleton<IJiraConnectionRepository, JiraConnectionRepository>();
         services.AddSingleton<IIssueAnalysisJobRepository, IssueAnalysisJobRepository>();
+        services.AddSingleton<IAnalyzedIssueRepository, AnalyzedIssueRepository>();
+        services.AddSingleton<IBacklogBackfillRepository, BacklogBackfillRepository>();
         services.AddSingleton<IRepositoryRepository, RepositoryRepository>();
         services.AddSingleton<ICodeChunkRepository, CodeChunkRepository>();
         services.AddSingleton<IRepoIndexJobRepository, RepoIndexJobRepository>();
@@ -84,6 +86,7 @@ public static class DependencyInjection
         services.AddSingleton<IPullReviewJobPublisher, RabbitMqPullReviewJobPublisher>();
         services.AddSingleton<IJiraIssueAnalysisJobPublisher, RabbitMqJiraJobPublisher>();
         services.AddSingleton<IRepoIndexJobPublisher, RabbitMqRepoIndexJobPublisher>();
+        services.AddSingleton<IBacklogBackfillJobPublisher, RabbitMqBacklogBackfillPublisher>();
         return services;
     }
 

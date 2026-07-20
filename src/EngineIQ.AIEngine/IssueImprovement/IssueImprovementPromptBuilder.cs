@@ -8,6 +8,7 @@ namespace EngineIQ.AIEngine.IssueImprovement;
 public static class IssueImprovementPromptBuilder
 {
     public const int MaxDescriptionChars = 8000;
+    public const int MaxParentDescriptionChars = 1500;
 
     /// <summary>Slice 1 system prompt — kept byte-stable when no code context is provided.</summary>
     public static string BuildSystemPrompt(string issueType) => BuildSystemPrompt(issueType, hasCodeContext: false);
@@ -64,47 +65,76 @@ public static class IssueImprovementPromptBuilder
             """.Trim();
     }
 
-    /// <summary>Slice 1 user prompt — byte-stable when code/repo context is absent.</summary>
+    /// <summary>Slice 1 user prompt — byte-stable when code/repo/parent context is absent.</summary>
     public static string BuildUserPrompt(JiraIssueDetails issue) =>
-        BuildUserPrompt(issue, codeContext: null, repoContext: null);
+        BuildUserPrompt(issue, codeContext: null, repoContext: null, parent: null);
 
     public static string BuildUserPrompt(
         JiraIssueDetails issue,
         CodeSearchResult? codeContext,
-        RepoContext? repoContext)
+        RepoContext? repoContext,
+        JiraParentSummary? parent = null)
     {
         var hasHits = codeContext is { IsEmpty: false };
+        string body;
         if (!hasHits)
-            return BuildSlice1UserPrompt(issue);
+            body = BuildSlice1UserPrompt(issue);
+        else
+        {
+            var sb = new StringBuilder();
+            sb.Append(BuildSlice1UserPrompt(issue));
+
+            if (repoContext is not null)
+            {
+                sb.AppendLine();
+                sb.AppendLine("## Repository architecture");
+                sb.AppendLine($"Detected style: {repoContext.DetectedStyle}");
+                if (repoContext.LayerFolderMap.Count > 0)
+                {
+                    sb.AppendLine("Layer folder map:");
+                    foreach (var (layer, folders) in repoContext.LayerFolderMap.OrderBy(kv => kv.Key))
+                        sb.AppendLine($"- {layer}: {string.Join(", ", folders)}");
+                }
+            }
+
+            sb.AppendLine();
+            sb.AppendLine("## Relevant code from the indexed codebase");
+            foreach (var hit in codeContext!.Hits)
+            {
+                var symbol = string.IsNullOrWhiteSpace(hit.Symbol) ? "" : $" [{hit.Symbol}]";
+                sb.AppendLine($"// {hit.RepositoryName}/{hit.FilePath}{symbol} lines {hit.StartLine}-{hit.EndLine}");
+                sb.AppendLine("```");
+                sb.AppendLine(hit.Content);
+                sb.AppendLine("```");
+                sb.AppendLine();
+            }
+
+            body = sb.ToString();
+        }
+
+        if (parent is null)
+            return body;
+
+        return body + BuildParentEpicSection(parent);
+    }
+
+    public static string BuildParentEpicSection(JiraParentSummary parent)
+    {
+        var description = parent.Description ?? string.Empty;
+        if (description.Length > MaxParentDescriptionChars)
+            description = description[..MaxParentDescriptionChars];
 
         var sb = new StringBuilder();
-        sb.Append(BuildSlice1UserPrompt(issue));
-
-        if (repoContext is not null)
-        {
-            sb.AppendLine();
-            sb.AppendLine("## Repository architecture");
-            sb.AppendLine($"Detected style: {repoContext.DetectedStyle}");
-            if (repoContext.LayerFolderMap.Count > 0)
-            {
-                sb.AppendLine("Layer folder map:");
-                foreach (var (layer, folders) in repoContext.LayerFolderMap.OrderBy(kv => kv.Key))
-                    sb.AppendLine($"- {layer}: {string.Join(", ", folders)}");
-            }
-        }
-
         sb.AppendLine();
-        sb.AppendLine("## Relevant code from the indexed codebase");
-        foreach (var hit in codeContext!.Hits)
-        {
-            var symbol = string.IsNullOrWhiteSpace(hit.Symbol) ? "" : $" [{hit.Symbol}]";
-            sb.AppendLine($"// {hit.RepositoryName}/{hit.FilePath}{symbol} lines {hit.StartLine}-{hit.EndLine}");
-            sb.AppendLine("```");
-            sb.AppendLine(hit.Content);
-            sb.AppendLine("```");
-            sb.AppendLine();
-        }
-
+        sb.AppendLine("## Parent epic");
+        sb.AppendLine($"Key: {parent.Key}");
+        sb.AppendLine($"Summary: {parent.Summary}");
+        sb.AppendLine("Description:");
+        sb.AppendLine(string.IsNullOrWhiteSpace(description) ? "(empty)" : description);
+        sb.AppendLine();
+        sb.AppendLine(
+            "Instruction: acceptance criteria and suggested approach must be consistent with the epic's intent; " +
+            "flag contradictions between the story and its epic as a question for the reporter.");
         return sb.ToString();
     }
 

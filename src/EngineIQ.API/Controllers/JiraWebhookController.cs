@@ -6,6 +6,7 @@ using EngineIQ.Domain.Messaging;
 using EngineIQ.Jira;
 using EngineIQ.Observability;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace EngineIQ.API.Controllers;
 
@@ -19,17 +20,20 @@ public sealed class JiraWebhookController : ControllerBase
     private readonly JiraWebhookValidator _validator;
     private readonly IIssueAnalysisJobRepository _jobs;
     private readonly IJiraIssueAnalysisJobPublisher _publisher;
+    private readonly JiraClientOptions _jiraOptions;
     private readonly ILogger<JiraWebhookController> _logger;
 
     public JiraWebhookController(
         JiraWebhookValidator validator,
         IIssueAnalysisJobRepository jobs,
         IJiraIssueAnalysisJobPublisher publisher,
+        IOptions<JiraClientOptions> jiraOptions,
         ILogger<JiraWebhookController> logger)
     {
         _validator = validator;
         _jobs = jobs;
         _publisher = publisher;
+        _jiraOptions = jiraOptions.Value;
         _logger = logger;
     }
 
@@ -83,19 +87,28 @@ public sealed class JiraWebhookController : ControllerBase
             return BadRequest();
         }
 
+        var triggerLabel = string.IsNullOrWhiteSpace(_jiraOptions.TriggerLabel) ? "engineiq" : _jiraOptions.TriggerLabel;
+        var labelAdded = JiraWebhookEventFilter.WasTriggerLabelAdded(parsed.ChangelogItems, triggerLabel);
+        var trigger = string.Equals(parsed.WebhookEvent, JiraWebhookEventFilter.IssueUpdatedEvent, StringComparison.OrdinalIgnoreCase)
+            ? AnalysisTrigger.Label
+            : AnalysisTrigger.Created;
+
         if (!JiraWebhookEventFilter.ShouldEnqueue(
                 parsed.WebhookEvent,
                 parsed.IssueTypeName,
                 parsed.IsSubtask,
                 parsed.ProjectKey,
                 connection.ProjectKeysCsv,
-                out var skipReason))
+                out var skipReason,
+                labelTriggerAdded: labelAdded))
         {
             _logger.LogInformation("Ignoring Jira webhook: {Reason}", skipReason);
             return Ok();
         }
 
-        var dedupeKey = JiraWebhookEventFilter.BuildDedupeKey(parsed.IssueId, parsed.Updated);
+        var dedupeKey = trigger == AnalysisTrigger.Label
+            ? JiraWebhookEventFilter.BuildLabelDedupeKey(parsed.IssueId, parsed.Updated)
+            : JiraWebhookEventFilter.BuildDedupeKey(parsed.IssueId, parsed.Updated);
 
         IssueAnalysisJobEnqueueResult enqueue;
         try
@@ -106,7 +119,8 @@ public sealed class JiraWebhookController : ControllerBase
                 parsed.IssueKey,
                 parsed.IssueId,
                 dedupeKey,
-                budget.Token);
+                budget.Token,
+                trigger);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -152,7 +166,8 @@ public sealed class JiraWebhookController : ControllerBase
             enqueue.JiraConnectionId!.Value,
             parsed.IssueKey,
             parsed.IssueId,
-            Attempt: 0);
+            Attempt: 0,
+            Trigger: trigger);
 
         try
         {
@@ -246,6 +261,8 @@ public sealed class JiraWebhookController : ControllerBase
                         : updatedEl.GetRawText();
             }
 
+            var changelogItems = ParseChangelogItems(root);
+
             payload = new JiraWebhookMinimalPayload(
                 webhookEvent,
                 issueId,
@@ -253,13 +270,39 @@ public sealed class JiraWebhookController : ControllerBase
                 issueTypeName,
                 projectKey,
                 updated,
-                isSubtask);
+                isSubtask,
+                changelogItems);
             return true;
         }
         catch (JsonException)
         {
             return false;
         }
+    }
+
+    private static IReadOnlyList<JiraChangelogLabelItem> ParseChangelogItems(JsonElement root)
+    {
+        if (!root.TryGetProperty("changelog", out var changelog)
+            || !changelog.TryGetProperty("items", out var items)
+            || items.ValueKind != JsonValueKind.Array)
+        {
+            return Array.Empty<JiraChangelogLabelItem>();
+        }
+
+        var list = new List<JiraChangelogLabelItem>();
+        foreach (var item in items.EnumerateArray())
+        {
+            var field = item.TryGetProperty("field", out var f) ? f.GetString() : null;
+            var fromString = item.TryGetProperty("fromString", out var fs)
+                ? (fs.ValueKind == JsonValueKind.String ? fs.GetString() : fs.GetRawText())
+                : null;
+            var toString = item.TryGetProperty("toString", out var ts)
+                ? (ts.ValueKind == JsonValueKind.String ? ts.GetString() : ts.GetRawText())
+                : null;
+            list.Add(new JiraChangelogLabelItem(field, fromString, toString));
+        }
+
+        return list;
     }
 
     private sealed record JiraWebhookMinimalPayload(
@@ -269,5 +312,6 @@ public sealed class JiraWebhookController : ControllerBase
         string? IssueTypeName,
         string? ProjectKey,
         string? Updated,
-        bool IsSubtask);
+        bool IsSubtask,
+        IReadOnlyList<JiraChangelogLabelItem> ChangelogItems);
 }

@@ -30,11 +30,12 @@ public sealed class IssueImprovementService : IJiraIssueImprovementService
         JiraIssueDetails issue,
         CodeSearchResult? codeContext = null,
         RepoContext? repoContext = null,
+        JiraParentSummary? parent = null,
         CancellationToken cancellationToken = default)
     {
         var hasCode = codeContext is { IsEmpty: false };
         var systemPrompt = IssueImprovementPromptBuilder.BuildSystemPrompt(issue.IssueType, hasCode);
-        var userContent = IssueImprovementPromptBuilder.BuildUserPrompt(issue, codeContext, repoContext);
+        var userContent = IssueImprovementPromptBuilder.BuildUserPrompt(issue, codeContext, repoContext, parent);
 
         var body = new
         {

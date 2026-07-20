@@ -17,6 +17,8 @@ public sealed class PendingPublishRelayService : BackgroundService
     private readonly IJiraIssueAnalysisJobPublisher _jiraPublisher;
     private readonly IRepoIndexJobRepository _indexJobs;
     private readonly IRepoIndexJobPublisher _indexPublisher;
+    private readonly IBacklogBackfillRepository _backfillJobs;
+    private readonly IBacklogBackfillJobPublisher _backfillPublisher;
     private readonly IOptions<PendingPublishRelayOptions> _options;
     private readonly ILogger<PendingPublishRelayService> _logger;
 
@@ -27,6 +29,8 @@ public sealed class PendingPublishRelayService : BackgroundService
         IJiraIssueAnalysisJobPublisher jiraPublisher,
         IRepoIndexJobRepository indexJobs,
         IRepoIndexJobPublisher indexPublisher,
+        IBacklogBackfillRepository backfillJobs,
+        IBacklogBackfillJobPublisher backfillPublisher,
         IOptions<PendingPublishRelayOptions> options,
         ILogger<PendingPublishRelayService> logger)
     {
@@ -36,6 +40,8 @@ public sealed class PendingPublishRelayService : BackgroundService
         _jiraPublisher = jiraPublisher;
         _indexJobs = indexJobs;
         _indexPublisher = indexPublisher;
+        _backfillJobs = backfillJobs;
+        _backfillPublisher = backfillPublisher;
         _options = options;
         _logger = logger;
     }
@@ -53,6 +59,7 @@ public sealed class PendingPublishRelayService : BackgroundService
                 await RelayStaleJobsAsync(staleAfter, stoppingToken);
                 await RelayStaleJiraJobsAsync(staleAfter, stoppingToken);
                 await RelayStaleIndexJobsAsync(staleAfter, stoppingToken);
+                await RelayStaleBackfillJobsAsync(staleAfter, stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -144,7 +151,8 @@ public sealed class PendingPublishRelayService : BackgroundService
                 job.JiraConnectionId,
                 job.IssueKey,
                 job.JiraIssueId,
-                Attempt: 0);
+                Attempt: 0,
+                Trigger: job.Trigger);
 
             try
             {
@@ -221,6 +229,39 @@ public sealed class PendingPublishRelayService : BackgroundService
                     ex,
                     "Reconciler could not publish repo index job {JobId}; will retry on next poll or webhook redelivery.",
                     job.JobId);
+            }
+        }
+    }
+
+    private async Task RelayStaleBackfillJobsAsync(TimeSpan staleAfter, CancellationToken cancellationToken)
+    {
+        var pending = await _backfillJobs.ListStalePendingPublishJobsAsync(staleAfter, limit: 50, cancellationToken);
+        if (pending.Count == 0)
+            return;
+
+        _logger.LogInformation("Reconciling {Count} stale PendingPublish backfill job(s).", pending.Count);
+
+        foreach (var job in pending)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                break;
+
+            var message = new BacklogBackfillJobMessage(job.TenantId, job.JobId, job.JiraConnectionId, Attempt: 0);
+            try
+            {
+                await _backfillPublisher.PublishAsync(message, cancellationToken);
+                var marked = await _backfillJobs.MarkQueuedAfterPublishAsync(job.TenantId, job.JobId, cancellationToken);
+                if (marked)
+                {
+                    _logger.LogInformation(
+                        "Reconciler published backfill job {JobId} for tenant {TenantId}.",
+                        job.JobId,
+                        job.TenantId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Reconciler could not publish backfill job {JobId}.", job.JobId);
             }
         }
     }

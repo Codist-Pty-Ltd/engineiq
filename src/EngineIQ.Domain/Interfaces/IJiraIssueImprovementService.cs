@@ -14,5 +14,6 @@ public interface IJiraIssueImprovementService
         JiraIssueDetails issue,
         CodeSearchResult? codeContext = null,
         RepoContext? repoContext = null,
+        JiraParentSummary? parent = null,
         CancellationToken cancellationToken = default);
 }

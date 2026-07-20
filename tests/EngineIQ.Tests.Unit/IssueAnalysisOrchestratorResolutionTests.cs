@@ -1,5 +1,6 @@
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Jira;
+using EngineIQ.Domain.Messaging;
 using EngineIQ.Domain.Search;
 using EngineIQ.Domain.Trust;
 using EngineIQ.ReviewEngine.Orchestration;
@@ -87,6 +88,7 @@ public class IssueAnalysisOrchestratorResolutionTests
         var repos = new FakeRepos(new[] { Row(repoId, tenantId, "org/repo") });
         var search = new ThrowingSearch();
         var context = new FakeContextBuilder();
+        var analyzed = new FakeAnalyzedIssueRepository();
 
         var orchestrator = new IssueAnalysisOrchestrator(
             jira,
@@ -95,6 +97,7 @@ public class IssueAnalysisOrchestratorResolutionTests
             repos,
             search,
             context,
+            analyzed,
             Options.Create(new TrustOptions { PublicApiBaseUrl = "https://api.test" }),
             NullLogger<IssueAnalysisOrchestrator>.Instance);
 
@@ -112,7 +115,8 @@ public class IssueAnalysisOrchestratorResolutionTests
 
     private static IssueAnalysisOrchestrator Build(
         IJiraProjectRepoMappingRepository mappings,
-        IRepositoryRepository repos) =>
+        IRepositoryRepository repos,
+        IAnalyzedIssueRepository? analyzed = null) =>
         new(
             new FakeJiraClient(null!),
             new FakeImprovement(),
@@ -120,6 +124,7 @@ public class IssueAnalysisOrchestratorResolutionTests
             repos,
             new EmptySearch(),
             new FakeContextBuilder(),
+            analyzed ?? new FakeAnalyzedIssueRepository(),
             Options.Create(new TrustOptions()),
             NullLogger<IssueAnalysisOrchestrator>.Instance);
 
@@ -178,11 +183,23 @@ public class IssueAnalysisOrchestratorResolutionTests
         public Task<JiraIssueDetails?> GetIssueAsync(JiraConnectionInfo connection, string issueKey, CancellationToken cancellationToken = default) =>
             Task.FromResult(_issue);
 
-        public Task PostCommentAsync(JiraConnectionInfo connection, string issueKey, string body, CancellationToken cancellationToken = default)
+        public Task<string> PostCommentAsync(JiraConnectionInfo connection, string issueKey, string body, CancellationToken cancellationToken = default)
         {
             PostedComment = body;
-            return Task.CompletedTask;
+            return Task.FromResult("comment-1");
         }
+
+        public Task<string?> UpdateCommentAsync(
+            JiraConnectionInfo connection, string issueKey, string commentId, string body, CancellationToken cancellationToken = default) =>
+            Task.FromResult<string?>(commentId);
+
+        public Task<JiraSearchPage> SearchIssuesAsync(
+            JiraConnectionInfo connection, string jql, int startAt, int maxResults, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new JiraSearchPage(0, startAt, Array.Empty<JiraSearchIssue>()));
+
+        public Task<JiraParentSummary?> GetParentAsync(
+            JiraConnectionInfo connection, string parentKey, CancellationToken cancellationToken = default) =>
+            Task.FromResult<JiraParentSummary?>(null);
     }
 
     private sealed class FakeImprovement : IJiraIssueImprovementService
@@ -193,6 +210,7 @@ public class IssueAnalysisOrchestratorResolutionTests
             JiraIssueDetails issue,
             CodeSearchResult? codeContext = null,
             Domain.Context.RepoContext? repoContext = null,
+            JiraParentSummary? parent = null,
             CancellationToken cancellationToken = default)
         {
             LastCodeContext = codeContext;
@@ -200,6 +218,24 @@ public class IssueAnalysisOrchestratorResolutionTests
                 new IssueImprovementResult("body", Array.Empty<string>(), Array.Empty<string>(), "Low", false),
                 1, 1, 0.01m));
         }
+    }
+
+    private sealed class FakeAnalyzedIssueRepository : IAnalyzedIssueRepository
+    {
+        public Task<AnalyzedIssueRow?> GetByIssueAsync(
+            Guid tenantId, Guid jiraConnectionId, long jiraIssueId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<AnalyzedIssueRow?>(null);
+
+        public Task UpsertAsync(
+            Guid tenantId,
+            Guid jiraConnectionId,
+            long jiraIssueId,
+            string issueKey,
+            string jiraCommentId,
+            DateTimeOffset lastAnalyzedIssueUpdatedAt,
+            AnalysisTrigger trigger,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     private sealed class ThrowingSearch : ICodeSearchService

@@ -1,3 +1,5 @@
+using EngineIQ.Domain.Messaging;
+
 namespace EngineIQ.Domain.Jira;
 
 public sealed record JiraIssueAnalysisJobCommand(
@@ -6,4 +8,5 @@ public sealed record JiraIssueAnalysisJobCommand(
     Guid JiraConnectionId,
     string IssueKey,
     long JiraIssueId,
-    JiraConnectionInfo Connection);
+    JiraConnectionInfo Connection,
+    AnalysisTrigger Trigger = AnalysisTrigger.Created);

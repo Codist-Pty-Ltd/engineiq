@@ -15,7 +15,8 @@ public interface IIssueAnalysisJobRepository
         string issueKey,
         long jiraIssueId,
         string dedupeKey,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        Messaging.AnalysisTrigger trigger = Messaging.AnalysisTrigger.Created);
 
     Task<bool> TryMarkJobProcessingIfQueuedAsync(Guid tenantId, Guid jobId, CancellationToken cancellationToken = default);
 
@@ -64,7 +65,8 @@ public sealed record PendingJiraPublishJobInfo(
     Guid JobId,
     Guid JiraConnectionId,
     string IssueKey,
-    long JiraIssueId);
+    long JiraIssueId,
+    Messaging.AnalysisTrigger Trigger = Messaging.AnalysisTrigger.Created);
 
 public interface IJiraIssueAnalysisJobPublisher
 {
