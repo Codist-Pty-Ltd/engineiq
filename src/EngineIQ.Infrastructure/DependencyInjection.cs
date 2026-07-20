@@ -53,6 +53,7 @@ public static class DependencyInjection
         services.AddSingleton<IRepositoryRepository, RepositoryRepository>();
         services.AddSingleton<ICodeChunkRepository, CodeChunkRepository>();
         services.AddSingleton<IRepoIndexJobRepository, RepoIndexJobRepository>();
+        services.AddSingleton<IJiraProjectRepoMappingRepository, JiraProjectRepoMappingRepository>();
 
         return services;
     }

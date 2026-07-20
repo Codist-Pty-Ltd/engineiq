@@ -12,4 +12,6 @@ public interface IIssueAnalysisOrchestrator
 public sealed record IssueAnalysisOutcome(
     int InputTokens,
     int OutputTokens,
-    decimal EstimatedCostZar);
+    decimal EstimatedCostZar,
+    int ReposSearched = 0,
+    int ChunksRetrieved = 0);

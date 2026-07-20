@@ -33,7 +33,9 @@ public interface IIssueAnalysisJobRepository
         int inputTokens,
         int outputTokens,
         decimal estimatedCostZar,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        int reposSearched = 0,
+        int chunksRetrieved = 0);
 
     Task MarkJobFailedAsync(
         Guid tenantId,

@@ -22,6 +22,7 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
     public DbSet<IssueAnalysisJob> IssueAnalysisJobs => Set<IssueAnalysisJob>();
     public DbSet<CodeChunk> CodeChunks => Set<CodeChunk>();
     public DbSet<RepoIndexJob> RepoIndexJobs => Set<RepoIndexJob>();
+    public DbSet<JiraProjectRepoMapping> JiraProjectRepoMappings => Set<JiraProjectRepoMapping>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
@@ -192,6 +193,18 @@ public sealed class EngineIQDbContext : DbContext, IDataProtectionKeyContext
             e.Property(x => x.Status).HasMaxLength(64).IsRequired();
             e.Property(x => x.FailureReason).HasMaxLength(512);
             e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Repository).WithMany().HasForeignKey(x => x.RepositoryId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<JiraProjectRepoMapping>(e =>
+        {
+            e.ToTable("jira_project_repo_mappings");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.JiraConnectionId, x.ProjectKey, x.RepositoryId }).IsUnique();
+            e.HasIndex(x => new { x.TenantId, x.JiraConnectionId });
+            e.Property(x => x.ProjectKey).HasMaxLength(64).IsRequired();
+            e.HasOne(x => x.Tenant).WithMany().HasForeignKey(x => x.TenantId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.JiraConnection).WithMany().HasForeignKey(x => x.JiraConnectionId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Repository).WithMany().HasForeignKey(x => x.RepositoryId).OnDelete(DeleteBehavior.Cascade);
         });
 

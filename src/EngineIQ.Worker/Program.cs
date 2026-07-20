@@ -34,6 +34,8 @@ builder.Services.AddEngineIQEmbeddings(builder.Configuration);
 builder.Services.Configure<RedisContextOptions>(builder.Configuration.GetSection(RedisContextOptions.SectionName));
 builder.Services.Configure<EngineIQ.ContextBuilder.Indexing.IndexingOptions>(
     builder.Configuration.GetSection(EngineIQ.ContextBuilder.Indexing.IndexingOptions.SectionName));
+builder.Services.Configure<EngineIQ.ContextBuilder.Search.RetrievalOptions>(
+    builder.Configuration.GetSection(EngineIQ.ContextBuilder.Search.RetrievalOptions.SectionName));
 
 builder.Services.AddHttpClient(ReviewService.AnthropicHttpClientName, client =>
 {
@@ -53,6 +55,7 @@ builder.Services.AddSingleton<IRepoArchiveClient, RepoArchiveClient>();
 builder.Services.AddSingleton<IJiraClient, JiraCloudClient>();
 builder.Services.AddSingleton<IStandardsEngine, EngineIQ.StandardsEngine.StandardsEngine>();
 builder.Services.AddSingleton<IContextBuilder, ContextBuilderService>();
+builder.Services.AddSingleton<ICodeSearchService, EngineIQ.ContextBuilder.Search.CodeSearchService>();
 builder.Services.AddSingleton<IAIEngine, ReviewService>();
 builder.Services.AddSingleton<IJiraIssueImprovementService, IssueImprovementService>();
 builder.Services.AddSingleton<IReviewOrchestrator, ReviewOrchestrator>();

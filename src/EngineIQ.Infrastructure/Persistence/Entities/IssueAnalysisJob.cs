@@ -17,6 +17,8 @@ public sealed class IssueAnalysisJob
     public int InputTokens { get; set; }
     public int OutputTokens { get; set; }
     public decimal? EstimatedCostZar { get; set; }
+    public int ReposSearched { get; set; }
+    public int ChunksRetrieved { get; set; }
 
     public Tenant? Tenant { get; set; }
     public JiraConnection? JiraConnection { get; set; }

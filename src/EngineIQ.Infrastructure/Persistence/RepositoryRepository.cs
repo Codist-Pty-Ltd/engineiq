@@ -100,6 +100,26 @@ public sealed class RepositoryRepository : IRepositoryRepository
         await db.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<RepositoryLookupRow>> ListIndexedAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken = default)
+    {
+        await using var db = await _factory.CreateDbContextAsync(cancellationToken);
+        await db.SetCurrentTenantAsync(tenantId, cancellationToken);
+
+        var rows = await (
+            from r in db.Repositories.AsNoTracking()
+            join t in db.Tenants.AsNoTracking() on r.TenantId equals t.Id
+            where r.TenantId == tenantId && r.IndexedCommitSha != null && r.IndexedCommitSha != ""
+            select new { r.Id, r.TenantId, r.FullName, r.IndexedCommitSha, InstallationId = t.GitHubAppInstallationId }
+        ).ToListAsync(cancellationToken);
+
+        return rows
+            .Where(r => r.InstallationId.HasValue)
+            .Select(r => new RepositoryLookupRow(r.Id, r.TenantId, r.FullName, r.IndexedCommitSha, r.InstallationId!.Value))
+            .ToList();
+    }
+
     private async Task<Guid?> ResolveTenantIdByInstallationAsync(long installationId, CancellationToken cancellationToken)
     {
         var cs = _options.Value.ConnectionString;

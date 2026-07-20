@@ -182,7 +182,9 @@ public sealed class IssueAnalysisJobRepository : IIssueAnalysisJobRepository
         int inputTokens,
         int outputTokens,
         decimal estimatedCostZar,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        int reposSearched = 0,
+        int chunksRetrieved = 0)
     {
         await using var db = await _factory.CreateDbContextAsync(cancellationToken);
         await db.SetCurrentTenantAsync(tenantId, cancellationToken);
@@ -195,6 +197,8 @@ public sealed class IssueAnalysisJobRepository : IIssueAnalysisJobRepository
         job.InputTokens = inputTokens;
         job.OutputTokens = outputTokens;
         job.EstimatedCostZar = estimatedCostZar;
+        job.ReposSearched = reposSearched;
+        job.ChunksRetrieved = chunksRetrieved;
         job.FailureReason = null;
         await db.SaveChangesAsync(cancellationToken);
     }

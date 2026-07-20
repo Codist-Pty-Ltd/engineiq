@@ -19,6 +19,11 @@ public static class IssueImprovementResponseParser
         @"^\s*```(?:json)?\s*(.*?)\s*```\s*$",
         RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
+    private static readonly HashSet<string> KnownConfidence = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "High", "Medium", "Low"
+    };
+
     public static IssueImprovementResult Parse(string assistantText)
     {
         if (string.IsNullOrWhiteSpace(assistantText))
@@ -64,8 +69,62 @@ public static class IssueImprovementResponseParser
                 ReadStringArray(root, "acceptanceCriteria"),
                 ReadStringArray(root, "missingInfoQuestions"),
                 severity,
-                wellFormed);
+                wellFormed,
+                ReadImpactAnalysis(root));
         }
+    }
+
+    private static IssueImpactAnalysis? ReadImpactAnalysis(JsonElement root)
+    {
+        if (!root.TryGetProperty("impactAnalysis", out var el) || el.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+            return null;
+        if (el.ValueKind != JsonValueKind.Object)
+            return null;
+
+        var files = new List<ImpactedFile>();
+        if (el.TryGetProperty("likelyFiles", out var filesEl) && filesEl.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in filesEl.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                    continue;
+                var path = SanitizePath(ReadString(item, "path"));
+                if (string.IsNullOrWhiteSpace(path))
+                    continue;
+                var reason = ReadString(item, "reason")?.Trim() ?? string.Empty;
+                var confidence = NormalizeConfidence(ReadString(item, "confidence"));
+                files.Add(new ImpactedFile(path, reason, confidence));
+            }
+        }
+
+        return new IssueImpactAnalysis(
+            files,
+            ReadStringArray(el, "affectedModules"),
+            ReadString(el, "blastRadius")?.Trim() ?? string.Empty,
+            ReadStringArray(el, "suggestedApproach"));
+    }
+
+    private static string NormalizeConfidence(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return "Medium";
+        var trimmed = value.Trim();
+        foreach (var known in KnownConfidence)
+        {
+            if (string.Equals(known, trimmed, StringComparison.OrdinalIgnoreCase))
+                return known;
+        }
+
+        return "Medium";
+    }
+
+    private static string? SanitizePath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return null;
+        if (path.Contains('`', StringComparison.Ordinal) || path.Contains('\n') || path.Contains('\r'))
+            return null;
+        return path.Trim();
     }
 
     private static string? ReadString(JsonElement root, string name)

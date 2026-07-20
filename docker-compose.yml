@@ -144,6 +144,11 @@ services:
       Indexing__MaxFileSizeKb: ${INDEXING_MAX_FILE_SIZE_KB:-200}
       Indexing__EmbedBatchSize: ${INDEXING_EMBED_BATCH_SIZE:-96}
       Indexing__JobTimeoutMinutes: ${INDEXING_JOB_TIMEOUT_MINUTES:-10}
+      Retrieval__VectorTopK: ${RETRIEVAL_VECTOR_TOP_K:-30}
+      Retrieval__TextTopK: ${RETRIEVAL_TEXT_TOP_K:-30}
+      Retrieval__MaxHits: ${RETRIEVAL_MAX_HITS:-16}
+      Retrieval__MaxHitsPerFile: ${RETRIEVAL_MAX_HITS_PER_FILE:-3}
+      Retrieval__MaxContextChars: ${RETRIEVAL_MAX_CONTEXT_CHARS:-30000}
       Observability__Enabled: ${OBSERVABILITY_ENABLED:-true}
       Observability__MetricsPort: ${OBSERVABILITY_WORKER_METRICS_PORT:-9465}
       GitHub__AppId: ${GITHUB_APP_ID:?}

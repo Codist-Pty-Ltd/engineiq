@@ -191,7 +191,9 @@ public sealed class JiraIssueJobConsumer : BackgroundService
                 outcome.InputTokens,
                 outcome.OutputTokens,
                 outcome.EstimatedCostZar,
-                stoppingToken);
+                stoppingToken,
+                outcome.ReposSearched,
+                outcome.ChunksRetrieved);
 
             try
             {

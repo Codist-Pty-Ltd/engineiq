@@ -45,4 +45,20 @@ public interface ICodeChunkRepository
         CancellationToken cancellationToken = default);
 
     Task<int> CountByRepoAsync(Guid tenantId, Guid repositoryId, CancellationToken cancellationToken = default);
+
+    /// <summary>Cosine nearest-neighbour over embeddings for the given repos (rank 1 = closest).</summary>
+    Task<IReadOnlyList<Search.VectorHit>> VectorSearchAsync(
+        Guid tenantId,
+        IReadOnlyList<Guid> repositoryIds,
+        float[] queryEmbedding,
+        int topK,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Full-text search over <c>content_tsv</c> (simple config) plus identifier OR tokens.</summary>
+    Task<IReadOnlyList<Search.TextHit>> FullTextSearchAsync(
+        Guid tenantId,
+        IReadOnlyList<Guid> repositoryIds,
+        string query,
+        int topK,
+        CancellationToken cancellationToken = default);
 }

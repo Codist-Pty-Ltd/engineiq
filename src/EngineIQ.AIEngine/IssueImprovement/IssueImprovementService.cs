@@ -1,8 +1,10 @@
 using System.Text;
 using System.Text.Json;
 using EngineIQ.AIEngine.Anthropic;
+using EngineIQ.Domain.Context;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Jira;
+using EngineIQ.Domain.Search;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -26,10 +28,13 @@ public sealed class IssueImprovementService : IJiraIssueImprovementService
 
     public async Task<(IssueImprovementResult Result, int InputTokens, int OutputTokens, decimal EstimatedCostZar)> ImproveAsync(
         JiraIssueDetails issue,
+        CodeSearchResult? codeContext = null,
+        RepoContext? repoContext = null,
         CancellationToken cancellationToken = default)
     {
-        var systemPrompt = IssueImprovementPromptBuilder.BuildSystemPrompt(issue.IssueType);
-        var userContent = IssueImprovementPromptBuilder.BuildUserPrompt(issue);
+        var hasCode = codeContext is { IsEmpty: false };
+        var systemPrompt = IssueImprovementPromptBuilder.BuildSystemPrompt(issue.IssueType, hasCode);
+        var userContent = IssueImprovementPromptBuilder.BuildUserPrompt(issue, codeContext, repoContext);
 
         var body = new
         {
@@ -70,6 +75,9 @@ public sealed class IssueImprovementService : IJiraIssueImprovementService
             throw new IssueImprovementParseException("missing_assistant_text");
 
         var result = IssueImprovementResponseParser.Parse(assistantText);
+        if (!hasCode && result.ImpactAnalysis is not null)
+            result = result with { ImpactAnalysis = null };
+
         _ = AnthropicReviewResponseParser.TryParseUsage(root, out var inputTokens, out var outputTokens);
         var estimatedZar = AnthropicReviewResponseParser.EstimateZarCost(
             inputTokens,
@@ -79,11 +87,12 @@ public sealed class IssueImprovementService : IJiraIssueImprovementService
             _options.UsdToZar);
 
         _logger.LogInformation(
-            "IssueImprovementCompleted IssueKey={IssueKey} EstimatedZarCost={EstimatedZar:F4} InputTokens={InputTokens} OutputTokens={OutputTokens}",
+            "IssueImprovementCompleted IssueKey={IssueKey} EstimatedZarCost={EstimatedZar:F4} InputTokens={InputTokens} OutputTokens={OutputTokens} HasImpact={HasImpact}",
             issue.IssueKey,
             estimatedZar,
             inputTokens,
-            outputTokens);
+            outputTokens,
+            result.ImpactAnalysis is not null);
 
         return (result, inputTokens, outputTokens, estimatedZar);
     }

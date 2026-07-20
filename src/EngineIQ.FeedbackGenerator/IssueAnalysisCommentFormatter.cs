@@ -23,6 +23,7 @@ public static class IssueAnalysisCommentFormatter
         }
 
         AppendBulleted(sb, "Acceptance criteria", result.AcceptanceCriteria);
+        AppendImpactAnalysis(sb, result.ImpactAnalysis);
         AppendBulleted(sb, "Questions for reporter", result.MissingInfoQuestions);
 
         if (!string.IsNullOrWhiteSpace(result.SeverityAssessment))
@@ -43,6 +44,7 @@ public static class IssueAnalysisCommentFormatter
         sb.AppendLine("This ticket looks well-formed. Only minor additions below (if any).");
         sb.AppendLine();
         AppendBulleted(sb, "Suggested acceptance criteria", result.AcceptanceCriteria);
+        AppendImpactAnalysis(sb, result.ImpactAnalysis);
         AppendBulleted(sb, "Optional clarifications", result.MissingInfoQuestions);
         if (!string.IsNullOrWhiteSpace(result.SeverityAssessment))
         {
@@ -52,6 +54,55 @@ public static class IssueAnalysisCommentFormatter
         }
 
         return sb.ToString().TrimEnd() + trustFooter;
+    }
+
+    internal static void AppendImpactAnalysis(StringBuilder sb, IssueImpactAnalysis? impact)
+    {
+        if (impact is null)
+            return;
+
+        sb.AppendLine("h3. Impact Analysis");
+
+        if (impact.LikelyFiles.Count > 0)
+        {
+            sb.AppendLine("*Likely files:*");
+            foreach (var file in impact.LikelyFiles)
+            {
+                sb.Append("- ");
+                sb.Append(file.Path);
+                sb.Append(" — ");
+                sb.Append(file.Reason);
+                sb.Append(" _(");
+                sb.Append(file.Confidence);
+                sb.AppendLine(" confidence)_");
+            }
+        }
+
+        if (impact.AffectedModules.Count > 0)
+        {
+            sb.Append("*Affected modules:* ");
+            sb.AppendLine(string.Join(", ", impact.AffectedModules));
+        }
+
+        if (!string.IsNullOrWhiteSpace(impact.BlastRadius))
+        {
+            sb.Append("*Blast radius:* ");
+            sb.AppendLine(impact.BlastRadius.Trim());
+        }
+
+        if (impact.SuggestedApproach.Count > 0)
+        {
+            sb.AppendLine("*Suggested approach:*");
+            foreach (var step in impact.SuggestedApproach)
+            {
+                if (string.IsNullOrWhiteSpace(step))
+                    continue;
+                sb.Append("# ");
+                sb.AppendLine(step.Trim());
+            }
+        }
+
+        sb.AppendLine();
     }
 
     private static void AppendBulleted(StringBuilder sb, string heading, IReadOnlyList<string> items)

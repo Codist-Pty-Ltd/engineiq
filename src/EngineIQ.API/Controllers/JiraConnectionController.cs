@@ -14,15 +14,18 @@ public sealed class JiraConnectionController : ControllerBase
 {
     private readonly ITenantRepository _tenants;
     private readonly IJiraConnectionRepository _connections;
+    private readonly IJiraProjectRepoMappingRepository _mappings;
     private readonly ILogger<JiraConnectionController> _logger;
 
     public JiraConnectionController(
         ITenantRepository tenants,
         IJiraConnectionRepository connections,
+        IJiraProjectRepoMappingRepository mappings,
         ILogger<JiraConnectionController> logger)
     {
         _tenants = tenants;
         _connections = connections;
+        _mappings = mappings;
         _logger = logger;
     }
 
@@ -101,6 +104,77 @@ public sealed class JiraConnectionController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("{connectionId:guid}/mappings")]
+    public async Task<ActionResult<JiraMappingsListResponse>> ListMappings(
+        Guid id,
+        Guid connectionId,
+        CancellationToken cancellationToken)
+    {
+        var account = await _tenants.GetAccountSnapshotAsync(id, cancellationToken);
+        if (account is null)
+            return NotFound();
+
+        var connection = await _connections.GetByIdAsync(id, connectionId, cancellationToken);
+        if (connection is null)
+            return NotFound();
+
+        var rows = await _mappings.ListByConnectionAsync(id, connectionId, cancellationToken);
+        var items = rows
+            .GroupBy(r => r.ProjectKey, StringComparer.OrdinalIgnoreCase)
+            .Select(g => new JiraMappingRowResponse(
+                g.Key,
+                g.Select(x => new JiraMappingRepoResponse(x.RepositoryId, x.RepositoryFullName)).ToList()))
+            .OrderBy(x => x.ProjectKey)
+            .ToList();
+
+        return Ok(new JiraMappingsListResponse(items));
+    }
+
+    [HttpPut("{connectionId:guid}/mappings")]
+    public async Task<IActionResult> ReplaceMappings(
+        Guid id,
+        Guid connectionId,
+        [FromBody] List<JiraMappingPutRequest>? body,
+        CancellationToken cancellationToken)
+    {
+        var account = await _tenants.GetAccountSnapshotAsync(id, cancellationToken);
+        if (account is null)
+            return NotFound();
+
+        var connection = await _connections.GetByIdAsync(id, connectionId, cancellationToken);
+        if (connection is null)
+            return NotFound();
+
+        body ??= new List<JiraMappingPutRequest>();
+        var tenantRepos = await _tenants.ListRepositoriesAsync(id, cancellationToken);
+        var tenantRepoIds = tenantRepos.Select(r => r.Id).ToHashSet();
+
+        var inputs = new List<JiraProjectMappingInput>();
+        foreach (var item in body)
+        {
+            if (string.IsNullOrWhiteSpace(item.ProjectKey))
+                return BadRequest(new { error = "project_key_required" });
+
+            var repoIds = item.RepositoryIds ?? new List<Guid>();
+            foreach (var repoId in repoIds)
+            {
+                if (!tenantRepoIds.Contains(repoId))
+                    return BadRequest(new { error = "repository_not_in_tenant", repository_id = repoId });
+            }
+
+            inputs.Add(new JiraProjectMappingInput(item.ProjectKey.Trim(), repoIds));
+        }
+
+        await _mappings.ReplaceAsync(id, connectionId, inputs, cancellationToken);
+        _logger.LogInformation(
+            "Replaced Jira project mappings for connection {ConnectionId} tenant {TenantId} ({Count} project rows).",
+            connectionId,
+            id,
+            inputs.Count);
+
+        return NoContent();
+    }
+
     public sealed class JiraConnectionCreateRequest
     {
         [JsonPropertyName("site_base_url")]
@@ -114,6 +188,15 @@ public sealed class JiraConnectionController : ControllerBase
 
         [JsonPropertyName("project_keys")]
         public List<string>? ProjectKeys { get; set; }
+    }
+
+    public sealed class JiraMappingPutRequest
+    {
+        [JsonPropertyName("projectKey")]
+        public string ProjectKey { get; set; } = string.Empty;
+
+        [JsonPropertyName("repositoryIds")]
+        public List<Guid>? RepositoryIds { get; set; }
     }
 
     public sealed record JiraConnectionCreatedResponse(
@@ -131,4 +214,15 @@ public sealed class JiraConnectionController : ControllerBase
 
     public sealed record JiraConnectionsListResponse(
         [property: JsonPropertyName("items")] IReadOnlyList<JiraConnectionRowResponse> Items);
+
+    public sealed record JiraMappingRepoResponse(
+        [property: JsonPropertyName("repositoryId")] Guid RepositoryId,
+        [property: JsonPropertyName("fullName")] string FullName);
+
+    public sealed record JiraMappingRowResponse(
+        [property: JsonPropertyName("projectKey")] string ProjectKey,
+        [property: JsonPropertyName("repositories")] IReadOnlyList<JiraMappingRepoResponse> Repositories);
+
+    public sealed record JiraMappingsListResponse(
+        [property: JsonPropertyName("items")] IReadOnlyList<JiraMappingRowResponse> Items);
 }

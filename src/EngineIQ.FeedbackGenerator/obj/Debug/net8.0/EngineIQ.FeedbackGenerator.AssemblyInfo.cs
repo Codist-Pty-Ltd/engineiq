@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EngineIQ.FeedbackGenerator")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+228f53b998b1d522f4a0ac7636c7eab0203f2b2a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1bc3136b423ed2aec17d24f82f060d9c904d9970")]
 [assembly: System.Reflection.AssemblyProductAttribute("EngineIQ.FeedbackGenerator")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EngineIQ.FeedbackGenerator")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

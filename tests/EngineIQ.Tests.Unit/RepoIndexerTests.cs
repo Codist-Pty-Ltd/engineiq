@@ -5,6 +5,7 @@ using EngineIQ.ContextBuilder.Indexing;
 using EngineIQ.Domain.Indexing;
 using EngineIQ.Domain.Interfaces;
 using EngineIQ.Domain.Messaging;
+using EngineIQ.Domain.Search;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -346,6 +347,14 @@ public class RepoIndexerTests
 
         public Task<int> CountByRepoAsync(Guid tenantId, Guid repositoryId, CancellationToken cancellationToken = default) =>
             Task.FromResult(_hashesByFile.Values.Sum(s => s.Count));
+
+        public Task<IReadOnlyList<VectorHit>> VectorSearchAsync(
+            Guid tenantId, IReadOnlyList<Guid> repositoryIds, float[] queryEmbedding, int topK, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<VectorHit>>(Array.Empty<VectorHit>());
+
+        public Task<IReadOnlyList<TextHit>> FullTextSearchAsync(
+            Guid tenantId, IReadOnlyList<Guid> repositoryIds, string query, int topK, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<TextHit>>(Array.Empty<TextHit>());
     }
 
     private sealed class FakeRepositoryRepository : IRepositoryRepository
@@ -371,5 +380,9 @@ public class RepoIndexerTests
             LastSetCommitSha = commitSha;
             return Task.CompletedTask;
         }
+
+        public Task<IReadOnlyList<RepositoryLookupRow>> ListIndexedAsync(
+            Guid tenantId, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<RepositoryLookupRow>>(Array.Empty<RepositoryLookupRow>());
     }
 }

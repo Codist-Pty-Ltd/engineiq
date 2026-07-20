@@ -24,6 +24,11 @@ public interface IRepositoryRepository
         string commitSha,
         DateTimeOffset indexedAt,
         CancellationToken cancellationToken = default);
+
+    /// <summary>All tenant repositories that have completed at least one index (<c>IndexedCommitSha</c> set).</summary>
+    Task<IReadOnlyList<RepositoryLookupRow>> ListIndexedAsync(
+        Guid tenantId,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record RepositoryLookupRow(
